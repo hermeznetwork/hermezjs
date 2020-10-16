@@ -1,0 +1,25 @@
+{
+  "name": "hermezjs",
+  "version": "1.0.0",
+  "description": "Hermez SDK",
+  "main": "hermez-example.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "npx buidler run deploy.js --network localhost"
+  },
+  "author": "",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "@hermeznetwork/commonjs": "0.0.2",
+    "@nomiclabs/buidler": "^1.4.7",
+    "@openzeppelin/test-helpers": "^0.5.7",
+    "circomlib": "^0.2.4",
+    "dotenv": "^8.2.0",
+    "ethers": "^5.0.17",
+    "ffjavascript": "^0.2.24",
+    "node-localstorage": "^2.1.6"
+  }
+}
