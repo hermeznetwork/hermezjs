@@ -1,35 +1,13 @@
-const { ethers }                    = require("@nomiclabs/buidler")
-const { keccak256 }                 = require('js-sha3')
-
-const { initializeTransactionPool } = require("./src/tx-pool.js")
-const { getHermezAddress }          = require('./src/addresses')
-const { BabyJubWallet }             = require('./src/babyjub-wallet')
-const { METAMASK_MESSAGE }          = require('./src/constants')
-const { hexToBuffer }               = require('./src/utils.js')
-const { deposit,
-        send }                      = require('./src/tx.js')
-const { generateL2Transaction }     = require('./src/tx-utils')
-const { getTokenAmountBigInt }      = require('./src/currencies.js')
-const { getTokens,
-        getAccounts, 
-        getFees }                   = require('./src/api')
-const { float2Fix, 
-	floorFix2Float }            = require('./src/float16')
-const { initNetwork, 
-        getProvider }               = require('./src/providers')
+const hermez        = require("./src/hermez")
 
 async function main() {
-  // Init network. Default is http://localhost:8545
-  if (process.argv.length === 2 ){
-     initNetwork("http://localhost:8545")
-  } else {
-     initNetwork(process.argv[2])
-  }
+  // Init network provider.
+  hermez.setDefaultProvider("http://localhost:8545")
   
   // Initialize Transaction Pool
   // Transaction Pool declares an instance in LocalStorage where user transactions are stored.
   // When a L1Tx or L2Tx is sent, the transaction is also kept in the LocalStorage
-  initializeTransactionPool();
+  hermez.initializeTransactionPool()
   
 
   // Create wallet
@@ -38,14 +16,7 @@ async function main() {
   //  Hermez ethereum address is created by appending 'hez:' to the ethereum address.
   // In this example we create a standard wallet. It is also possible to link the hermez wallet to a existing
   // Metamask wallet
-  const provider = getProvider();
-  const signer = provider.getSigner()
-  const ethereumAddress = await signer.getAddress()
-  const hermezEthereumAddress = getHermezAddress(ethereumAddress)
-  const signature = await signer.signMessage(METAMASK_MESSAGE)
-  const hashedSignature = keccak256(signature)
-  const bufferSignature = hexToBuffer(hashedSignature)
-  const walletRollup = new BabyJubWallet(bufferSignature, hermezEthereumAddress)
+  const {hermezWallet, hermezEthereumAddress } = await hermez.newWalletFromEtherAccount(0)
 
   // Deposit
   // First transaction is a deposit from the ethereum address into hermez network. Since a hermez
@@ -73,24 +44,26 @@ async function main() {
   //  - ethereum account is preloaded with 1e6 ERC20Tokens and 1e6 ERC777Tokens
 
   // TODO : I don't understand this function
-  amount = getTokenAmountBigInt("100.2",2)
+  amount = hermez.getTokenAmountBigInt("100",2)
 
   // retrieve token info from Hermez network
-  token = await getTokens()
+  token = await hermez.getTokens()
 
   // ERC20 Token
   //  tmp function to update returned values from getToken to real ones.
   tokenERC20 = tmpUpdateToken(token,1)
 
+  acc = await hermez.getAccounts(hermezEthereumAddress)
+  console.log(acc)
   // make deposit of ERC20 Tokens
-  await deposit(amount, hermezEthereumAddress, tokenERC20, walletRollup.publicKeyCompressedHex)
+  await hermez.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
 
   // HEZ Token : ERC777 
   //  tmp function to update returned values from getToken to real ones.
   tokenERC777 = tmpUpdateToken(token,2)
 
   // make deposit of ERC777 Tokens
-  await deposit(amount, hermezEthereumAddress, tokenERC777, walletRollup.publicKeyCompressedHex)
+  await hermez.deposit(amount, hermezEthereumAddress, tokenERC777, hermezWallet.publicKeyCompressedHex)
  
   // Withdraw -> Not completed
 
@@ -103,7 +76,7 @@ async function main() {
   //     For this we need:
   //     * Source account index -> retrieved by calling getAccounts with sender hermez address and token id
   //        of the token used for the transfer. Source account index must exist.
-  //     * Destination account index -> retrieved by calling getAccounts with sender hermez address and token id
+  //     * Destination account index -> retrieved by calling getAccounts with sender hermez address and token id. If its an Exit, set it to false
   //        of the token used for the transfer. Destination account undex must exit. Additionally, token id
   //        associated to source account must much token id associated to destination account.
   //     * Amount of tokens to transfer. Sender must have enough funds.
@@ -124,31 +97,69 @@ async function main() {
   //    - getFees -> it should provide information on the fees
 
   // src account
-  let account = (await getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
+  let account = (await hermez.getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
   // dst account
-  let to = (await getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
+  let to = (await hermez.getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
   // fee computation
-  let fees = await getFees()
+  let fees = await hermez.getFees()
+  console.log(fees)
   let usdTokenExchangeRate = tokenERC777.USD
   let fee = fees.existingAccount / usdTokenExchangeRate
   // amount to transfer
-  amount = getTokenAmountBigInt("10",2)
+  amount = hermez.getTokenAmountBigInt("10",2)
 
   // generate L2 transaction
-  var {transaction, encodedTransaction} = await generateL2Transaction(
+  var {transaction, encodedTransaction} = await hermez.generateL2Transaction(
     {
       from: account.accountIndex,
       to: to.accountIndex,
-      amount: float2Fix(floorFix2Float(amount)),
+      amount: hermez.float2Fix(hermez.floorFix2Float(amount)),
       fee,
       nonce: account.nonce
     },
-    walletRollup.publicKeyCompressedHex, account.token)
+    hermezWallet.publicKeyCompressedHex, account.token)
+
+  // sign encoded transaction
+  hermezWallet.signTransaction(transaction, encodedTransaction)
+  // send transaction to coordinator
+  result = await hermez.send(transaction, hermezWallet.publicKeyCompressedHex)
+  console.log(result)
+
+  // Check transaction in coordinator's transaction pool
+  txPool = await hermez.getPoolTransaction(result.id)
+  console.log(txPool)
+
+  // Get transaction confirmation
+  txConf = await hermez.getHistoryTransaction(txPool.id)
+  console.log(txConf)
+
+
+  // Exit
+  // amount to retrieve
+  amount = hermez.getTokenAmountBigInt("10",2)
+
+  // generate L2 transaction
+  var {transaction, encodedTransaction} = await hermez.generateL2Transaction(
+    {
+      type: 'Exit',
+      from: account.accountIndex,
+      to: false,
+      amount: hermez.float2Fix(hermez.floorFix2Float(amount)),
+      fee,
+      nonce: account.nonce
+    },
+    hermezWallet.publicKeyCompressedHex, account.token)
 
     // sign encoded transaction
-    walletRollup.signTransaction(transaction, encodedTransaction)
+    hermezWallet.signTransaction(transaction, encodedTransaction)
     // send transaction to coordinator
-    send(transaction, walletRollup.publicKeyCompressedHex)
+    result = await hermez.send(transaction, hermezWallet.publicKeyCompressedHex)
+    console.log("EXIT",result)
+
+    // Check transaction in coordinator's transaction pool
+    txPool = await hermez.getPoolTransaction(result.id)
+    console.log(txPool)
+
 }
 
 function tmpUpdateToken(token, id) {

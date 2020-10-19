@@ -13,7 +13,7 @@ const { tokenTypes,
 const { getEthereumAddress,
         getAccountIndex }     = require('./addresses')
 const { getContract }         = require('./contracts')
-const { getProvider }         = require('./providers')
+const { getDefaultProvider }         = require('./providers')
 const HermezABI               = require('./abis/HermezABI.json')
 const ERC777ABI               = require('./abis/ERC777ABI.json')
 
@@ -30,7 +30,10 @@ const TxType = {
 }
 
 const TxState = {
-  Pending: 'pend'
+  Forged: 'fged',
+  Forging: 'fing',
+  Pending: 'pend',
+  Invalid: 'invl'
 }
 
 /**
@@ -39,7 +42,7 @@ const TxState = {
  * @returns {Promise} - promise will return the gas price obtained.
 */
 async function getGasPrice (multiplier) {
-  const provider = getProvider()
+  const provider = getDefaultProvider()
   const strAvgGas = await provider.getGasPrice()
   const avgGas = Scalar.e(strAvgGas)
   const res = (avgGas * Scalar.e(multiplier))
@@ -62,7 +65,7 @@ async function getGasPrice (multiplier) {
  * @returns {Promise} transaction
  */
 const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit = 5000000, gasMultiplier = 1) => {
-  const provider = getProvider()
+  const provider = getDefaultProvider()
   const signer = provider.getSigner()
   const hermezContract = new ethers.Contract(contractAddresses.Hermez, HermezABI, signer)
 
@@ -107,7 +110,7 @@ const withdraw = async (addressSC, tokenId, walletRollup, abi, urlOperator,
   numExitRoot, gasLimit = 5000000, gasMultiplier = 1) => {
   const { publicKey, publicKeyHex } = walletRollup
   const apiOperator = new CliExternalOperator(urlOperator)
-  const provider = getProvider()
+  const provider = getDefaultProvider()
   const signer = provider.getSigner()
   const contractWithSigner = new ethers.Contract(addressSC, abi, signer)
 
@@ -131,7 +134,7 @@ const withdraw = async (addressSC, tokenId, walletRollup, abi, urlOperator,
 
 const forceWithdraw = async (addressSC, tokenId, amount, walletRollup, abi,
   gasLimit = 5000000, gasMultiplier = 1) => {
-  const provider = getProvider()
+  const provider = getDefaultProvider()
   const signer = provider.getSigner()
   const contractWithSigner = new ethers.Contract(addressSC, abi, signer)
 

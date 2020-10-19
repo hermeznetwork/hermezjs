@@ -8,7 +8,7 @@ const { bufToHex }            = require('./utils')
 const { fix2Float }           = require('./float16')
 const { getPoolTransactions } = require('./tx-pool')
 const { getAccountIndex }     = require('./addresses')
-const { getProvider }         = require('./providers')
+const { getDefaultProvider }         = require('./providers')
 
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
@@ -21,11 +21,15 @@ const { getProvider }         = require('./providers')
 async function encodeTransaction (transaction) {
   const encodedTransaction = Object.assign({}, transaction)
 
-  const provider = getProvider()
+  const provider = getDefaultProvider()
   encodedTransaction.chainId = await provider.getNetwork().chainId
 
   encodedTransaction.fromAccountIndex = getAccountIndex(transaction.fromAccountIndex)
-  encodedTransaction.toAccountIndex = getAccountIndex(transaction.toAccountIndex)
+  if (transaction.toAccountIndex) {
+    encodedTransaction.toAccountIndex = getAccountIndex(transaction.toAccountIndex)
+  } else if (transaction.type === 'Exit') {
+    encodedTransaction.toAccountIndex = 1
+  }
 
   return encodedTransaction
 }
@@ -92,8 +96,10 @@ function getFee (fee, amount, decimals) {
  * @return {String} transactionType
  */
 function getTransactionType (transaction) {
-  if (transaction.to.includes('hez:')) {
+  if (transaction.to && transaction.to.includes('hez:')) {
     return 'Transfer'
+  } else {
+    return 'Exit'
   }
 }
 
@@ -172,7 +178,7 @@ function buildTransactionHashMessage (encodedTransaction) {
  *
  * @param {Object} transaction - ethAddress and babyPubKey together
  * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
- * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156
+ * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
  * @param {String} transaction.amount - The amount being sent as a BigInt string
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account
@@ -186,7 +192,7 @@ async function generateL2Transaction (tx, bjj, token) {
     type: getTransactionType(tx),
     tokenId: token.id,
     fromAccountIndex: tx.from,
-    toAccountIndex: tx.to,
+    toAccountIndex: tx.to || null,
     toHezEthereumAddress: null,
     toBjj: null,
     amount: tx.amount.toString(),

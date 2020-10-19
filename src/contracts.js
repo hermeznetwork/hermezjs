@@ -1,6 +1,6 @@
 const ethers = require('ethers')
 
-const { getProvider } = require('./providers')
+const { getDefaultProvider } = require('./providers')
 
 const contractsCache = new Map()
 
@@ -15,7 +15,7 @@ function getContract (contractAddress, abi) {
     return contractsCache.get(contractAddress)
   }
 
-  const provider = getProvider()
+  const provider = getDefaultProvider()
   const signer = provider.getSigner()
   const contract = new ethers.Contract(contractAddress, abi, signer)
 

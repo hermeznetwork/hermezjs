@@ -7,16 +7,16 @@ var _networkURL
  *
  * @param {String} url - Network url (i.e, http://localhost:8545)
  */
-function initNetwork(url){
+function setDefaultProvider(url){
    _networkURL = url
 }
 
 /**
- * Retrieved provider
+ * Retrieve provider
  *
  * @returns {Object} provider
  */
-function getProvider(){
+function getDefaultProvider(){
   if (typeof window === "undefined" || window === null){
     return (new ethers.getDefaultProvider(_networkURL))
   } else {
@@ -26,6 +26,6 @@ function getProvider(){
 }
 
 module.exports = {
-  initNetwork,
-  getProvider
+  setDefaultProvider,
+  getDefaultProvider
 }

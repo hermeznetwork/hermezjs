@@ -1,8 +1,13 @@
 const { eddsa }                        = require('circomlib')
+const { keccak256 }                 = require('js-sha3')
 
 const eddsaBabyJub                     = require('./eddsa-babyjub.js')
 const { buildTransactionHashMessage }  = require('./tx-utils')
-const { hashBuffer }                   = require('./utils.js')
+const { hashBuffer,
+        hexToBuffer }                   = require('./utils.js')
+const { getDefaultProvider }                   = require('./providers')
+const { getHermezAddress }             = require('./addresses')
+const { METAMASK_MESSAGE }             = require('./constants')
 
 /**
  * Manage Babyjubjub keys
@@ -68,7 +73,21 @@ function verifyBabyJub (publicKeyHex, messStr, signatureHex) {
   return pk.verifyPoseidon(hash, sig)
 }
 
+async function newWalletFromEtherAccount(addressIdx) {
+  const provider = getDefaultProvider();
+  const signer = provider.getSigner(addressIdx)
+  const ethereumAddress = await signer.getAddress(addressIdx)
+  const hermezEthereumAddress = getHermezAddress(ethereumAddress)
+  const signature = await signer.signMessage(METAMASK_MESSAGE)
+  const hashedSignature = keccak256(signature)
+  const bufferSignature = hexToBuffer(hashedSignature)
+  const hermezWallet = new BabyJubWallet(bufferSignature, hermezEthereumAddress)
+
+  return {hermezWallet, hermezEthereumAddress}
+}
+
 module.exports = {
  BabyJubWallet,
- verifyBabyJub
+ verifyBabyJub,
+ newWalletFromEtherAccount
 }
