@@ -65,8 +65,6 @@ async function main() {
   // make deposit of ERC777 Tokens
   await hermez.deposit(amount, hermezEthereumAddress, tokenERC777, hermezWallet.publicKeyCompressedHex)
  
-  // Withdraw -> Not completed
-
   // Transfer
   //  Transfer is a L2 transaction. At this point, Hermez source account is already created with 
   //  some amount of tokens.
@@ -96,10 +94,13 @@ async function main() {
   //       provided a harcoded answer.
   //    - getFees -> it should provide information on the fees
 
+  // Create 2nd wallet
+  const {hermezWallet2, hermezEthereumAddress2 } =
+                      await hermez.newWalletFromEtherAccount(1)
   // src account
   let account = (await hermez.getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
   // dst account
-  let to = (await hermez.getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
+  let to = (await hermez.getAccounts(hermezEthereumAddress2, [tokenERC777.id])).accounts[0]
   // fee computation
   let fees = await hermez.getFees()
   console.log(fees)
