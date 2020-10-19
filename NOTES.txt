@@ -1,0 +1,8 @@
+The following changes have been done :
+- src/hermez.js : Exports functions and constants in hermezjs so that can be used by third modules by simply importing hermezjs
+- src/providers.js : I needed some wrapping around functionality to be able to link with localhost:8545. Not sure if this is the right mechanism
+- src/
+- Substituted all modules export functions so that they can be used externally
+- deploy.sh / src/deply.js : allow to deploy Hermez contract, initialize some funds and adding some tokens to the initial token Hermez list
+- hermez-example.js : A simple example of using hermezjs. Creates wallet, deposit, transfer and withdraw (pending)
+- src/babyjub-wallet : Added a new function that allows to create a simple wallet importing ethereum addresses from localhost:8545. May need some rework.
