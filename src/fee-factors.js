@@ -223,7 +223,7 @@ const feeFactors = [
   7.50E-01,
   8.25E-01,
   9.09E-01,
-  1.00E+00,
+  1,
   1.00E+01,
   1.00E+02,
   1.00E+03,
@@ -257,6 +257,6 @@ const feeFactors = [
   1.00E+31
 ]
 
-module.exports = {
+export {
   feeFactors
 }

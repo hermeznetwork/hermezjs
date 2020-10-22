@@ -11,29 +11,28 @@ This command will download contracts, compile them and deploy them on http://loc
 Load hermezjs library
 
 ```javascript
-const hermez        = require("./src/hermez")
-
+import * as hermez from './src/hermez'
 ```
 
 ## Create Transaction Pool
 Initialize some local storage where user transactions are stored.
 
 ```
-  hermez.initializeTransactionPool()
+  hermez.txPool.initializeTransactionPool()
 ```
 
 ## Connect to Ethereum Network
 Some of the operations in Hermez network, such as sending L1 transactions, require interacting with smart contracts.It is thus necessary to initialize a provider.
 
 ```
-  hermez.setDefaultProvider("http://localhost:8545")
+  hermez.setProvider("http://localhost:8545")
 ```
 
 ## Create a Wallet 
 We can create a new Hermez wallet by providing the ethereum address associated with the provider initialized. This wallet will store the ethereum and babyjubjub keys for the newly created Hermez account. As discussed in the [`developer-guide`](../developers/dev-guide?id=Accounts), the ethereum address is used to authorize L1 transactions, and the babyjubjub key is used to authorize L2 transactions.
 
 ```
-  const {hernezWallet, hermezEthereumAddress } = await hermez.newWalletFromEtherAccount(0)
+  const {hernezWallet, hermezEthereumAddress } = await hermez.createWalletFromEtherAccount(0)
 ```
 ## Check Token exists in Hermez Network
 Before being able to operate in Hermez network, we must ensure that the token we want to ooperate with is listed. For that we make a call to the Hermez node API that will list all listed tokens. All tokens in Hermez Network must be ERC20.
@@ -113,7 +112,7 @@ First we create a second wallet following the procedure we saw earlier
 
 ```
    const {hermezWallet2, hermezEthereumAddress2 } =
-                      await hermez.newWalletFromEtherAccount(1)
+                      await hermez.createWalletFromEtherAccount(1)
 ```
 
 Next step we compute the fees for the transaction. For this we consult the recommended fees from the coordinator .

@@ -1,5 +1,5 @@
-const { babyJub, eddsa }  = require('circomlib')
-const { utils }           = require('ffjavascript')
+import { babyJub, eddsa } from 'circomlib'
+import { utils } from 'ffjavascript'
 
 /**
  * Class representing EdDSA Baby Jub signature
@@ -97,7 +97,7 @@ class PrivateKey {
   }
 }
 
-module.exports = {
+export {
   Signature,
   PublicKey,
   PrivateKey

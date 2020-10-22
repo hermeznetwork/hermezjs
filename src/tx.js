@@ -1,35 +1,23 @@
-const { Scalar }  = require('ffjavascript')
-const ethers      = require('ethers')
+import { Scalar } from 'ffjavascript'
 
-const { postPoolTransaction,
-        getAccounts }         = require('./api')
-const { fix2Float }           = require('./float16')
-const { CliExternalOperator } = require('./cli-external-operator')
-const { addPoolTransaction }  = require('./tx-pool')
-const { contractAddresses }   = require('./constants')
-const { tokenTypes, 
-        detectTokenType,
-        approve }             = require('./tokens')
-const { getEthereumAddress,
-        getAccountIndex }     = require('./addresses')
-const { getContract }         = require('./contracts')
-const { getDefaultProvider }         = require('./providers')
-const HermezABI               = require('./abis/HermezABI.json')
-const ERC777ABI               = require('./abis/ERC777ABI.json')
+import { postPoolTransaction, getAccounts, getAccount } from './api.js'
+import { fix2Float } from './float16.js'
+import { addPoolTransaction } from './tx-pool.js'
+import { contractAddresses, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
+import { approve } from './tokens.js'
+import { getEthereumAddress, getAccountIndex } from './addresses.js'
+import { getContract } from './contracts.js'
+import { getProvider } from './providers.js'
+import HermezABI from './abis/HermezABI.js'
 
-const partialHermezABI = [
-  'function addL1Transaction(uint256,uint48,uint16,uint16,uint32,uint48)'
-]
-const abiInterface = new ethers.utils.Interface(partialHermezABI)
-
-const TxType = {
+export const TxType = {
   Deposit: 'Deposit',
   Transfer: 'Transfer',
   Withdraw: 'Withdrawn',
   Exit: 'Exit'
 }
 
-const TxState = {
+export const TxState = {
   Forged: 'fged',
   Forging: 'fing',
   Pending: 'pend',
@@ -42,7 +30,7 @@ const TxState = {
  * @returns {Promise} - promise will return the gas price obtained.
 */
 async function getGasPrice (multiplier) {
-  const provider = getDefaultProvider()
+  const provider = getProvider()
   const strAvgGas = await provider.getGasPrice()
   const avgGas = Scalar.e(strAvgGas)
   const res = (avgGas * Scalar.e(multiplier))
@@ -64,10 +52,8 @@ async function getGasPrice (multiplier) {
  *
  * @returns {Promise} transaction
  */
-const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit = 5000000, gasMultiplier = 1) => {
-  const provider = getDefaultProvider()
-  const signer = provider.getSigner()
-  const hermezContract = new ethers.Contract(contractAddresses.Hermez, HermezABI, signer)
+const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
 
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   let account = (await getAccounts(ethereumAddress, [token.id])).accounts[0]
@@ -91,71 +77,109 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
   if (token.id === 0) {
     overrides.value = amount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
+      .then(() => {
+        return transactionParameters
+      })
   }
 
-  const tokenType = await detectTokenType(token.ethereumAddress)
-  if (tokenType === tokenTypes.ERC777) {
-    const erc777Contract = getContract(token.ethereumAddress, ERC777ABI)
-    const encodedTransactionParameters = abiInterface.encodeFunctionData('addL1Transaction', transactionParameters)
-    return erc777Contract.send(contractAddresses.Hermez, amount, encodedTransactionParameters)
-  } else if (tokenType === tokenTypes.ERC20) {
-    await approve(amount, ethereumAddress, token.ethereumAddress)
+  await approve(amount, ethereumAddress, token.ethereumAddress)
+  return hermezContract.addL1Transaction(...transactionParameters, overrides)
+    .then(() => {
+      return transactionParameters
+    })
+}
+
+/**
+ * Makes a force Exit. This is the L1 transaction equivalent of Exit.
+ *
+ * @param {BigInt} amount - The amount to be withdrawn
+ * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
+ * @param {Object} token - The token information object as returned from the API
+ * @param {Number} gasLimit - Optional gas limit
+ * @param {Bumber} gasMultiplier - Optional gas multiplier
+ */
+const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
+
+  const account = await getAccount(accountIndex)
+  const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
+
+  const overrides = {
+    gasLimit,
+    gasPrice: await getGasPrice(gasMultiplier)
+  }
+
+  const transactionParameters = [
+    0,
+    getAccountIndex(accountIndex),
+    0,
+    fix2Float(amount),
+    token.id,
+    1
+  ]
+
+  if (token.id === 0) {
+    overrides.value = amount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
-  } else {
-    throw new Error('Not a valid ERC20 or ERC777 smart contract')
+      .then(() => {
+        return transactionParameters
+      })
   }
+
+  await approve(amount, ethereumAddress, token.ethereumAddress)
+  return hermezContract.addL1Transaction(...transactionParameters, overrides)
+    .then(() => {
+      return transactionParameters
+    })
 }
 
-const withdraw = async (addressSC, tokenId, walletRollup, abi, urlOperator,
-  numExitRoot, gasLimit = 5000000, gasMultiplier = 1) => {
-  const { publicKey, publicKeyHex } = walletRollup
-  const apiOperator = new CliExternalOperator(urlOperator)
-  const provider = getDefaultProvider()
-  const signer = provider.getSigner()
-  const contractWithSigner = new ethers.Contract(addressSC, abi, signer)
+/**
+ * Finalise the withdraw. This a L1 transaction.
+ *
+ * @param {BigInt} amount - The amount to be withdrawn
+ * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
+ * @param {Object} token - The token information object as returned from the API
+ * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @param {BigInt} merkleRoot -
+ * @param {Array} merkleSiblings -
+ * @param {Number} gasLimit - Optional gas limit
+ * @param {Bumber} gasMultiplier - Optional gas multiplier
+ */
+const withdraw = async (amount, accountIndex, token, babyJubJub, merkleRoot, merkleSiblings, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
+
+  const account = await getAccount(accountIndex)
+  const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier, provider)
+    gasPrice: await getGasPrice(gasMultiplier)
   }
 
-  try {
-    const res = await apiOperator.getExitInfo(tokenId, publicKeyHex[0], publicKeyHex[1], numExitRoot)
-    const infoExitTree = res.data
-    if (infoExitTree.found) {
-      return await contractWithSigner.withdraw(infoExitTree.state.amount, numExitRoot,
-        infoExitTree.siblings, publicKey, tokenId, overrides)
-    }
-    throw new Error(`No exit tree leaf was found in batch: ${numExitRoot} with babyjub: ${publicKeyHex}`)
-  } catch (error) {
-    throw new Error(`Message error: ${error.message}`)
+  const transactionParameters = [
+    token.id,
+    amount,
+    `0x${babyJubJub}`,
+    merkleRoot,
+    merkleSiblings,
+    getAccountIndex(accountIndex),
+    true
+  ]
+
+  if (token.id === 0) {
+    overrides.value = amount
+    return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
+      .then(() => {
+        return transactionParameters
+      })
   }
+
+  await approve(amount, ethereumAddress, token.ethereumAddress)
+  return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
+    .then(() => {
+      return transactionParameters
+    })
 }
-
-const forceWithdraw = async (addressSC, tokenId, amount, walletRollup, abi,
-  gasLimit = 5000000, gasMultiplier = 1) => {
-  const provider = getDefaultProvider()
-  const signer = provider.getSigner()
-  const contractWithSigner = new ethers.Contract(addressSC, abi, signer)
-
-  const feeOnchainTx = await contractWithSigner.feeOnchainTx()
-  const overrides = {
-    gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier, provider),
-    value: feeOnchainTx
-  }
-
-  const amountF = fix2Float(amount)
-  try {
-    return await contractWithSigner.forceWithdraw(walletRollup.publicKey, tokenId, amountF, overrides)
-  } catch (error) {
-    throw new Error(`Message error: ${error.message}`)
-  }
-}
-
-// const exitAx = '0x0000000000000000000000000000000000000000000000000000000000000000'
-// const exitAy = '0x0000000000000000000000000000000000000000000000000000000000000000'
-// const exitEthAddr = '0x0000000000000000000000000000000000000000'
 
 /**
  * Sends a L2 transaction to the Coordinator
@@ -178,12 +202,21 @@ async function send (transaction, bJJ) {
   }
 }
 
-module.exports = {
- TxType,
- TxState,
- getGasPrice,
- deposit,
- withdraw,
- forceWithdraw,
- send
+/**
+ * Gets the beautified name of a transaction state
+ *
+ * @param {String} transactionState - The original transaction state from the API
+ *
+ * @return {String} - The beautified transaction state
+*/
+function beautifyTransactionState (transactionState) {
+  return Object.keys(TxState).find(key => TxState[key] === transactionState)
+}
+
+export {
+  deposit,
+  forceExit,
+  withdraw,
+  send,
+  beautifyTransactionState
 }

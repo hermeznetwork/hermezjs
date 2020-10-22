@@ -1,6 +1,5 @@
 require('@openzeppelin/test-helpers/configure')({provider: 'http://localhost:8545'});
 const { ethers } = require("@nomiclabs/buidler");
-const { time } = require("@openzeppelin/test-helpers");
 const fs = require('fs');
 
 const { calculateInputMaxTxLevels } = require("@hermeznetwork/commonjs");
