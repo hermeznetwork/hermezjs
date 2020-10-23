@@ -12,8 +12,7 @@ const GAS_MULTIPLIER = 1
 
 const hermezAddress = '0xc4905364b78a742ccce7B890A89514061E47068D'
 const contractAddresses = {
-  Hermez: hermezAddress,
-  ERC1820: '0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24'
+  Hermez: hermezAddress
 }
 
 export {

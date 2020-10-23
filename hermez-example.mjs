@@ -91,13 +91,13 @@ async function main() {
   const {hermezWallet2, hermezEthereumAddress2 } =
                       await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
   // src account
-  let account = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
+  let account = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0]
   // dst account
-  let to = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC777.id])).accounts[0]
+  let to = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
   // fee computation
   let fees = await hermez.CoordinatorAPI.getFees()
   console.log(fees)
-  let usdTokenExchangeRate = tokenERC777.USD
+  let usdTokenExchangeRate = tokenERC20.USD
   let fee = fees.existingAccount / usdTokenExchangeRate
   // amount to transfer
   amount = hermez.Utils.getTokenAmountBigInt('10',2)
@@ -159,7 +159,7 @@ async function main() {
 function tmpUpdateToken(token, id) {
   if (id === 1){
     // ERC20
-    token.tokens[0].ethereumAddress = '0x8858eeB3DfffA017D4BCE9801D340D36Cf895CCf'
+    token.tokens[0].ethereumAddress = '0xf784709d2317d872237c4bc22f867d1bae2913ab'
   } else {
     // ERC777
     token.tokens[0].ethereumAddress = '0x7c2C195CD6D34B8F845992d380aADB2730bB9C6F' 
