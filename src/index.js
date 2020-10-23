@@ -9,6 +9,19 @@ import * as Float16 from './float16.js'
 import * as Addresses from './addresses.js'
 import * as Providers from './providers.js'
 
+export {
+  BabyJubWallet,
+  Utils,
+  Tx,
+  TxUtils,
+  TxPool,
+  CoordinatorAPI,
+  Constants,
+  Float16,
+  Addresses,
+  Providers
+}
+
 export default {
   BabyJubWallet,
   Utils,
