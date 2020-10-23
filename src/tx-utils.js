@@ -1,6 +1,6 @@
 import BigInt from 'big-integer'
 import { Scalar } from 'ffjavascript'
-import { poseidon } from 'circomlib'
+import circomlib from 'circomlib'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
@@ -160,7 +160,7 @@ function buildTxCompressedData (tx) {
 function buildTransactionHashMessage (encodedTransaction) {
   const txCompressedData = buildTxCompressedData(encodedTransaction)
 
-  const h = poseidon([
+  const h = circomlib.poseidon([
     txCompressedData,
     Scalar.fromString(encodedTransaction.toEthAddr || '0', 16),
     Scalar.fromString(encodedTransaction.toBjjAy || '0', 16),

@@ -1,5 +1,5 @@
-import { eddsa } from 'circomlib'
-import { keccak256 } from 'js-sha3'
+import circomlib from 'circomlib'
+import jsSha3 from 'js-sha3'
 
 import * as eddsaBabyJub from './eddsa-babyjub.js'
 import { buildTransactionHashMessage } from './tx-utils.js'
@@ -20,6 +20,7 @@ class BabyJubWallet {
    * @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
    */
   constructor (privateKey, hermezEthereumAddress) {
+    console.log(jsSha3)
     const priv = new eddsaBabyJub.PrivateKey(privateKey)
     const pub = priv.public()
     this.privateKey = privateKey
@@ -49,8 +50,8 @@ class BabyJubWallet {
    */
   signTransaction (transaction, encodedTransaction) {
     const hashMessage = buildTransactionHashMessage(encodedTransaction)
-    const signature = eddsa.signPoseidon(this.privateKey, hashMessage)
-    const packedSignature = eddsa.packSignature(signature)
+    const signature = circomlib.eddsa.signPoseidon(this.privateKey, hashMessage)
+    const packedSignature = circomlib.eddsa.packSignature(signature)
     transaction.signature = packedSignature.toString('hex')
     return transaction
   }
@@ -79,11 +80,12 @@ function verifyBabyJub (publicKeyHex, messStr, signatureHex) {
  */
 async function createWalletFromEtherAccount (index) {
   const provider = getProvider()
+  console.log(provider)
   const signer = provider.getSigner(index)
   const ethereumAddress = await signer.getAddress(index)
   const hermezEthereumAddress = getHermezAddress(ethereumAddress)
   const signature = await signer.signMessage(METAMASK_MESSAGE)
-  const hashedSignature = keccak256(signature)
+  const hashedSignature = jsSha3.keccak256(signature)
   const bufferSignature = hexToBuffer(hashedSignature)
   const hermezWallet = new BabyJubWallet(bufferSignature, hermezEthereumAddress)
 

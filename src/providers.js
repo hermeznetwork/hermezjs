@@ -8,10 +8,10 @@ let provider
  * @param {String} url - Network url (i.e, http://localhost:8545)
  */
 function setProvider (url) {
-  if (url) {
+  if (url || typeof window === 'undefined') {
     return ethers.getDefaultProvider(url)
   } else {
-    return new ethers.providers.Web3Provider(window.ethereum)
+    return new ethers.providers.Web3Provider(ethereum)
   }
 }
 

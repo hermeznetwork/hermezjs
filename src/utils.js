@@ -1,9 +1,9 @@
 import { Scalar, utils as ffUtils } from 'ffjavascript'
-import { utils as ethersUtils } from 'ethers'
-import { poseidon } from 'circomlib'
+import ethers from 'ethers'
+import circomlib from 'circomlib'
 
-const hash = poseidon([6, 8, 57])
-const F = poseidon.F
+const hash = circomlib.poseidon([6, 8, 57])
+const F = circomlib.poseidon.F
 
 /**
  * Converts a buffer to a hexadecimal representation
@@ -71,7 +71,7 @@ const hexToBuffer = (hexString) => {
  * @returns {String}
  */
 function getTokenAmountString (amountBigInt, decimals) {
-  return ethersUtils.formatUnits(amountBigInt, decimals)
+  return ethers.utils.formatUnits(amountBigInt, decimals)
 }
 
 /** s
@@ -83,7 +83,7 @@ function getTokenAmountString (amountBigInt, decimals) {
  * @returns {BigInt}
  */
 function getTokenAmountBigInt (amountString, decimals) {
-  return ethersUtils.parseUnits(amountString, decimals)
+  return ethers.utils.parseUnits(amountString, decimals)
 }
 
 export {
