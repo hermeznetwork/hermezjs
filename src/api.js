@@ -56,8 +56,8 @@ async function getToken (tokenId) {
   return extractJSON(axios.get(`${baseApiUrl}/tokens/${tokenId}`))
 }
 
-async function getFees () {
-  return extractJSON(axios.get(`${baseApiUrl}/recommended-fee`))
+async function getState () {
+  return extractJSON(axios.get(`${baseApiUrl}/state`))
 }
 
 export {
@@ -71,5 +71,5 @@ export {
   getExits,
   getTokens,
   getToken,
-  getFees
+  getState
 }

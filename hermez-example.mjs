@@ -95,10 +95,10 @@ async function main() {
   // dst account
   let to = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
   // fee computation
-  let fees = await hermez.CoordinatorAPI.getFees()
-  console.log(fees)
+  const state = await hermez.CoordinatorAPI.getState()
+  console.log(state.recommendedFee)
   let usdTokenExchangeRate = tokenERC20.USD
-  let fee = fees.existingAccount / usdTokenExchangeRate
+  let fee = state.recommendedFee.existingAccount / usdTokenExchangeRate
   // amount to transfer
   amount = hermez.Utils.getTokenAmountBigInt('10',2)
 

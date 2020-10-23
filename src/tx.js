@@ -74,9 +74,6 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
     0
   ]
 
-  console.log(hezEthereumAddress)
-  console.log(transactionParameters)
-
   if (token.id === 0) {
     overrides.value = amount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
@@ -86,7 +83,6 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
   }
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
-  console.log('here')
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => {
       return transactionParameters

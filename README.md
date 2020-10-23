@@ -119,8 +119,8 @@ Next step we compute the fees for the transaction. For this we consult the recom
 
 ```
   // fee computation
-  let fees = await hermez.getFees()
-  console.log(fees)
+  let state = await hermez.CoordinatorAPI.getState()
+  console.log(state.recommendedFee)
 
 >>>>
 {
@@ -133,7 +133,7 @@ Next step we compute the fees for the transaction. For this we consult the recom
 
 The returned fees are the suggested feeds for different transactions:
 - existingAccount : Do a transfer to an existing account
-- createAccount   : Do a transfer to a inexistent account, and create a Reguler account
+- createAccount   : Do a transfer to a inexistent account, and create a regular account
 - createAccountInternal : Do a transfer to a and create internal account
 
 The fee amounts are given in USD. However, fees are payed in the token of the transaction. So, we need to do a conversion.
