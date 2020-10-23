@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { extractJSON } from './http.js'
 
-const baseApiUrl = 'http://167.71.59.190/4010'
+const baseApiUrl = 'http://167.71.59.190:4010'
 
 async function getAccounts (hermezEthereumAddress, tokenIds) {
   const params = {

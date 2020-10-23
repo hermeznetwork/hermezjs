@@ -20,7 +20,6 @@ class BabyJubWallet {
    * @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
    */
   constructor (privateKey, hermezEthereumAddress) {
-    console.log(jsSha3)
     const priv = new eddsaBabyJub.PrivateKey(privateKey)
     const pub = priv.public()
     this.privateKey = privateKey
@@ -80,7 +79,6 @@ function verifyBabyJub (publicKeyHex, messStr, signatureHex) {
  */
 async function createWalletFromEtherAccount (index) {
   const provider = getProvider()
-  console.log(provider)
   const signer = provider.getSigner(index)
   const ethereumAddress = await signer.getAddress(index)
   const hermezEthereumAddress = getHermezAddress(ethereumAddress)
