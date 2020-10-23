@@ -19,7 +19,7 @@ deployContracts(){
     # launch test node
     logInfo "Starting new tmux session"
     tmux new-session -d -s contracts
-    tmux send-keys -t contracts "npx buidler node" Enter
+    tmux send-keys -t contracts "npx buidler --config buidler.config.cjs node" Enter
 
     # check if contracts exist
     if [ ! -d "${contractsFolder}" ]; then

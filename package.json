@@ -15,7 +15,7 @@
     "lint:fix": "standard --fix"
   },
   "author": "",
-  "license": "AG  PL-3.0",
+  "license": "AGPL-3.0",
   "dependencies": {
     "axios": "^0.20.0",
     "babel-eslint": "^10.1.0",

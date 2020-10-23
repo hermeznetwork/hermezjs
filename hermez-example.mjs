@@ -44,16 +44,16 @@ async function main() {
   //  - ethereum account is preloaded with 1e6 ERC20Tokens and 1e6 ERC777Tokens
 
   // TODO : I don't understand this function
-  amount = hermez.Utils.getTokenAmountBigInt('100',2)
+  let amount = hermez.Utils.getTokenAmountBigInt('100',2)
 
   // retrieve token info from Hermez network
-  token = await hermez.CoordinatorAPI.getTokens()
+  const token = await hermez.CoordinatorAPI.getTokens()
 
   // ERC20 Token
   //  tmp function to update returned values from getToken to real ones.
-  tokenERC20 = tmpUpdateToken(token,1)
+  const tokenERC20 = tmpUpdateToken(token,1)
 
-  acc = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress)
+  const acc = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress)
   console.log(acc)
   // make deposit of ERC20 Tokens
   await hermez.Tx.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
@@ -116,15 +116,15 @@ async function main() {
   // sign encoded transaction
   hermezWallet.signTransaction(transaction, encodedTransaction)
   // send transaction to coordinator
-  result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
+  let result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
   console.log(result)
 
   // Check transaction in coordinator's transaction pool
-  txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
+  let txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
   console.log(txPool)
 
   // Get transaction confirmation
-  txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txPool.id)
+  const txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txPool.id)
   console.log(txConf)
 
 

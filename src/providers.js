@@ -9,9 +9,9 @@ let provider
  */
 function setProvider (url) {
   if (url || typeof window === 'undefined') {
-    return ethers.getDefaultProvider(url)
+    provider = ethers.getDefaultProvider(url)
   } else {
-    return new ethers.providers.Web3Provider(ethereum)
+    provider = new ethers.providers.Web3Provider(ethereum)
   }
 }
 
