@@ -164,14 +164,14 @@ The last part is to make the actual transfer.
       fee,
       nonce: from.nonce
     },
-    walletRollup.publicKeyCompressedHex, from.token)
+    hermezWallet.publicKeyCompressedHex, from.token)
 
   // sign encoded transaction
-  walletRollup.signTransaction(transaction, encodedTransaction)
+  hermezWallet.signTransaction(transaction, encodedTransaction)
   // send transaction to coordinator
-  const result = await hermez.Tx.send(transaction, walletRollup.publicKeyCompressedHex)
+  const result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
   
-  console.log(result9
+  console.log(result)
 >>>>>
 
 { status: 200, id: '0x00000000000001e240004700', nonce: 122 }
@@ -234,7 +234,7 @@ After a few seconds, we verify transaction status:
 
 ```js
     // Get transaction confirmation
-    const txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txPool.id)
+    const txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txInfo.id)
     console.log(txConf)
 
 >>>>>
@@ -270,3 +270,63 @@ After a few seconds, we verify transaction status:
 }
 ```
 
+## Withdrawing funds from Hermez
+
+This is a 2-step process. First we need to do what we call an **Exit**. This moves the user's funds from their token account to a specific Exit merkle tree. Once the funds are in the Exit tree, we can then withdraw them to an Ethereum L1 account.
+
+### Exit
+
+This is normally a L2 transaction. Thus, it uses the same API as a `transfer`.
+
+```js
+// generate L2 transaction
+  const {transaction, encodedTransaction} = await hermez.TxUtils.generateL2Transaction(
+    {
+      from: from.accountIndex,
+      to: null,
+      amount: hermez.Float16.float2Fix(hermez.Float16.floorFix2Float(newAmount)),
+      fee,
+      nonce: from.nonce
+    },
+    hermezWallet.publicKeyCompressedHex, from.token)
+
+  // sign encoded transaction
+  hermezWallet.signTransaction(transaction, encodedTransaction)
+  // send transaction to coordinator
+  const result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
+```
+
+The only difference is that we set the `to` property to `null`.
+
+### Force Exit
+
+This is the L1 equivalent of an Exit. With this option, the Smart Contract forces Coordinators to pick up these transactions before they pick up L2 transactions. Meaning that these transactions will always be picked up.
+
+This is a security measure. We don't expect users to need to make a Force Exit.
+
+```js
+const result = await hermez.Tx.forceExit(newAmount from.accountIndex, from.token)
+```
+
+### Withdraw
+
+Once the Exit information is in the Exit tree, we can move on to make a Withdraw. First we need to track the transaction as we did with the Transfer above.
+
+```js
+const txInfo = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
+const txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txInfo.id)
+```
+
+Once the transaction has been forged and comes up in the History, we can get its information from the Exit tree.
+
+```js
+const exitInfo = await hermez.CoordinatorAPI.getExit(txConf.batchNum, txConf.fromAccountIndex)
+```
+
+And with the Exit information, we can now make a withdraw.
+
+```js
+const result = await hermez.Tx.withdraw(newAmount, from.accountIndex, from.token, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
+```
+
+The funds should now appear in the Ethereum account that made the withdraw.
