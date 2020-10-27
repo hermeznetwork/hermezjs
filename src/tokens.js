@@ -1,31 +1,6 @@
-const  ethers   = require('ethers')
-
-const ERC20ABI              = require('./abis/ERC20ABI.json')
-const ERC1820ABI            = require('./abis/ERC1820ABI.json')
-const { contractAddresses } = require('./constants')
-const { getContract }       = require('./contracts')
-
-const tokenTypes = {
-  ERC20: 0,
-  ERC777: 1
-}
-
-/**
- * Detects if a smart contract is an ERC 20 or ERC 777 contract
- *
- * @param {String} contractAddress - The token smart contract address
- *
- * @returns {Number} tokenType - Value from tokenTypes
- */
-async function detectTokenType (contractAddress) {
-  const tokenContract = getContract(contractAddresses.ERC1820, ERC1820ABI)
-  const contractType = await tokenContract.getInterfaceImplementer(contractAddress, ethers.utils.id('ERC777Token'))
-  if (contractType === '0x0000000000000000000000000000000000000000') {
-    return tokenTypes.ERC20
-  } else {
-    return tokenTypes.ERC777
-  }
-}
+import ERC20ABI from './abis/ERC20ABI.js'
+import { contractAddresses } from './constants.js'
+import { getContract } from './contracts.js'
 
 /**
  * Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
@@ -52,8 +27,6 @@ async function approve (amount, accountAddress, contractAddress) {
   return erc20Contract.approve(contractAddresses.Hermez, amount)
 }
 
-module.exports =  {
-  tokenTypes,
-  detectTokenType,
+export {
   approve
 }

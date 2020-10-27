@@ -18,7 +18,7 @@ const DEFAULT_MNEMONIC =
 // This object can have the following optional entries:
 // defaultNetwork, networks, solc, and paths.
 // Go to https://buidler.dev/config/ to learn more
-module.exports = {
+export {
   defaultNetwork: "buidlerevm",
   networks: {
     buidlerevm: {

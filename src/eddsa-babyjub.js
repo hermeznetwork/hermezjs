@@ -1,5 +1,5 @@
-const { babyJub, eddsa }  = require('circomlib')
-const { utils }           = require('ffjavascript')
+import circomlib from 'circomlib'
+import { utils } from 'ffjavascript'
 
 /**
  * Class representing EdDSA Baby Jub signature
@@ -24,7 +24,7 @@ class Signature {
     if (buf.length !== 64) {
       throw new Error('buf must be 64 bytes')
     }
-    const sig = eddsa.unpackSignature(buf)
+    const sig = circomlib.eddsa.unpackSignature(buf)
     if (sig.R8 == null) {
       throw new Error('unpackSignature failed')
     }
@@ -57,7 +57,7 @@ class PublicKey {
       throw new Error('buf must be 32 bytes')
     }
 
-    const p = babyJub.unpackPoint(compressedBuffLE)
+    const p = circomlib.babyJub.unpackPoint(compressedBuffLE)
     if (p == null) {
       throw new Error('unpackPoint failed')
     }
@@ -69,7 +69,7 @@ class PublicKey {
      * @returns {Buffer} - point compressed into a buffer
      */
   compress () {
-    return utils.leBuff2int(babyJub.packPoint(this.p))
+    return utils.leBuff2int(circomlib.babyJub.packPoint(this.p))
   }
 }
 
@@ -93,11 +93,11 @@ class PrivateKey {
      * @returns {PublicKey} PublicKey derived from PrivateKey
      */
   public () {
-    return new PublicKey(eddsa.prv2pub(this.sk))
+    return new PublicKey(circomlib.eddsa.prv2pub(this.sk))
   }
 }
 
-module.exports = {
+export {
   Signature,
   PublicKey,
   PrivateKey

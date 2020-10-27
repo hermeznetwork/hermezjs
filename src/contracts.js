@@ -1,6 +1,6 @@
-const ethers = require('ethers')
+import ethers from 'ethers'
 
-const { getDefaultProvider } = require('./providers')
+import { getProvider } from './providers.js'
 
 const contractsCache = new Map()
 
@@ -15,7 +15,7 @@ function getContract (contractAddress, abi) {
     return contractsCache.get(contractAddress)
   }
 
-  const provider = getDefaultProvider()
+  const provider = getProvider()
   const signer = provider.getSigner()
   const contract = new ethers.Contract(contractAddress, abi, signer)
 
@@ -24,6 +24,6 @@ function getContract (contractAddress, abi) {
   return contract
 }
 
-module.exports = {
+export {
   getContract
 }

@@ -1,4 +1,4 @@
-const { Scalar }  = require('ffjavascript')
+import { Scalar } from 'ffjavascript'
 
 /**
  * Convert a float to a fix
@@ -21,8 +21,11 @@ function float2Fix (fl) {
 
 /**
 * Convert a fix to a float, always rounding down
+*
 * @param {String} _f - Scalar encoded in fix
+*
 * @returns {Scalar} Scalar encoded in float
+* @private
 */
 function _floorFix2Float (_f) {
   const f = Scalar.e(_f)
@@ -104,7 +107,7 @@ function floorFix2Float (_f) {
   }
 }
 
-module.exports = {
+export {
   fix2Float,
   float2Fix,
   floorFix2Float

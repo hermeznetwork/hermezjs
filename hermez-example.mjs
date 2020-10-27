@@ -1,13 +1,13 @@
-const hermez        = require("./src/hermez")
+import hermez from './src/index.js'
 
 async function main() {
   // Init network provider.
-  hermez.setDefaultProvider("http://localhost:8545")
+  hermez.Providers.setProvider('http://localhost:8545')
   
   // Initialize Transaction Pool
   // Transaction Pool declares an instance in LocalStorage where user transactions are stored.
   // When a L1Tx or L2Tx is sent, the transaction is also kept in the LocalStorage
-  hermez.initializeTransactionPool()
+  hermez.TxPool.initializeTransactionPool()
   
 
   // Create wallet
@@ -16,7 +16,7 @@ async function main() {
   //  Hermez ethereum address is created by appending 'hez:' to the ethereum address.
   // In this example we create a standard wallet. It is also possible to link the hermez wallet to a existing
   // Metamask wallet
-  const {hermezWallet, hermezEthereumAddress } = await hermez.newWalletFromEtherAccount(0)
+  const {hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet.createWalletFromEtherAccount(0)
 
   // Deposit
   // First transaction is a deposit from the ethereum address into hermez network. Since a hermez
@@ -44,27 +44,20 @@ async function main() {
   //  - ethereum account is preloaded with 1e6 ERC20Tokens and 1e6 ERC777Tokens
 
   // TODO : I don't understand this function
-  amount = hermez.getTokenAmountBigInt("100",2)
+  let amount = hermez.Utils.getTokenAmountBigInt('100',2)
 
   // retrieve token info from Hermez network
-  token = await hermez.getTokens()
+  const token = await hermez.CoordinatorAPI.getTokens()
 
   // ERC20 Token
   //  tmp function to update returned values from getToken to real ones.
-  tokenERC20 = tmpUpdateToken(token,1)
+  const tokenERC20 = tmpUpdateToken(token,1)
 
-  acc = await hermez.getAccounts(hermezEthereumAddress)
+  const acc = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress)
   console.log(acc)
   // make deposit of ERC20 Tokens
-  await hermez.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
+  await hermez.Tx.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
 
-  // HEZ Token : ERC777 
-  //  tmp function to update returned values from getToken to real ones.
-  tokenERC777 = tmpUpdateToken(token,2)
-
-  // make deposit of ERC777 Tokens
-  await hermez.deposit(amount, hermezEthereumAddress, tokenERC777, hermezWallet.publicKeyCompressedHex)
- 
   // Transfer
   //  Transfer is a L2 transaction. At this point, Hermez source account is already created with 
   //  some amount of tokens.
@@ -96,25 +89,25 @@ async function main() {
 
   // Create 2nd wallet
   const {hermezWallet2, hermezEthereumAddress2 } =
-                      await hermez.newWalletFromEtherAccount(1)
+                      await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
   // src account
-  let account = (await hermez.getAccounts(hermezEthereumAddress, [tokenERC777.id])).accounts[0]
+  let account = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0]
   // dst account
-  let to = (await hermez.getAccounts(hermezEthereumAddress2, [tokenERC777.id])).accounts[0]
+  let to = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
   // fee computation
-  let fees = await hermez.getFees()
-  console.log(fees)
-  let usdTokenExchangeRate = tokenERC777.USD
-  let fee = fees.existingAccount / usdTokenExchangeRate
+  const state = await hermez.CoordinatorAPI.getState()
+  console.log(state.recommendedFee)
+  let usdTokenExchangeRate = tokenERC20.USD
+  let fee = state.recommendedFee.existingAccount / usdTokenExchangeRate
   // amount to transfer
-  amount = hermez.getTokenAmountBigInt("10",2)
+  amount = hermez.Utils.getTokenAmountBigInt('10',2)
 
   // generate L2 transaction
-  var {transaction, encodedTransaction} = await hermez.generateL2Transaction(
+  var {transaction, encodedTransaction} = await hermez.TxUtils.generateL2Transaction(
     {
       from: account.accountIndex,
       to: to.accountIndex,
-      amount: hermez.float2Fix(hermez.floorFix2Float(amount)),
+      amount: hermez.Float16.float2Fix(hermez.Float16.floorFix2Float(amount)),
       fee,
       nonce: account.nonce
     },
@@ -123,29 +116,29 @@ async function main() {
   // sign encoded transaction
   hermezWallet.signTransaction(transaction, encodedTransaction)
   // send transaction to coordinator
-  result = await hermez.send(transaction, hermezWallet.publicKeyCompressedHex)
+  let result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
   console.log(result)
 
   // Check transaction in coordinator's transaction pool
-  txPool = await hermez.getPoolTransaction(result.id)
+  let txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
   console.log(txPool)
 
   // Get transaction confirmation
-  txConf = await hermez.getHistoryTransaction(txPool.id)
+  const txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txPool.id)
   console.log(txConf)
 
 
   // Exit
   // amount to retrieve
-  amount = hermez.getTokenAmountBigInt("10",2)
+  amount = hermez.Utils.getTokenAmountBigInt('10',2)
 
   // generate L2 transaction
-  var {transaction, encodedTransaction} = await hermez.generateL2Transaction(
+  var {transaction, encodedTransaction} = await hermez.TxUtils.generateL2Transaction(
     {
       type: 'Exit',
       from: account.accountIndex,
       to: false,
-      amount: hermez.float2Fix(hermez.floorFix2Float(amount)),
+      amount: hermez.Float16.float2Fix(hermez.Float16.floorFix2Float(amount)),
       fee,
       nonce: account.nonce
     },
@@ -154,11 +147,11 @@ async function main() {
     // sign encoded transaction
     hermezWallet.signTransaction(transaction, encodedTransaction)
     // send transaction to coordinator
-    result = await hermez.send(transaction, hermezWallet.publicKeyCompressedHex)
-    console.log("EXIT",result)
+    result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
+    console.log('EXIT',result)
 
     // Check transaction in coordinator's transaction pool
-    txPool = await hermez.getPoolTransaction(result.id)
+    txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
     console.log(txPool)
 
 }
@@ -166,10 +159,10 @@ async function main() {
 function tmpUpdateToken(token, id) {
   if (id === 1){
     // ERC20
-    token.tokens[0].ethereumAddress = "0x8858eeB3DfffA017D4BCE9801D340D36Cf895CCf"
+    token.tokens[0].ethereumAddress = '0xf784709d2317d872237c4bc22f867d1bae2913ab'
   } else {
     // ERC777
-    token.tokens[0].ethereumAddress = "0x7c2C195CD6D34B8F845992d380aADB2730bB9C6F" 
+    token.tokens[0].ethereumAddress = '0x7c2C195CD6D34B8F845992d380aADB2730bB9C6F' 
   }
   token.tokens[0].id = id
 

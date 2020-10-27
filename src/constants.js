@@ -1,39 +1,25 @@
-const { CurrencySymbol } = require ('./currencies')
+// import scAddressFile from '../auxdata/sc-address.json'
 
 const TRANSACTION_POOL_KEY = 'transactionPool'
-
-const SETTINGS = {
-  PREFERRED_CURRENCY_KEY: 'preferredCurrency',
-  DEFAULT_PREFERRED_CURRENCY: CurrencySymbol.USD.code
-}
-
-const MY_ADDRESS = {
-  QR_CODE_SIZE: 200
-}
-
-const SNACKBAR_AUTO_HIDE_DURATION = 5000
 
 const METAMASK_MESSAGE = 'HERMEZ_ACCOUNT. Don\'t share this signature with anyone as this would reveal your Hermez private key. Unless you are in a trusted application, DO NOT SIGN THIS'
 
 const ETHER_TOKEN_ID = 0
 
-const MAX_DECIMALS_UNTIL_ZERO_AMOUNT = 6
+const GAS_LIMIT = 5000000
 
-const scAddressFile = require("../auxdata/sc-address.json")
+const GAS_MULTIPLIER = 1
 
-const hermezAddress = scAddressFile.hermez
+const hermezAddress = '0xc4905364b78a742ccce7B890A89514061E47068D'
 const contractAddresses = {
-  Hermez: hermezAddress,
-  ERC1820: '0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24'
+  Hermez: hermezAddress
 }
 
-module.exports = {
+export {
   TRANSACTION_POOL_KEY,
-  SETTINGS,
-  MY_ADDRESS,
-  SNACKBAR_AUTO_HIDE_DURATION,
   METAMASK_MESSAGE,
   ETHER_TOKEN_ID,
-  MAX_DECIMALS_UNTIL_ZERO_AMOUNT,
+  GAS_LIMIT,
+  GAS_MULTIPLIER,
   contractAddresses
 }

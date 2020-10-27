@@ -1,20 +1,20 @@
-const { TRANSACTION_POOL_KEY } = require("./constants.js")
-const { getPoolTransaction }   = require("./api.js")
-const { HttpStatusCode }       = require("./http.js")
+import nodeLocalstorage from 'node-localstorage'
 
-if (typeof localStorage === "undefined" || localStorage === null) {
-     var LocalStorage = require('node-localstorage').LocalStorage;
-     localStorage = new LocalStorage('./auxdata');
-}
+import { TRANSACTION_POOL_KEY } from './constants.js'
+import { getPoolTransaction } from './api.js'
+import { HttpStatusCode } from './http.js'
+
+const LocalStorage = nodeLocalstorage.LocalStorage
+const storage = (typeof localStorage === 'undefined' || localStorage === null) ? new LocalStorage('./auxdata') : localStorage
 
 /**
  * If there's no instance in LocalStorage for the Transaction Pool, create it
  * This needs to be run when the Hermez client loads
  */
 function initializeTransactionPool () {
-  if (!localStorage.getItem(TRANSACTION_POOL_KEY)) {
+  if (!storage.getItem(TRANSACTION_POOL_KEY)) {
     const emptyTransactionPool = {}
-    localStorage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(emptyTransactionPool))
+    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(emptyTransactionPool))
   }
 }
 
@@ -27,7 +27,7 @@ function initializeTransactionPool () {
  * @returns {Array}
  */
 function getPoolTransactions (accountIndex, bJJ) {
-  const transactionPool = JSON.parse(localStorage.getItem(TRANSACTION_POOL_KEY))
+  const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
   const accountTransactionPool = transactionPool[bJJ]
 
   if (typeof accountTransactionPool === 'undefined') {
@@ -64,7 +64,7 @@ function getPoolTransactions (accountIndex, bJJ) {
  * @returns {void}
  */
 function addPoolTransaction (transaction, bJJ) {
-  const transactionPool = JSON.parse(localStorage.getItem(TRANSACTION_POOL_KEY))
+  const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
   const accountTransactionPool = transactionPool[bJJ]
   const newAccountTransactionPool = accountTransactionPool === undefined
     ? [transaction]
@@ -74,7 +74,7 @@ function addPoolTransaction (transaction, bJJ) {
     [bJJ]: newAccountTransactionPool
   }
 
-  localStorage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+  storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
 }
 
 /**
@@ -84,7 +84,7 @@ function addPoolTransaction (transaction, bJJ) {
  * @returns {void}
  */
 function removePoolTransaction (bJJ, transactionId) {
-  const transactionPool = JSON.parse(localStorage.getItem(TRANSACTION_POOL_KEY))
+  const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
   const accountTransactionPool = transactionPool[bJJ]
   const newAccountTransactionPool = accountTransactionPool
     .filter((transaction) => transaction.id !== transactionId)
@@ -93,10 +93,10 @@ function removePoolTransaction (bJJ, transactionId) {
     [bJJ]: newAccountTransactionPool
   }
 
-  localStorage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+  storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
 }
 
-module.exports = {
+export {
   initializeTransactionPool,
   getPoolTransactions,
   addPoolTransaction,

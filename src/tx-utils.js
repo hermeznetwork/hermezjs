@@ -1,14 +1,13 @@
-const  BigInt      = require('big-integer')
-const { Scalar }   = require( 'ffjavascript')
-const { poseidon } = require('circomlib')
-const ethers       = require('ethers')
+import BigInt from 'big-integer'
+import { Scalar } from 'ffjavascript'
+import circomlib from 'circomlib'
 
-const { feeFactors }          = require('./fee-factors')
-const { bufToHex }            = require('./utils')
-const { fix2Float }           = require('./float16')
-const { getPoolTransactions } = require('./tx-pool')
-const { getAccountIndex }     = require('./addresses')
-const { getDefaultProvider }         = require('./providers')
+import { feeFactors } from './fee-factors.js'
+import { bufToHex } from './utils.js'
+import { fix2Float } from './float16.js'
+import { getPoolTransactions } from './tx-pool.js'
+import { getAccountIndex } from './addresses.js'
+import { getProvider } from './providers.js'
 
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
@@ -21,7 +20,7 @@ const { getDefaultProvider }         = require('./providers')
 async function encodeTransaction (transaction) {
   const encodedTransaction = Object.assign({}, transaction)
 
-  const provider = getDefaultProvider()
+  const provider = getProvider()
   encodedTransaction.chainId = await provider.getNetwork().chainId
 
   encodedTransaction.fromAccountIndex = getAccountIndex(transaction.fromAccountIndex)
@@ -161,7 +160,7 @@ function buildTxCompressedData (tx) {
 function buildTransactionHashMessage (encodedTransaction) {
   const txCompressedData = buildTxCompressedData(encodedTransaction)
 
-  const h = poseidon([
+  const h = circomlib.poseidon([
     txCompressedData,
     Scalar.fromString(encodedTransaction.toEthAddr || '0', 16),
     Scalar.fromString(encodedTransaction.toBjjAy || '0', 16),
@@ -216,7 +215,7 @@ async function generateL2Transaction (tx, bjj, token) {
   return { transaction, encodedTransaction }
 }
 
-module.exports = {
+export {
   getTxId,
   getFee,
   getNonce,

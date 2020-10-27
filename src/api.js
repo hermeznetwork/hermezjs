@@ -1,8 +1,7 @@
-const axios = require("axios")
-const { extractJSON } = require("./http.js")
-require('dotenv').config();
+import axios from 'axios'
+import { extractJSON } from './http.js'
 
-const baseApiUrl = process.env.REACT_APP_ROLLUP_API_URL
+const baseApiUrl = 'http://167.71.59.190:4010'
 
 async function getAccounts (hermezEthereumAddress, tokenIds) {
   const params = {
@@ -37,7 +36,7 @@ async function postPoolTransaction (transaction) {
   return axios.post(`${baseApiUrl}/transactions-pool`, transaction)
 }
 
-async function getExits (batchNum, accountIndex) {
+async function getExits () {
   return extractJSON(axios.get(`${baseApiUrl}/exits`))
 }
 
@@ -57,11 +56,11 @@ async function getToken (tokenId) {
   return extractJSON(axios.get(`${baseApiUrl}/tokens/${tokenId}`))
 }
 
-async function getFees () {
-  return extractJSON(axios.get(`${baseApiUrl}/recommended-fee`))
+async function getState () {
+  return extractJSON(axios.get(`${baseApiUrl}/state`))
 }
 
-module.exports = {
+export {
   getAccounts,
   getAccount,
   getTransactions,
@@ -72,5 +71,5 @@ module.exports = {
   getExits,
   getTokens,
   getToken,
-  getFees
+  getState
 }

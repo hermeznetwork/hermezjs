@@ -1,14 +1,18 @@
-const ethers = require('ethers')
+import ethers from 'ethers'
 
-var _networkURL
+let provider
 
 /**
- * Initilizes network URL
+ * Set a Provider URL
  *
  * @param {String} url - Network url (i.e, http://localhost:8545)
  */
-function setDefaultProvider(url){
-   _networkURL = url
+function setProvider (url) {
+  if (url || typeof window === 'undefined') {
+    provider = ethers.getDefaultProvider(url)
+  } else {
+    provider = new ethers.providers.Web3Provider(ethereum)
+  }
 }
 
 /**
@@ -16,16 +20,14 @@ function setDefaultProvider(url){
  *
  * @returns {Object} provider
  */
-function getDefaultProvider(){
-  if (typeof window === "undefined" || window === null){
-    return (new ethers.getDefaultProvider(_networkURL))
-  } else {
-    return (new ethers.providers.Web3Provider(window.ethereum))
+function getProvider () {
+  if (!provider) {
+    setProvider()
   }
- 
+  return provider
 }
 
-module.exports = {
-  setDefaultProvider,
-  getDefaultProvider
+export {
+  setProvider,
+  getProvider
 }
