@@ -21,10 +21,10 @@ function setProvider (url) {
  * @returns {Object} provider
  */
 function getProvider () {
-  if (provider) {
-    return provider
+  if (!provider) {
+    setProvider()
   }
-  return setProvider()
+  return provider
 }
 
 export {
