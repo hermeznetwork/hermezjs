@@ -151,7 +151,12 @@ export default [
         "internalType": "uint48",
         "name": "toIdx",
         "type": "uint48"
-      }
+      },
+        {
+          "internalType": "bytes",
+          "name": "permit",
+          "type": "bytes"
+        }
     ],
     "name": "addL1Transaction",
     "outputs": [],

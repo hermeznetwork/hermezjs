@@ -1,4 +1,7 @@
-import { Scalar, utils as ffUtils } from 'ffjavascript'
+import _ffjavascript from 'ffjavascript'
+//const { Scalar, utils as ffUtils } = _ffjavascript
+const { Scalar } = _ffjavascript
+const { ffUtils } = _ffjavascript.utils
 import ethers from 'ethers'
 import circomlib from 'circomlib'
 

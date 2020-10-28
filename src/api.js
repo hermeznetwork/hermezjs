@@ -8,7 +8,6 @@ async function getAccounts (hermezEthereumAddress, tokenIds) {
     ...(hermezEthereumAddress ? { hermezEthereumAddress } : {}),
     tokenIds: tokenIds ? { tokenIds: tokenIds.join(',') } : ''
   }
-
   return extractJSON(axios.get(`${baseApiUrl}/accounts`, { params }))
 }
 

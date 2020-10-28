@@ -1,4 +1,5 @@
-// import scAddressFile from '../auxdata/sc-address.json'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const TRANSACTION_POOL_KEY = 'transactionPool'
 
@@ -10,9 +11,9 @@ const GAS_LIMIT = 5000000
 
 const GAS_MULTIPLIER = 1
 
-const hermezAddress = '0xc4905364b78a742ccce7B890A89514061E47068D'
 const contractAddresses = {
-  Hermez: hermezAddress
+  Hermez: process.env.HERMEZ_ADDRESS,
+  ERC20:  process.env.ERC20_ADDRESS
 }
 
 export {

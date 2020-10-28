@@ -1,4 +1,5 @@
-import { Scalar } from 'ffjavascript'
+import _ffjavascript from 'ffjavascript'
+const { Scalar } = _ffjavascript;
 
 import { postPoolTransaction, getAccounts, getAccount } from './api.js'
 import { fix2Float } from './float16.js'
@@ -64,7 +65,6 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
     gasLimit,
     gasPrice: await getGasPrice(gasMultiplier)
   }
-
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
     account ? getAccountIndex(account.accountIndex) : 0,
@@ -83,7 +83,9 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
   }
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
-  return hermezContract.addL1Transaction(...transactionParameters, overrides)
+  //TODO : check how to pass overrides parameter
+  return hermezContract.addL1Transaction(...transactionParameters, "0x")
+  //return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => {
       return transactionParameters
     })
@@ -127,7 +129,9 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
   }
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
-  return hermezContract.addL1Transaction(...transactionParameters, overrides)
+  //return hermezContract.addL1Transaction(...transactionParameters, overrides)
+  //TODO : check how to pass overrides parameter
+  return hermezContract.addL1Transaction(...transactionParameters, "0x")
     .then(() => {
       return transactionParameters
     })

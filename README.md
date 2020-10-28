@@ -1,11 +1,31 @@
 # HermezJS
 HermezJS is an open source SDK to interact with the Hermez Rollup network.
 
-To deploy the contracts on localhost, run:
+To deploy the contracts on localhost, do:
+1. Clone contracts repo and set feature/fe-tools branch
+
 ```
-./deploy.sh
+git clone https://github.com/hermeznetwork/contracts.git
+git checkout feature/fe-tools
+
 ```
-This command will download contracts, compile them and deploy them on http://localhost:8545.
+2. Launch node
+
+```
+npx buidler node
+cd <CONTRACTS_REPO>/scripts/fe-deploymentTest
+node deployTest.js
+```
+
+3. Copy contracts/scripts/fe-deploymentTest/.env.example to contracts/scripts/fe-deploymentTest/.env ensuring addresses provided during deployment are correct
+
+4. Copy hermezjs/.env.example to hermezjs/.env and set `HERMEZ_ADDRESS` and `ERC20_ADDRESS` to addresses provided during deployment step
+
+5. Launch example
+```
+cd <HERMEZJS_FOLDER>
+node hermez-example.mjs
+```
 
 ## Import modules
 Load hermezjs library

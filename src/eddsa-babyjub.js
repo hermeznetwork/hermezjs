@@ -1,5 +1,7 @@
 import circomlib from 'circomlib'
-import { utils } from 'ffjavascript'
+import _ffjavascript from 'ffjavascript'
+const { utils } = _ffjavascript;
+
 
 /**
  * Class representing EdDSA Baby Jub signature
