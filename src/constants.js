@@ -15,11 +15,14 @@ const contractAddresses = {
   Hermez: hermezAddress
 }
 
+const DEFAULT_PAGE_SIZE = 20
+
 export {
   TRANSACTION_POOL_KEY,
   METAMASK_MESSAGE,
   ETHER_TOKEN_ID,
   GAS_LIMIT,
   GAS_MULTIPLIER,
+  DEFAULT_PAGE_SIZE,
   contractAddresses
 }

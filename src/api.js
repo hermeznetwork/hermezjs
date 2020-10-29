@@ -1,14 +1,24 @@
 import axios from 'axios'
+
 import { extractJSON } from './http.js'
+import { DEFAULT_PAGE_SIZE } from '../constants'
 
 const baseApiUrl = 'http://167.71.59.190:4010'
+
+function getPageData (fromItem) {
+  return {
+    ...(fromItem !== undefined ? { fromItem } : {}),
+    limit: DEFAULT_PAGE_SIZE
+  }
+}
 
 async function getAccounts (hermezEthereumAddress, tokenIds) {
   const params = {
     ...(hermezEthereumAddress ? { hermezEthereumAddress } : {}),
-    tokenIds: tokenIds ? { tokenIds: tokenIds.join(',') } : ''
+    ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
+    ...getPageData(fromItem)
   }
-
+  
   return extractJSON(axios.get(`${baseApiUrl}/accounts`, { params }))
 }
 
@@ -18,7 +28,8 @@ async function getAccount (accountIndex) {
 
 async function getTransactions (accountIndex) {
   const params = {
-    ...(accountIndex ? { accountIndex } : {})
+    ...(accountIndex ? { accountIndex } : {}),
+    ...getPageData(fromItem)
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { params }))
