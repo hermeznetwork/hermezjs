@@ -12,7 +12,7 @@ function getPageData (fromItem) {
   }
 }
 
-async function getAccounts (hermezEthereumAddress, tokenIds) {
+async function getAccounts (hermezEthereumAddress, tokenIds, fromItem) {
   const params = {
     ...(hermezEthereumAddress ? { hermezEthereumAddress } : {}),
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
@@ -26,7 +26,7 @@ async function getAccount (accountIndex) {
   return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`))
 }
 
-async function getTransactions (accountIndex) {
+async function getTransactions (accountIndex, fromItem) {
   const params = {
     ...(accountIndex ? { accountIndex } : {}),
     ...getPageData(fromItem)
