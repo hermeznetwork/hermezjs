@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import { extractJSON } from './http.js'
-import { DEFAULT_PAGE_SIZE } from '../constants'
+import { DEFAULT_PAGE_SIZE } from './constants'
 
 const baseApiUrl = 'http://167.71.59.190:4010'
 
@@ -18,7 +18,7 @@ async function getAccounts (hermezEthereumAddress, tokenIds) {
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ...getPageData(fromItem)
   }
-  
+
   return extractJSON(axios.get(`${baseApiUrl}/accounts`, { params }))
 }
 
