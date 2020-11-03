@@ -159,7 +159,7 @@ async function main() {
 function tmpUpdateToken(token, id) {
   if (id === 1){
     // ERC20
-    token.tokens[0].ethereumAddress = '0xf784709d2317d872237c4bc22f867d1bae2913ab'
+    token.tokens[0].ethereumAddress = '0xf4e77E5Da47AC3125140c470c71cBca77B5c638c'
   } else {
     // ERC777
     token.tokens[0].ethereumAddress = '0x7c2C195CD6D34B8F845992d380aADB2730bB9C6F' 

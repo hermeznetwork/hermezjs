@@ -71,7 +71,8 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
     fix2Float(amount),
     0,
     token.id,
-    0
+    0,
+    '0x'
   ]
 
   if (token.id === 0) {
@@ -115,11 +116,11 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
     0,
     fix2Float(amount),
     token.id,
-    1
+    1,
+    '0x'
   ]
 
   if (token.id === 0) {
-    overrides.value = amount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
       .then(() => {
         return transactionParameters
@@ -167,7 +168,6 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, merkleRoot, mer
   ]
 
   if (token.id === 0) {
-    overrides.value = amount
     return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
       .then(() => {
         return transactionParameters

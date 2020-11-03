@@ -36,9 +36,9 @@ async function postPoolTransaction (transaction) {
   return axios.post(`${baseApiUrl}/transactions-pool`, transaction)
 }
 
-async function getExits (onlyPending) {
+async function getExits (onlyPendingWithdraws) {
   const params = {
-    ...(onlyPending ? { onlyPending } : {})
+    ...(onlyPendingWithdraws ? { onlyPendingWithdraws } : {})
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/exits`, { params }))
