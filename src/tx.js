@@ -71,7 +71,8 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
     fix2Float(amount),
     0,
     token.id,
-    0
+    0,
+    '0x'
   ]
 
   if (token.id === 0) {
@@ -83,8 +84,7 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
   }
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
-  //TODO : check how to pass overrides parameter
-  //return hermezContract.addL1Transaction(...transactionParameters, "0x")
+  console.log(overrides)
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => {
       return transactionParameters
@@ -117,7 +117,8 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
     0,
     fix2Float(amount),
     token.id,
-    1
+    1,
+    '0x'
   ]
 
   if (token.id === 0) {
@@ -129,9 +130,7 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
   }
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
-  //return hermezContract.addL1Transaction(...transactionParameters, overrides)
-  //TODO : check how to pass overrides parameter
-  return hermezContract.addL1Transaction(...transactionParameters, "0x")
+  return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => {
       return transactionParameters
     })

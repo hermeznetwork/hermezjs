@@ -153,7 +153,7 @@ async function main() {
 
     const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
     console.log(txExitConf)
-   
+    
     // Force Exit (L1)
     const from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
     const forceExitTx = await hermez.Tx.forceExit(amount, 'hez:TKN:256', tokenERC20)
