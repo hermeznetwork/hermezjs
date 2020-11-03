@@ -36,12 +36,18 @@ async function postPoolTransaction (transaction) {
   return axios.post(`${baseApiUrl}/transactions-pool`, transaction)
 }
 
-async function getExits () {
-  return extractJSON(axios.get(`${baseApiUrl}/exits`))
+async function getExits (onlyPending) {
+  const params = {
+    ...(onlyPending ? { onlyPending } : {})
+  }
+
+  return extractJSON(axios.get(`${baseApiUrl}/exits`, { params }))
+  // exit.batchNum = 5432
+  // exit.instantWithdrawn = null
 }
 
 async function getExit (batchNum, accountIndex) {
-  return extractJSON(axios.get(`${baseApiUrl}/exits/${batchNum}/${accountIndex}`))
+  return await extractJSON(axios.get(`${baseApiUrl}/exits/${batchNum}/${accountIndex}`))
 }
 
 async function getTokens (tokenIds) {
