@@ -1,5 +1,4 @@
-import _ffjavascript from 'ffjavascript'
-const { Scalar } = _ffjavascript;
+import { Scalar } from 'ffjavascript'
 
 /**
  * Convert a float to a fix

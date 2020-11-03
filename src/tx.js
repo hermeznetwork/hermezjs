@@ -1,5 +1,5 @@
-import _ffjavascript from 'ffjavascript'
-const { Scalar } = _ffjavascript;
+import { Scalar } from 'ffjavascript'
+
 
 import { postPoolTransaction, getAccounts, getAccount } from './api.js'
 import { fix2Float } from './float16.js'
@@ -84,8 +84,8 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
   //TODO : check how to pass overrides parameter
-  return hermezContract.addL1Transaction(...transactionParameters, "0x")
-  //return hermezContract.addL1Transaction(...transactionParameters, overrides)
+  //return hermezContract.addL1Transaction(...transactionParameters, "0x")
+  return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => {
       return transactionParameters
     })

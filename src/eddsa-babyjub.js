@@ -1,6 +1,5 @@
 import circomlib from 'circomlib'
-import _ffjavascript from 'ffjavascript'
-const { utils } = _ffjavascript;
+import { utils } from 'ffjavascript'
 
 
 /**

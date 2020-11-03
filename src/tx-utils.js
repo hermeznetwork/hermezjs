@@ -1,6 +1,5 @@
 import BigInt from 'big-integer'
-import _ffjavascript from 'ffjavascript'
-const { Scalar } = _ffjavascript;
+import { Scalar } from 'ffjavascript'
 import circomlib from 'circomlib'
 
 import { feeFactors } from './fee-factors.js'

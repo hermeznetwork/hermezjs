@@ -54,6 +54,8 @@ async function main() {
 
   // make deposit of ERC20 Tokens
   await hermez.Tx.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
+
+
   // Transfer
   //  Transfer is a L2 transaction. At this point, Hermez source account is already created with 
   //  some amount of tokens.
@@ -116,11 +118,11 @@ async function main() {
   console.log(result)
 
   // Check transaction in coordinator's transaction pool
-  let txInfo = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
-  console.log(txInfo)
+  const txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
+  console.log(txPool)
 
   // Get transaction confirmation
-  let txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txInfo.id)
+  const txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txPool.id)
   console.log(txConf)
 
   // Exit (L2)
@@ -146,14 +148,14 @@ async function main() {
     console.log('EXIT',result)
 
     // Check transaction in coordinator's transaction pool
-    txInfo = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
-    console.log(txInfo)
+    const txExitPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
+    console.log(txExitPool)
 
-    txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txInfo.id)
-    console.log(txConf)
+    const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
+    console.log(txExitConf)
    
     // Force Exit (L1)
-    let from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
+    const from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
     const forceExitTx = await hermez.Tx.forceExit(amount, 'hez:TKN:256', tokenERC20)
     //const forceExitTx = await hermez.Tx.forceExit(amount, from.accountIndex, tokenERC20)
     console.log(forceExitTx)
@@ -161,9 +163,8 @@ async function main() {
     // Forge batch
 
     // Withdraw
-    let exitInfo = await hermez.CoordinatorAPI.getExit(txConf.batchNum, txConf.fromAccountIndex)
-    //let withdrawInfo = await hermez.Tx.withdraw(amount, account.accountIndex, tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
-    let withdrawInfo = await hermez.Tx.withdraw(amount, 'hez:TKN:256', tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
+    const exitInfo = await hermez.CoordinatorAPI.getExit(txExitConf.batchNum, txExitConf.fromAccountIndex)
+    const withdrawInfo = await hermez.Tx.withdraw(amount, 'hez:TKN:256', tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
     console.log(withdrawInfo)
 
 
