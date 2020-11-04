@@ -174,7 +174,7 @@ function tmpUpdateToken(token, id) {
 
   if (id === 1){
     // ERC20
-    token.tokens[0].ethereumAddress = hermez.Constants.contractAddresses.ERC20
+    token.tokens[0].ethereumAddress = '0xf4e77E5Da47AC3125140c470c71cBca77B5c638c'
   } 
   token.tokens[0].id = id
 

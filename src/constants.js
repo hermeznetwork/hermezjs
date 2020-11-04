@@ -12,8 +12,7 @@ const GAS_LIMIT = 5000000
 const GAS_MULTIPLIER = 1
 
 const contractAddresses = {
-  Hermez: "0x500D1d6A4c7D8Ae28240b47c8FCde034D827fD5e",
-  ERC20:  "0xf4e77E5Da47AC3125140c470c71cBca77B5c638c"
+  Hermez: "0x500D1d6A4c7D8Ae28240b47c8FCde034D827fD5e"
 }
 
 export {

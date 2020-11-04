@@ -84,7 +84,6 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
   }
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
-  console.log(overrides)
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => {
       return transactionParameters
