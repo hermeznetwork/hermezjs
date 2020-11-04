@@ -12,8 +12,10 @@ const GAS_LIMIT = 5000000
 const GAS_MULTIPLIER = 1
 
 const contractAddresses = {
-  Hermez: "0x500D1d6A4c7D8Ae28240b47c8FCde034D827fD5e"
+  Hermez: '0x500D1d6A4c7D8Ae28240b47c8FCde034D827fD5e'
 }
+
+const DEFAULT_PAGE_SIZE = 20
 
 export {
   TRANSACTION_POOL_KEY,
@@ -21,5 +23,6 @@ export {
   ETHER_TOKEN_ID,
   GAS_LIMIT,
   GAS_MULTIPLIER,
+  DEFAULT_PAGE_SIZE,
   contractAddresses
 }
