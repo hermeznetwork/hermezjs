@@ -1,5 +1,6 @@
 import { Scalar } from 'ffjavascript'
 
+
 import { postPoolTransaction, getAccounts, getAccount } from './api.js'
 import { fix2Float } from './float16.js'
 import { addPoolTransaction } from './tx-pool.js'
@@ -64,7 +65,6 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
     gasLimit,
     gasPrice: await getGasPrice(gasMultiplier)
   }
-
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
     account ? getAccountIndex(account.accountIndex) : 0,

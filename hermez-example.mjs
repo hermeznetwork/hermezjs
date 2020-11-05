@@ -34,14 +34,13 @@ async function main() {
   //  In this preliminary version there are certain harcoded steps that stem from the fact that there is
   //    no real Hermez node running yet (mock server only that always provides same responses to the 
   //    same queries). These are:
-  //  - In the example deployment, two tokens have been deployed and initialized in Hermez (ERC20 token and
-  //      ERC777 token)
+  //  - In the example deployment, one token have been deployed and initialized in Hermez (ERC20 token)
   //  - Deposit is a L1 transaction that interacts with a deployed mock smart contract.
   //  - Hermez node returns a single token available with a false address. Therefore, we substitute the
   //      token address returned by Hermez node by the real address of the token added to the list of supported 
   //      tokens
   //  - Deposit funtion always returns that the deposit is to be done to a non existent account
-  //  - ethereum account is preloaded with 1e6 ERC20Tokens and 1e6 ERC777Tokens
+  //  - ethereum account is preloaded with 1e6 ERC20Tokens
 
   // TODO : I don't understand this function
   let amount = hermez.Utils.getTokenAmountBigInt('100',2)
@@ -53,10 +52,9 @@ async function main() {
   //  tmp function to update returned values from getToken to real ones.
   const tokenERC20 = tmpUpdateToken(token,1)
 
-  const acc = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress)
-  console.log(acc)
   // make deposit of ERC20 Tokens
   await hermez.Tx.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
+
 
   // Transfer
   //  Transfer is a L2 transaction. At this point, Hermez source account is already created with 
@@ -120,15 +118,14 @@ async function main() {
   console.log(result)
 
   // Check transaction in coordinator's transaction pool
-  let txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
+  const txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
   console.log(txPool)
 
   // Get transaction confirmation
   const txConf = await hermez.CoordinatorAPI.getHistoryTransaction(txPool.id)
   console.log(txConf)
 
-
-  // Exit
+  // Exit (L2)
   // amount to retrieve
   amount = hermez.Utils.getTokenAmountBigInt('10',2)
 
@@ -137,7 +134,7 @@ async function main() {
     {
       type: 'Exit',
       from: account.accountIndex,
-      to: false,
+      to: null,
       amount: hermez.Float16.float2Fix(hermez.Float16.floorFix2Float(amount)),
       fee,
       nonce: account.nonce
@@ -151,19 +148,34 @@ async function main() {
     console.log('EXIT',result)
 
     // Check transaction in coordinator's transaction pool
-    txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
-    console.log(txPool)
+    const txExitPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
+    console.log(txExitPool)
+
+    const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
+    console.log(txExitConf)
+    
+    // Force Exit (L1)
+    const from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
+    const forceExitTx = await hermez.Tx.forceExit(amount, 'hez:TKN:256', tokenERC20)
+    //const forceExitTx = await hermez.Tx.forceExit(amount, from.accountIndex, tokenERC20)
+    console.log(forceExitTx)
+
+    // Forge batch
+
+    // Withdraw
+    const exitInfo = await hermez.CoordinatorAPI.getExit(txExitConf.batchNum, txExitConf.fromAccountIndex)
+    const withdrawInfo = await hermez.Tx.withdraw(amount, 'hez:TKN:256', tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
+    console.log(withdrawInfo)
+
 
 }
 
 function tmpUpdateToken(token, id) {
+
   if (id === 1){
     // ERC20
     token.tokens[0].ethereumAddress = '0xf4e77E5Da47AC3125140c470c71cBca77B5c638c'
-  } else {
-    // ERC777
-    token.tokens[0].ethereumAddress = '0x7c2C195CD6D34B8F845992d380aADB2730bB9C6F' 
-  }
+  } 
   token.tokens[0].id = id
 
   return token.tokens[0]

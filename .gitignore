@@ -1,7 +1,5 @@
 .*swp
+.env
 node_modules
 package-lock.json
-artifacts
 auxdata
-cache
-contracts

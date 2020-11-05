@@ -1,11 +1,32 @@
 # HermezJS
 HermezJS is an open source SDK to interact with the Hermez Rollup network.
 
-To deploy the contracts on localhost, run:
+To deploy the contracts on localhost, do:
+1. Clone contracts repo and set feature/fe-tools branch
+
 ```
-./deploy.sh
+git clone https://github.com/hermeznetwork/contracts.git
+cd contracts
+git checkout feature/fe-tools
+
 ```
-This command will download contracts, compile them and deploy them on http://localhost:8545.
+2. Launch node
+
+```
+npx buidler node
+cd <CONTRACTS_REPO>/scripts/fe-deploymentTest
+node deployTest.js
+```
+
+3. Copy contracts/scripts/fe-deploymentTest/.env.example to contracts/scripts/fe-deploymentTest/.env ensuring addresses provided during deployment are correct
+
+4. Ensure `HERMEZ_ADDRESS` and `ERC20_ADDRESS` in src/constants.js are set to addresses provided during deployment step
+
+5. Launch example
+```
+cd <HERMEZJS_FOLDER>
+node hermez-example.mjs
+```
 
 ## Import modules
 Load hermezjs library
@@ -29,7 +50,7 @@ Some of the operations in Hermez network, such as sending L1 transactions, requi
 ```
 
 ## Create a Wallet 
-We can create a new Hermez wallet by providing the Ethereum account index associated with the provider initialized. This wallet will store the Ethereum and BabyJubJub keys for the Hermez account. As discussed in the [`developer-guide`](../developers/dev-guide?id=Accounts), the Ethereum address is used to authorize L1 transactions, and the BabyJubJub key is used to authorize L2 transactions.
+We can create a new Hermez wallet by providing the Ethereum account index associated with the provider initialized. This wallet will store the Ethereum and BabyJubJub keys for the Hermez account. The Ethereum address is used to authorize L1 transactions, and the BabyJubJub key is used to authorize L2 transactions.
 
 ```js
   const {hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet.createWalletFromEtherAccount(0)
@@ -224,7 +245,7 @@ Transactions received by the operator will be stored in its transaction pool whi
  
 ```
 
-At this point, the transactions is still in the coordinator's transaction pool as we can see in the `state` field. There are 4 possible stats:
+At this point, the transactions is still in the coordinator's transaction pool as we can see in the `state` field. There are 4 possible states:
 1. **pend** : Pending
 2. **fging** : Forging
 3. **fged** : Forged

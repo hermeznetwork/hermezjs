@@ -1,6 +1,7 @@
 import circomlib from 'circomlib'
 import { utils } from 'ffjavascript'
 
+
 /**
  * Class representing EdDSA Baby Jub signature
  */

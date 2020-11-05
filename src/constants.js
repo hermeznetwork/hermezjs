@@ -1,4 +1,5 @@
-// import scAddressFile from '../auxdata/sc-address.json'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const TRANSACTION_POOL_KEY = 'transactionPool'
 
