@@ -20,7 +20,7 @@
     "babel-eslint": "^10.1.0",
     "circomlib": "^0.2.4",
     "ethers": "^5.0.17",
-    "ffjavascript": "^0.2.32",
+    "ffjavascript": "^0.2.33",
     "js-sha3": "^0.8.0",
     "node-localstorage": "^2.1.6"
   },
