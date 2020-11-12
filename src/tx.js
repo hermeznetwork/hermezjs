@@ -86,9 +86,7 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
 
   await approve(amount, ethereumAddress, token.ethereumAddress)
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
-    .then(() => {
-      return transactionParameters
-    })
+    .then(() => transactionParameters)
 }
 
 /**
@@ -118,17 +116,8 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
     '0x'
   ]
 
-  if (token.id === 0) {
-    return hermezContract.addL1Transaction(...transactionParameters, overrides)
-      .then(() => {
-        return transactionParameters
-      })
-  }
-
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
-    .then(() => {
-      return transactionParameters
-    })
+    .then(() => transactionParameters)
 }
 
 /**
@@ -163,9 +152,7 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, merkleRoot, mer
   ]
 
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
-    .then(() => {
-      return transactionParameters
-    })
+    .then(() => transactionParameters)
 }
 
 /**
@@ -192,9 +179,7 @@ const delayWithdraw = async (hezEthereumAddress, token, gasLimit = GAS_LIMIT, ga
   ]
 
   return delayedWithdrawalContract.withdrawal(...transactionParameters, overrides)
-    .then(() => {
-      return transactionParameters
-    })
+    .then(() => transactionParameters)
 }
 
 /**
@@ -211,6 +196,7 @@ async function send (transaction, bJJ) {
   if (result.status === 200) {
     addPoolTransaction(transaction, bJJ)
   }
+
   return {
     status: result.status,
     id: result.data,
