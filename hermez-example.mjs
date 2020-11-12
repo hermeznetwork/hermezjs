@@ -1,3 +1,4 @@
+import ethers from 'ethers'
 import hermez from './src/index.js'
 
 async function main() {
@@ -54,6 +55,8 @@ async function main() {
 
   // make deposit of ERC20 Tokens
   await hermez.Tx.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
+
+  // Forge Batch
 
 
   // Transfer
@@ -164,7 +167,8 @@ async function main() {
 
     // Withdraw
     const exitInfo = await hermez.CoordinatorAPI.getExit(txExitConf.batchNum, txExitConf.fromAccountIndex)
-    const withdrawInfo = await hermez.Tx.withdraw(amount, 'hez:TKN:256', tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
+    const withdrawInfo = await hermez.Tx.withdraw(amount, 'hez:TKN:256', tokenERC20, hermezWallet.publicKeyCompressedHex, ethers.BigNumber.from('4'), [])
+    // const withdrawInfo = await hermez.Tx.withdraw(amount, from.accountIndex, tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
     console.log(withdrawInfo)
 
 

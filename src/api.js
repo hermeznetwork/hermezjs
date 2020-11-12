@@ -73,7 +73,10 @@ async function getToken (tokenId) {
 }
 
 async function getState () {
-  return extractJSON(axios.get(`${baseApiUrl}/state`))
+  const state = await extractJSON(axios.get(`${baseApiUrl}/state`))
+  // state.withdrawalDelayer.emergencyMode = true
+  state.rollup.buckets[0].withdrawals = 0
+  return state
 }
 
 export {
