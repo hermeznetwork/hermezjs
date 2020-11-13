@@ -98,10 +98,11 @@ async function getState () {
   return state
 }
 
-async function getBatches (forgerAddr, slotNum) {
+async function getBatches (forgerAddr, slotNum, fromItem) {
   const params = {
     ...(forgerAddr ? { forgerAddr } : {}),
-    ...(slotNum ? { slotNum } : {})
+    ...(slotNum ? { slotNum } : {}),
+    ...getPageData(fromItem)
   }
   return extractJSON(axios.get(`${baseApiUrl}/batches`, { params }))
 }
