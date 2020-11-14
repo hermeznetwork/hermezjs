@@ -119,10 +119,11 @@ async function getSlot (slotNum) {
   return extractJSON(axios.get(`${baseApiUrl}/slots/${slotNum}`))
 }
 
-async function getBids (slotNum, forgerAddr) {
+async function getBids (slotNum, forgerAddr, fromItem) {
   const params = {
     ...(slotNum ? { slotNum } : {}),
     ...(forgerAddr ? { forgerAddr } : {})
+    ...getPageData(fromItem)
   }
   return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
 }
