@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { extractJSON } from './http.js'
 import { DEFAULT_PAGE_SIZE } from './constants.js'
-import isHermezEthereumAddress from './addresses.js'
+import { isHermezEthereumAddress } from './addresses.js'
 
 const baseApiUrl = 'http://167.71.59.190:4010'
 const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
