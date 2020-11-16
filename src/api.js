@@ -2,17 +2,9 @@ import axios from 'axios'
 
 import { extractJSON } from './http.js'
 import { DEFAULT_PAGE_SIZE } from './constants.js'
-import { isHermezEthereumAddress } from './addresses.js'
+import { isHermezEthereumAddress, isHermezBjjEthereumAddress } from './addresses.js'
 
 const baseApiUrl = 'http://167.71.59.190:4010'
-const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
-
-function isBjjAddress (test) {
-  if (bjjAddressPattern.test(test)) {
-    return true
-  }
-  return false
-}
 
 function getPageData (fromItem) {
   return {
@@ -38,7 +30,7 @@ async function getAccount (accountIndex) {
 async function getTransactions (address, tokenIds, batchNum, accountIndex, fromItem) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
-    ...(isBjjAddress(address) ? { BJJ: address } : {}),
+    ...(isHermezBjjEthereumAddress(address) ? { BJJ: address } : {}),
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ...(batchNum ? { batchNum } : {}),
     ...(accountIndex ? { accountIndex } : {}),

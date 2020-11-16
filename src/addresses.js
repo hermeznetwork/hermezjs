@@ -1,5 +1,6 @@
 const hermezPrefix = 'hez:'
 const hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}$')
+const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
 
 /**
  * Get the hermez address representation of an ethereum address
@@ -40,6 +41,20 @@ function isHermezEthereumAddress (test) {
 }
 
 /**
+ * Checks if given string matches regex of a Hermez BJJ address
+ *
+ * @param {String} test
+ *
+ * @returns {Boolean}
+ */
+function isHermezBjjEthereumAddress (test) {
+  if (bjjAddressPattern.test(test)) {
+    return true
+  }
+  return false
+}
+
+/**
  * Extracts the account index from the address with the hez prefix
  *
  * @param {String} hezAccountIndex - Account index with hez prefix e.g. hez:DAI:4444
@@ -55,5 +70,6 @@ export {
   getHermezAddress,
   getEthereumAddress,
   isHermezEthereumAddress,
+  isHermezBjjEthereumAddress,
   getAccountIndex
 }
