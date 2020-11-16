@@ -2,8 +2,17 @@ import axios from 'axios'
 
 import { extractJSON } from './http.js'
 import { DEFAULT_PAGE_SIZE } from './constants.js'
+import isHermezEthereumAddress from './addresses.js'
 
 const baseApiUrl = 'http://167.71.59.190:4010'
+const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
+
+function isBjjAddress (test) {
+  if (bjjAddressPattern.test(test)) {
+    return true
+  }
+  return false
+}
 
 function getPageData (fromItem) {
   return {
@@ -12,9 +21,10 @@ function getPageData (fromItem) {
   }
 }
 
-async function getAccounts (hermezEthereumAddress, tokenIds, fromItem) {
+async function getAccounts (address, tokenIds, fromItem) {
   const params = {
-    ...(hermezEthereumAddress ? { hermezEthereumAddress } : {}),
+    ...(isEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
+    ...(isBjjAddress(address) ? { BJJ: address } : {}),
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ...getPageData(fromItem)
   }
@@ -25,12 +35,15 @@ async function getAccount (accountIndex) {
   return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`))
 }
 
-async function getTransactions (accountIndex, fromItem) {
+async function getTransactions (address, tokenIds, batchNum, accountIndex, fromItem) {
   const params = {
+    ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
+    ...(isBjjAddress(address) ? { BJJ: address } : {}),
+    ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
+    ...(batchNum ? { batchNum } : {}),
     ...(accountIndex ? { accountIndex } : {}),
     ...getPageData(fromItem)
   }
-
   return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { params }))
 }
 
@@ -79,6 +92,36 @@ async function getState () {
   return state
 }
 
+async function getBatches (forgerAddr, slotNum, fromItem) {
+  const params = {
+    ...(forgerAddr ? { forgerAddr } : {}),
+    ...(slotNum ? { slotNum } : {}),
+    ...getPageData(fromItem)
+  }
+  return extractJSON(axios.get(`${baseApiUrl}/batches`, { params }))
+}
+
+async function getBatch (batchNum) {
+  return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`))
+}
+
+async function getCoordinator (forgerAddr) {
+  return extractJSON(axios.get(`${baseApiUrl}/coordinators/${forgerAddr}`))
+}
+
+async function getSlot (slotNum) {
+  return extractJSON(axios.get(`${baseApiUrl}/slots/${slotNum}`))
+}
+
+async function getBids (slotNum, forgerAddr, fromItem) {
+  const params = {
+    ...(slotNum ? { slotNum } : {}),
+    ...(forgerAddr ? { forgerAddr } : {})
+    ...getPageData(fromItem)
+  }
+  return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
+}
+
 export {
   getAccounts,
   getAccount,
@@ -90,5 +133,10 @@ export {
   getExits,
   getTokens,
   getToken,
-  getState
+  getState,
+  getBatches,
+  getBatch,
+  getCoordinator,
+  getSlot,
+  getBids
 }
