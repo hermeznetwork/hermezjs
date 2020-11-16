@@ -1,4 +1,5 @@
 const hermezPrefix = 'hez:'
+const hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}$')
 
 /**
  * Get the hermez address representation of an ethereum address
@@ -25,6 +26,20 @@ function getEthereumAddress (hezEthereumAddress) {
 }
 
 /**
+ * Checks if given string matches regex of a Hermez address
+ *
+ * @param {String} test
+ *
+ * @returns {Boolean}
+ */
+function isHermezEthereumAddress (test) {
+  if (hezEthereumAddressPattern.test(test)) {
+    return true
+  }
+  return false
+}
+
+/**
  * Extracts the account index from the address with the hez prefix
  *
  * @param {String} hezAccountIndex - Account index with hez prefix e.g. hez:DAI:4444
@@ -39,5 +54,6 @@ function getAccountIndex (hezAccountIndex) {
 export {
   getHermezAddress,
   getEthereumAddress,
+  isHermezEthereumAddress,
   getAccountIndex
 }
