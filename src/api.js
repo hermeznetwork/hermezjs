@@ -116,7 +116,7 @@ async function getSlot (slotNum) {
 async function getBids (slotNum, forgerAddr, fromItem) {
   const params = {
     ...(slotNum ? { slotNum } : {}),
-    ...(forgerAddr ? { forgerAddr } : {})
+    ...(forgerAddr ? { forgerAddr } : {}),
     ...getPageData(fromItem)
   }
   return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
