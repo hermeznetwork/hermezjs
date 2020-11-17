@@ -15,8 +15,8 @@ function getPageData (fromItem) {
 
 async function getAccounts (address, tokenIds, fromItem) {
   const params = {
-    ...(isEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
-    ...(isBjjAddress(address) ? { BJJ: address } : {}),
+    ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
+    ...(isHermezBjjEthereumAddress(address) ? { BJJ: address } : {}),
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ...getPageData(fromItem)
   }
