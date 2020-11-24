@@ -97,18 +97,18 @@ async function getBatch (batchNum) {
   return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`))
 }
 
-async function getCoordinator (forgerAddr) {
-  return extractJSON(axios.get(`${baseApiUrl}/coordinators/${forgerAddr}`))
+async function getCoordinator (bidderAddr) {
+  return extractJSON(axios.get(`${baseApiUrl}/coordinators/${bidderAddr}`))
 }
 
 async function getSlot (slotNum) {
   return extractJSON(axios.get(`${baseApiUrl}/slots/${slotNum}`))
 }
 
-async function getBids (slotNum, forgerAddr, fromItem) {
+async function getBids (slotNum, bidderAddr, fromItem) {
   const params = {
     ...(slotNum ? { slotNum } : {}),
-    ...(forgerAddr ? { forgerAddr } : {}),
+    ...(bidderAddr ? { bidderAddr } : {}),
     ...getPageData(fromItem)
   }
   return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
