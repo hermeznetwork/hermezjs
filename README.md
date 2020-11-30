@@ -2,12 +2,12 @@
 HermezJS is an open source SDK to interact with the Hermez Rollup network.
 
 To deploy the contracts on localhost, do:
-1. Clone contracts repo and set feature/fe-tools branch
+1. Clone contracts repo and set feature/newDeploymentScript branch
 
 ```
 git clone https://github.com/hermeznetwork/contracts.git
 cd contracts
-git checkout feature/fe-tools
+git checkout feature/newDeploymentScript
 
 ```
 2. Launch node
@@ -344,10 +344,10 @@ Once the transaction has been forged and comes up in the History, we can get its
 const exitInfo = await hermez.CoordinatorAPI.getExit(txConf.batchNum, txConf.fromAccountIndex)
 ```
 
-And with the Exit information, we can now make a withdraw.
+And with the Exit information, we can now make a withdrawal.
 
 ```js
 const result = await hermez.Tx.withdraw(newAmount, from.accountIndex, from.token, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
 ```
 
-The funds should now appear in the Ethereum account that made the withdraw.
+The funds should now appear in the Ethereum account that made the withdrawal.

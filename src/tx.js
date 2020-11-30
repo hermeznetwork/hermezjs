@@ -14,6 +14,7 @@ import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
 
 export const TxType = {
   Deposit: 'Deposit',
+  CreateAccountDeposit: 'CreateAccountDeposit',
   Transfer: 'Transfer',
   Withdraw: 'Withdrawn',
   Exit: 'Exit'
@@ -163,7 +164,7 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, merkleRoot, mer
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  */
-const delayWithdraw = async (hezEthereumAddress, token, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
+const delayedWithdraw = async (hezEthereumAddress, token, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
   const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI)
 
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
@@ -219,7 +220,7 @@ export {
   deposit,
   forceExit,
   withdraw,
-  delayWithdraw,
+  delayedWithdraw,
   send,
   beautifyTransactionState
 }
