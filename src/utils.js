@@ -16,48 +16,6 @@ function bufToHex (buf) {
   return Array.prototype.map.call(new Uint8Array(buf), x => ('00' + x.toString(16)).slice(-2)).join('')
 }
 
-/**
- * Chunks inputs in five elements and hash with Poseidon all them togheter
- * @param {Array} arr - inputs hash
- * @returns {BigInt} - final hash
- */
-function _multiHash (arr) {
-  let r = Scalar.e(0)
-  for (let i = 0; i < arr.length; i += 5) {
-    const fiveElems = []
-    for (let j = 0; j < 5; j++) {
-      if (i + j < arr.length) {
-        fiveElems.push(arr[i + j])
-      } else {
-        fiveElems.push(Scalar.e(0))
-      }
-    }
-    const ph = hash(fiveElems)
-    r = F.add(r, ph)
-  }
-  return F.normalize(r)
-}
-
-/**
- * Poseidon hash of a generic buffer
- * @param {Buffer} msgBuff
- * @returns {BigInt} - final hash
- */
-function hashBuffer (msgBuff) {
-  const n = 31
-  const msgArray = []
-  const fullParts = Math.floor(msgBuff.length / n)
-  for (let i = 0; i < fullParts; i++) {
-    const v = ffUtils.leBuff2int(msgBuff.slice(n * i, n * (i + 1)))
-    msgArray.push(v)
-  }
-  if (msgBuff.length % n !== 0) {
-    const v = ffUtils.leBuff2int(msgBuff.slice(fullParts * n))
-    msgArray.push(v)
-  }
-  return _multiHash(msgArray)
-}
-
 const hexToBuffer = (hexString) => {
   return Buffer.from(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)))
 }
@@ -88,7 +46,6 @@ function getTokenAmountBigInt (amountString, decimals) {
 
 export {
   bufToHex,
-  hashBuffer,
   hexToBuffer,
   getTokenAmountString,
   getTokenAmountBigInt

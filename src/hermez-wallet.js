@@ -3,7 +3,7 @@ import jsSha3 from 'js-sha3'
 import { utils } from 'ffjavascript'
 
 import { buildTransactionHashMessage } from './tx-utils.js'
-import { hashBuffer, hexToBuffer } from './utils.js'
+import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
 import { getHermezAddress } from './addresses.js'
 import { METAMASK_MESSAGE } from './constants.js'
