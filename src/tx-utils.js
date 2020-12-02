@@ -21,7 +21,8 @@ async function encodeTransaction (transaction) {
   const encodedTransaction = Object.assign({}, transaction)
 
   const provider = getProvider()
-  encodedTransaction.chainId = await provider.getNetwork().chainId
+  console.log(await provider.getNetwork())
+  encodedTransaction.chainId = (await provider.getNetwork()).chainId
 
   encodedTransaction.fromAccountIndex = getAccountIndex(transaction.fromAccountIndex)
   if (transaction.toAccountIndex) {
