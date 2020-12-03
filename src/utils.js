@@ -1,9 +1,5 @@
-import { Scalar, utils as ffUtils } from 'ffjavascript'
 import ethers from 'ethers'
 import circomlib from 'circomlib'
-
-const hash = circomlib.poseidon([6, 8, 57])
-const F = circomlib.poseidon.F
 
 /**
  * Converts a buffer to a hexadecimal representation
@@ -32,10 +28,10 @@ function getTokenAmountString (amountBigInt, decimals) {
   return ethers.utils.formatUnits(amountBigInt, decimals)
 }
 
-/** s
+/**
  * Converts an amount in Float with the appropriate decimals to a BigInt
  *
- * @param {Number} amountString - String representing the amount as a Float
+ * @param {String} amountString - String representing the amount as a Float
  * @param {Number} decimals - Number of decimal points the amount has
  *
  * @returns {BigInt}
