@@ -1,11 +1,17 @@
 import * as utils from '../src/utils.js'
 
-test('#bufToHex', () => {
-  const testString1 = '1122334455aa'
-  expect(utils.bufToHex(utils.hexToBuffer(testString1))).toBe(testString1)
+test('#hexToBuffer', () => {
+  const testString = '1122334455aa'
+  const testBuffer = Buffer.from([0x11, 0x22, 0x33, 0x44, 0x55, 0xaa])
 
-  const testString2 = '00000000'
-  expect(utils.bufToHex(utils.hexToBuffer(testString2))).toBe(testString2)
+  expect(utils.hexToBuffer(testString).toString()).toBe(testBuffer.toString())
+})
+
+test('#bufToHex', () => {
+  const testString = '1122334455aa'
+  const testBuffer = Buffer.from([0x11, 0x22, 0x33, 0x44, 0x55, 0xaa])
+
+  expect(utils.bufToHex(testBuffer)).toBe(testString)
 })
 
 test('#getTokenAmountString', () => {
