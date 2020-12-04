@@ -4,7 +4,7 @@ import { extractJSON } from './http.js'
 import { DEFAULT_PAGE_SIZE } from './constants.js'
 import { isHermezEthereumAddress, isHermezBjjEthereumAddress } from './addresses.js'
 
-const baseApiUrl = 'http://167.71.59.190:4010'
+const baseApiUrl = "https://apimock.hermez.network"
 
 function getPageData (fromItem) {
   return {
