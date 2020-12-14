@@ -26,5 +26,6 @@ function getContract (contractAddress, abi, providerUrl) {
 }
 
 export {
-  getContract
+  getContract,
+  contractsCache as _contractsCache
 }
