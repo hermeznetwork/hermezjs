@@ -6,16 +6,17 @@ const contractsCache = new Map()
 
 /**
  * Caches smart contract instances
- *
- * @param {String} contractAddress - The smart contract address
- * @param {Array} abi - The smart contract ABI
+ * @param {string} contractAddress - The smart contract address
+ * @param {array} abi - The smart contract ABI
+ * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @return {Contract} The request contract
  */
-function getContract (contractAddress, abi) {
+function getContract (contractAddress, abi, providerUrl) {
   if (contractsCache.has(contractAddress)) {
     return contractsCache.get(contractAddress)
   }
 
-  const provider = getProvider()
+  const provider = getProvider(providerUrl)
   const signer = provider.getSigner()
   const contract = new ethers.Contract(contractAddress, abi, signer)
 

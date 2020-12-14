@@ -8,13 +8,13 @@ import { getContract } from './contracts.js'
  * @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
  * @param {String} accountAddress - The Ethereum address of the transaction sender
  * @param {String} contractAddress - The token smart contract address
+ * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  *
  * @returns {Promise} transaction
  */
-async function approve (amount, accountAddress, contractAddress) {
-  const erc20Contract = getContract(contractAddress, ERC20ABI)
+async function approve (amount, accountAddress, contractAddress, providerUrl) {
+  const erc20Contract = getContract(contractAddress, ERC20ABI, providerUrl)
   const allowance = await erc20Contract.allowance(accountAddress, contractAddresses.Hermez)
-
   if (allowance.lt(amount)) {
     return erc20Contract.approve(contractAddresses.Hermez, amount)
   }
