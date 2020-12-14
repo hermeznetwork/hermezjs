@@ -175,7 +175,7 @@ async function getBatches (forgerAddr, slotNum, fromItem) {
 /**
  * GET request to the /batches/:batchNum endpoint. Returns a specific batch
  * @param {numberr} batchNum - Number of a specific batch
- * @returns {object} Response data with a specific batch 
+ * @returns {object} Response data with a specific batch
  */
 async function getBatch (batchNum) {
   return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`))
@@ -184,7 +184,7 @@ async function getBatch (batchNum) {
 /**
  * GET request to the /coordinators/:bidderAddr endpoint. Returns a specific coordinator information
  * @param {string} bidderAddr - A coordinator address
- * @returns {object} Response data with a specific coordinator 
+ * @returns {object} Response data with a specific coordinator
  */
 async function getCoordinator (bidderAddr) {
   return extractJSON(axios.get(`${baseApiUrl}/coordinators/${bidderAddr}`))
@@ -201,7 +201,7 @@ async function getSlot (slotNum) {
 
 /**
  * GET request to the /bids endpoint. Returns a list of bids
- * @param {number} slotNum - Filter by slot 
+ * @param {number} slotNum - Filter by slot
  * @param {string} bidderAddr - Filter by coordinator
  * @param {number} fromItem - Item from where to start the request
  * @returns {object} Response data with the list of slots

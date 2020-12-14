@@ -3,7 +3,7 @@ import * as CoordinatorAPI from '../src/api'
 test('#_getPageData', () => {
   const pageData = CoordinatorAPI._getPageData(32)
   expect(pageData).toEqual({ fromItem: 32, limit: 20 })
-}) 
+})
 
 describe('#getAccounts', () => {
   const hermezEthereumAddress = 'hez:0x00000000000000000000000000000000004Ab84F'
@@ -94,17 +94,17 @@ test('#getPoolTransaction', async () => {
 test('#postPoolTransaction', async () => {
   const transactionId = '0x020000000001000000000006'
   const exampleTx = {
-    "id": transactionId,
-    "type": "Transfer",
-    "tokenId": 6,
-    "fromAccountIndex": "hez:DAI:256",
-    "toAccountIndex": "hez:DAI:257",
-    "toHezEthereumAddress": null,
-    "toBjj": null,
-    "amount": "100000000000000",
-    "fee": 0,
-    "nonce": 6,
-    "signature": "1a79dd5e661d58266901a0de8afb046b466c4c1af937100f627a421771f2911fa3fde8ea2e272b4802a8b1f1229689292acd6f7e8ab4cadc4ab37b6b9e13a101"
+    id: transactionId,
+    type: 'Transfer',
+    tokenId: 6,
+    fromAccountIndex: 'hez:DAI:256',
+    toAccountIndex: 'hez:DAI:257',
+    toHezEthereumAddress: null,
+    toBjj: null,
+    amount: '100000000000000',
+    fee: 0,
+    nonce: 6,
+    signature: '1a79dd5e661d58266901a0de8afb046b466c4c1af937100f627a421771f2911fa3fde8ea2e272b4802a8b1f1229689292acd6f7e8ab4cadc4ab37b6b9e13a101'
   }
   const resPost = await CoordinatorAPI.postPoolTransaction(exampleTx)
   expect(resPost.data).toBe('0x00000000000001e240004700')

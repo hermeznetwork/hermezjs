@@ -11,7 +11,6 @@ import { getTokenAmountBigInt } from '../src/utils.js'
 jest.mock('axios')
 
 describe('#Full flow', () => {
-
   const amount = getTokenAmountBigInt('2.88', 18)
   const hezEthereumAddress = 'hez:0xc783df8a850f42e7f7e57013759c285caa701eb6'
   const bjj = 'bc440c1c501f3476c50f39ce1f872e6a13560ebddc10791e980813bea95134d'
@@ -40,7 +39,7 @@ describe('#Full flow', () => {
     expect(depositTokenParams).toEqual([`0x${bjj}`, 0, 33056, 0, token.id, 0, '0x'])
     const depositEthParams = await Tx.deposit(amount, hezEthereumAddress, eth, bjj, 'http://localhost:8545')
     expect(depositEthParams).toEqual([`0x${bjj}`, 0, 33056, 0, eth.id, 0, '0x'])
-    
+
     await forgeBatch()
     await forgeBatch()
 
@@ -51,7 +50,7 @@ describe('#Full flow', () => {
 
     await forgeBatch()
     const forgedBatch = await forgeBatch()
-  
+
     const forceExitTokenParams2 = await Tx.forceExit(exitAmount, accountIndex, token)
     expect(forceExitTokenParams2).toEqual([0, 256, 0, 31520, token.id, 1, '0x'])
 
@@ -83,7 +82,7 @@ test('#sendL2Transaction', async () => {
     bJJ: bjj,
     nonce: 2
   }
-  axios.post = jest.fn().mockResolvedValue({ 
+  axios.post = jest.fn().mockResolvedValue({
     status: 200,
     data: txId
   })

@@ -70,7 +70,8 @@
     }
   },
   "lint-staged": {
-    "*.{js}": "standard --fix"
+    "*.{js}": "standard --fix",
+    "*.{mjs}": "standard --fix"
   },
   "jest": {
     "testTimeout": 50000,

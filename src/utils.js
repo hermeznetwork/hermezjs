@@ -1,9 +1,4 @@
-import { Scalar, utils as ffUtils } from 'ffjavascript'
 import ethers from 'ethers'
-import circomlib from 'circomlib'
-
-const hash = circomlib.poseidon([6, 8, 57])
-const F = circomlib.poseidon.F
 
 /**
  * Converts a buffer to a hexadecimal representation

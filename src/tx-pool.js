@@ -96,7 +96,7 @@ export {
   initializeTransactionPool,
   getPoolTransactions,
   addPoolTransaction,
-  removePoolTransaction,
+  removePoolTransaction
 }
 
 export const _storage = storage

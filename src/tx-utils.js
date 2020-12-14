@@ -164,7 +164,7 @@ function buildTxCompressedData (tx) {
  * @param {object} tx - Transaction object returned by `encodeTransaction`
  * @returns {Scalar} element_1 L2 signature
  */
-function buildElement1(tx){
+function buildElement1 (tx) {
   let res = Scalar.e(0)
 
   res = Scalar.add(res, Scalar.fromString(tx.toEthAddr || '0', 16)) // ethAddr --> 160 bits

@@ -20,7 +20,7 @@ export async function forgeBatch (providerUrl = 'http://localhost:8545', maxTx =
 
     // filter L1UserTxEvent for queueIndex
     const filter = buidlerHermez.filters.L1UserTxEvent(i, null, null)
-    let events = await buidlerHermez.queryFilter(filter, 0, "latest")
+    const events = await buidlerHermez.queryFilter(filter, 0, 'latest')
     events.forEach((e) => {
       bb.addTx(txUtils.decodeL1Tx(e.args.l1UserTx))
     })
@@ -47,12 +47,12 @@ export async function forgeBatch (providerUrl = 'http://localhost:8545', maxTx =
 
   await bbCurrent.build()
 
-  let stringL1CoordinatorTx = ''
+  const stringL1CoordinatorTx = ''
 
   const proofA = ['0', '0']
   const proofB = [
     ['0', '0'],
-    ['0', '0'],
+    ['0', '0']
   ]
   const proofC = ['0', '0']
 

@@ -36,7 +36,7 @@ class HermezWallet {
     const compressedPublicKey = utils.leBuff2int(circomlib.babyJub.packPoint(publicKey))
     this.publicKeyCompressed = compressedPublicKey.toString()
     this.publicKeyCompressedHex = compressedPublicKey.toString(16)
-  
+
     this.hermezEthereumAddress = hermezEthereumAddress
   }
 

@@ -114,7 +114,6 @@ describe('#removePoolTransaction', () => {
   })
 })
 
-
 describe('#getPoolTransactions', () => {
   const bjj1 = 'bjj1'
   const accountIndex1 = 1
@@ -185,7 +184,7 @@ describe('#getPoolTransactions', () => {
 
     const txs = await TransactionPool.getPoolTransactions(accountIndex1, bjj1)
     expect(txs).toEqual([tx1])
-    
+
     const finalPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(finalPool[bjj1]).toEqual([tx2])
   })

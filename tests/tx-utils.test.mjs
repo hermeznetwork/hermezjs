@@ -63,7 +63,7 @@ describe('#encodeTransaction', () => {
     const encodedTx = await TxUtils._encodeTransaction(transferTransaction, 'http://localhost:8545')
     expect(encodedTx).toEqual(transferTransactionEncoded)
   })
-  
+
   test('Works correctly for exits', async () => {
     const encodedTx = await TxUtils._encodeTransaction(exitTransaction, 'http://localhost:8545')
     expect(encodedTx).toEqual(exitTransactionEncoded)
@@ -87,7 +87,7 @@ describe('#getTransactionType', () => {
     }
     expect(TxUtils.getTransactionType(transferTx)).toBe('Transfer')
   })
-  
+
   test('Returns Exit', () => {
     const exitTx = {
       to: null
@@ -159,7 +159,7 @@ describe('#getNonce', () => {
     axios.get = jest.fn()
       .mockResolvedValue({ data: poolTx1 })
       .mockResolvedValueOnce({ data: poolTx3 })
-    
+
     TransactionPool.addPoolTransaction(localTx, bjj1)
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
@@ -170,7 +170,7 @@ describe('#getNonce', () => {
   test('returns current nonce plus one if no transactions for account index', async () => {
     axios.get = jest.fn()
       .mockResolvedValue({ data: poolTx3 })
-    
+
     TransactionPool.addPoolTransaction(localTx, bjj1)
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
@@ -192,7 +192,7 @@ test('#_buildTxCompressedData', () => {
         fee: Scalar.sub(Scalar.shl(1, 3), 1),
         toBjjSign: true
       },
-      txCompressedData: '107ffffffffffffffffffffffffffffffffffffffffffffffffffc60be60f',
+      txCompressedData: '107ffffffffffffffffffffffffffffffffffffffffffffffffffc60be60f'
     },
     {
       tx: {
@@ -205,7 +205,7 @@ test('#_buildTxCompressedData', () => {
         fee: 0,
         toBjjSign: false
       },
-      txCompressedData: 'c60be60f',
+      txCompressedData: 'c60be60f'
     },
     {
       tx: {
@@ -218,7 +218,7 @@ test('#_buildTxCompressedData', () => {
         fee: 214,
         toBjjSign: false
       },
-      txCompressedData: 'd6000000004c0000000189860000000001000000000001440001c60be60f',
+      txCompressedData: 'd6000000004c0000000189860000000001000000000001440001c60be60f'
     },
     {
       tx: {
@@ -231,7 +231,7 @@ test('#_buildTxCompressedData', () => {
         fee: 0,
         toBjjSign: false
       },
-      txCompressedData: '500040000000000030000000000020000c60be60f',
+      txCompressedData: '500040000000000030000000000020000c60be60f'
     },
     {
       tx: {
@@ -245,15 +245,15 @@ test('#_buildTxCompressedData', () => {
         toBjjAy: 'c433f7a696b7aa3a5224efb3993baf0ccd9e92eecee0c29a3f6c8208a9e81d1e',
         toBjjSign: true
       },
-      txCompressedData: '10000000000060000000500040000000000030000000000020000c60be60f',
+      txCompressedData: '10000000000060000000500040000000000030000000000020000c60be60f'
     }
   ]
 
-  for (let i = 0; i < testVectors.length; i++){
-      const { tx, txCompressedData } = testVectors[i]
+  for (let i = 0; i < testVectors.length; i++) {
+    const { tx, txCompressedData } = testVectors[i]
 
-      const computeTxCompressedData = TxUtils._buildTxCompressedData(tx)
-      expect(computeTxCompressedData.toString(16)).toBe(txCompressedData)
+    const computeTxCompressedData = TxUtils._buildTxCompressedData(tx)
+    expect(computeTxCompressedData.toString(16)).toBe(txCompressedData)
   }
 })
 
@@ -266,7 +266,7 @@ test('#buildTransactionHashMessage', () => {
         amount: 4,
         tokenId: 5,
         nonce: 6,
-        toEthAddr: '0xc58d29fA6e86E4FAe04DDcEd660d45BCf3Cb2370',
+        toEthAddr: '0xc58d29fA6e86E4FAe04DDcEd660d45BCf3Cb2370'
       },
       hashSignature: '33fef2d9564a48eec52054844c3c9bbdd942caaa397a3b918ef47b6695d276b'
     },
@@ -338,7 +338,6 @@ test('#buildTransactionHashMessage', () => {
 })
 
 describe('#generateL2Transaction', () => {
-
   const transferTx = {
     from: 'hez:DAI:4444',
     to: 'hez:DAI:1234',

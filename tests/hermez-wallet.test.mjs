@@ -18,7 +18,7 @@ describe('HermezWallet', () => {
 
     test('fails with invalid private key', () => {
       try {
-        new HermezWallet(privateKeyError, hermezEthereumAddress)
+        new HermezWallet(privateKeyError, hermezEthereumAddress) // eslint-disable-line no-new
       } catch (error) {
         expect(error.message).toBe('Private key buffer must be 32 bytes')
       }
@@ -26,7 +26,7 @@ describe('HermezWallet', () => {
 
     test('fails with invalid Hermez Ethereum address', () => {
       try {
-        new HermezWallet(privateKey, hermezEthereumAddressError)
+        new HermezWallet(privateKey, hermezEthereumAddressError) // eslint-disable-line no-new
       } catch (error) {
         expect(error.message).toBe('Invalid Hermez Ethereum address')
       }
