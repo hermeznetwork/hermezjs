@@ -30,7 +30,7 @@ export class LedgerSigner extends ethers.Signer {
 
   /**
    * Returns the signed prefixed-message.
-   * @param {*} message - Message to sign in bytes[] or string
+   * @param {Uint8[]|string} message - Message to sign in bytes[] or string
    * @returns {Promise} - Promise of the message signature
    */
   signMessage (message) {
