@@ -53,7 +53,7 @@ Some of the operations in Hermez network, such as sending L1 transactions, requi
 We can create a new Hermez wallet by providing the Ethereum account index associated with the provider initialized. This wallet will store the Ethereum and BabyJubJub keys for the Hermez account. The Ethereum address is used to authorize L1 transactions, and the BabyJubJub key is used to authorize L2 transactions.
 
 ```js
-  const {hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet.createWalletFromEtherAccount(0)
+  const {hermezWallet, hermezEthereumAddress } = await hermez.HermezWallet.createWalletFromEtherAccount(0)
 ```
 
 ## Check token exists in Hermez Network
@@ -135,7 +135,7 @@ First we create a second wallet following the procedure we saw earlier:
 
 ```js
    const {hermezWallet2, hermezEthereumAddress2 } =
-                      await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
+                      await hermez.HermezWallet.createWalletFromEtherAccount(1)
 ```
 
 Next, we compute the fees for the transaction. For this we consult the recommended fees from the coordinator state.

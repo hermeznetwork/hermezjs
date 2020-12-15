@@ -11,13 +11,20 @@ async function main() {
   hermez.TxPool.initializeTransactionPool()
   
 
-  // Create wallet
+  // Create 2 wallets
   // To create a wallet, we need to provide a signature and a hermez ethereum address.
   //  Signature is created with a standard message (METAMASK_MESSAGE)
   //  Hermez ethereum address is created by appending 'hez:' to the ethereum address.
   // In this example we create a standard wallet. It is also possible to link the hermez wallet to a existing
   // Metamask wallet
-  const { hermezWallet, hermezEthereumAddress } = await hermez.HermezWallet.createWalletFromEtherAccount(0)
+  const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(1)
+  const hermezWallet = wallet.hermezWallet
+  const hermezEthereumAddress = wallet.hermezEthereumAddress
+
+  // Create 2nd wallet
+  const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(2)
+  const hermezWallet2 = wallet2.hermezWallet
+  const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
 
   // Deposit
   // First transaction is a deposit from the ethereum address into hermez network. Since a hermez
@@ -43,21 +50,29 @@ async function main() {
   //  - Deposit funtion always returns that the deposit is to be done to a non existent account
   //  - ethereum account is preloaded with 1e6 ERC20Tokens
 
-  // TODO : I don't understand this function
   let amount = hermez.Utils.getTokenAmountBigInt('100',2)
 
   // retrieve token info from Hermez network
   const token = await hermez.CoordinatorAPI.getTokens()
+  expect(token.tokens.length).toBe(11)
+  expect(token.tokens[i].ethereumAddress).toBe(0x0000000000000000000000000000000000000000
+  for (var i=1; 1 < ; i++) {
+  }
 
-  // ERC20 Token
-  //  tmp function to update returned values from getToken to real ones.
-  const tokenERC20 = tmpUpdateToken(token,1)
+  // ERC20 Token -> Pick 3rd token
+  const tokenERC20=token.tokens[3]
 
   // make deposit of ERC20 Tokens
   await hermez.Tx.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
 
-  // Forge Batch
+  // Wait until transaction is forged
+  await waitAccount(hermezEthereumAddress, [tokenERC20.id])
 
+  // make deposit of ERC20 Tokens
+  await hermez.Tx.deposit(amount, hermezEthereumAddress2, tokenERC20, hermezWallet2.publicKeyCompressedHex)
+
+  // Wait until transaction is forged
+  await waitAccount(hermezEthereumAddress,2 [tokenERC20.id])
 
   // Transfer
   //  Transfer is a L2 transaction. At this point, Hermez source account is already created with 
@@ -88,16 +103,13 @@ async function main() {
   //       provided a harcoded answer.
   //    - getFees -> it should provide information on the fees
 
-  // Create 2nd wallet
-  const {hermezWallet2, hermezEthereumAddress2 } =
-                      await hermez.HermezWallet.createWalletFromEtherAccount(1)
   // src account
   let account = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0]
   // dst account
   let to = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
   // fee computation
   const state = await hermez.CoordinatorAPI.getState()
-  console.log(state.recommendedFee)
+
   let usdTokenExchangeRate = tokenERC20.USD
   let fee = state.recommendedFee.existingAccount / usdTokenExchangeRate
   // amount to transfer
@@ -118,7 +130,6 @@ async function main() {
   hermezWallet.signTransaction(transaction, encodedTransaction)
   // send transaction to coordinator
   let result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
-  console.log(result)
 
   // Check transaction in coordinator's transaction pool
   const txPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
@@ -174,17 +185,20 @@ async function main() {
 
 }
 
-function tmpUpdateToken(token, id) {
-
-  if (id === 1){
-    // ERC20
-    token.tokens[0].ethereumAddress = '0xf4e77E5Da47AC3125140c470c71cBca77B5c638c'
-  } 
-  token.tokens[0].id = id
-
-  return token.tokens[0]
+// Wait till batch is forged
+async function waitAccount(hermezEthereumAddress, tokenId) { 
+  while (true){
+    const accounts = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, tokenId)
+    console.log(accounts)
+    if (typeof accounts !== 'undefined') {
+      break
+    } else {
+      await sleep(2000)
+    }
+  }
 }
-  
+
+
 main()
   .then(() => process.exit(0))
   .catch(error => {

@@ -1,10 +1,8 @@
 import axios from 'axios'
 
 import { extractJSON } from './http.js'
-import { DEFAULT_PAGE_SIZE } from './constants.js'
+import { DEFAULT_PAGE_SIZE, baseApiUrl } from './constants.js'
 import { isHermezEthereumAddress, isHermezBjjAddress } from './addresses.js'
-
-const baseApiUrl = 'http://167.71.59.190:4010'
 
 /**
  * Sets the query parameters related to pagination
@@ -33,7 +31,12 @@ async function getAccounts (address, tokenIds, fromItem) {
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ..._getPageData(fromItem)
   }
-  return extractJSON(axios.get(`${baseApiUrl}/accounts`, { params }))
+  try {
+    const retVal = await axios.get(`${baseApiUrl}/accounts`, { params })
+    return retVal.data
+  } catch (error) {
+    return undefined
+  }
 }
 
 /**
@@ -180,7 +183,6 @@ async function getBatches (forgerAddr, slotNum, fromItem) {
 async function getBatch (batchNum) {
   return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`))
 }
-
 
 /**
  * GET request to the /coordinators/:bidderAddr endpoint. Returns a specific coordinator information
