@@ -92,9 +92,7 @@ describe('HermezWallet', () => {
   })
 })
 
-// Requires running a local blockchain like ganache or buidler.
-// Remove .skip to run
-test.skip('#createWalletFromEtherAccount', async () => {
+test('#createWalletFromEtherAccount', async () => {
   const { hermezWallet, hermezEthereumAddress } = await createWalletFromEtherAccount(0, 'http://localhost:8545')
   expect(hermezWallet).toBeInstanceOf(HermezWallet)
   expect(isHermezEthereumAddress(hermezEthereumAddress)).toBe(true)

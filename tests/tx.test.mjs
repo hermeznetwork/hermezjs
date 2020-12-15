@@ -10,7 +10,7 @@ import { getTokenAmountBigInt } from '../src/utils.js'
 
 jest.mock('axios')
 
-describe('#Full flow', () => {
+describe('Full flow', () => {
   const amount = getTokenAmountBigInt('2.88', 18)
   const hezEthereumAddress = 'hez:0xc783df8a850f42e7f7e57013759c285caa701eb6'
   const bjj = 'bc440c1c501f3476c50f39ce1f872e6a13560ebddc10791e980813bea95134d'
