@@ -181,6 +181,7 @@ async function getBatch (batchNum) {
   return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`))
 }
 
+
 /**
  * GET request to the /coordinators/:bidderAddr endpoint. Returns a specific coordinator information
  * @param {string} bidderAddr - A coordinator address
