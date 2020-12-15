@@ -2,9 +2,7 @@ import ethers from 'ethers'
 
 /**
  * Converts a buffer to a hexadecimal representation
- *
  * @param {ArrayBuffer} buf
- *
  * @returns {string}
  */
 function bufToHex (buf) {
@@ -17,10 +15,8 @@ const hexToBuffer = (hexString) => {
 
 /**
  * Converts an amount in BigInt and decimals to a String with correct decimal point placement
- *
  * @param {string} amountBigInt - String representing the amount as a BigInt with no decimals
  * @param {number} decimals - Number of decimal points the amount actually has
- *
  * @returns {string}
  */
 function getTokenAmountString (amountBigInt, decimals) {
@@ -29,10 +25,8 @@ function getTokenAmountString (amountBigInt, decimals) {
 
 /**
  * Converts an amount in Float with the appropriate decimals to a BigInt
- *
  * @param {string} amountString - String representing the amount as a Float
  * @param {number} decimals - Number of decimal points the amount has
- *
  * @returns {BigInt}
  */
 function getTokenAmountBigInt (amountString, decimals) {
