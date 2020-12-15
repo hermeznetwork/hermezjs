@@ -19,7 +19,7 @@ async function approve (amount, accountAddress, contractAddress, providerUrl) {
     return erc20Contract.approve(contractAddresses.Hermez, amount)
   }
 
-  if (!allowance.isZero(amount)) {
+  if (!allowance.isZero()) {
     const tx = await erc20Contract.approve(contractAddresses.Hermez, '0')
     await tx.wait(1)
   }
