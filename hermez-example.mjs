@@ -1,15 +1,16 @@
 import ethers from 'ethers'
+
 import hermez from './src/index.js'
+import { SignerType } from './src/signers.js'
 
 async function main() {
   // Init network provider.
   hermez.Providers.setProvider('http://localhost:8545')
-  
+
   // Initialize Transaction Pool
   // Transaction Pool declares an instance in LocalStorage where user transactions are stored.
   // When a L1Tx or L2Tx is sent, the transaction is also kept in the LocalStorage
   hermez.TxPool.initializeTransactionPool()
-  
 
   // Create wallet
   // To create a wallet, we need to provide a signature and a hermez ethereum address.
@@ -17,7 +18,15 @@ async function main() {
   //  Hermez ethereum address is created by appending 'hez:' to the ethereum address.
   // In this example we create a standard wallet. It is also possible to link the hermez wallet to a existing
   // Metamask wallet
-  const {hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet.createWalletFromEtherAccount(0)
+  const { hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet
+    .createWalletFromEtherAccount({ type: SignerType.JSON_RPC, indexOrAccount: 0 })
+
+  // We can also create a Hermez Wallet from a hardware wallet (Ledger or Trezor) providing different data
+  // to create a Signer
+  // const { hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet
+  //   .createWalletFromEtherAccount({ type: SignerType.LEDGER, path: "m/44'/60'/0'/0/0" })
+  // const { hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet
+  //   .createWalletFromEtherAccount({ type: SignerType.TREZOR, path: "m/44'/60'/0'/0/0" })
 
   // Deposit
   // First transaction is a deposit from the ethereum address into hermez network. Since a hermez
@@ -54,7 +63,13 @@ async function main() {
   const tokenERC20 = tmpUpdateToken(token,1)
 
   // make deposit of ERC20 Tokens
-  await hermez.Tx.deposit(amount, hermezEthereumAddress, tokenERC20, hermezWallet.publicKeyCompressedHex)
+  await hermez.Tx.deposit(
+    amount,
+    hermezEthereumAddress,
+    tokenERC20,
+    hermezWallet.publicKeyCompressedHex,
+    { type: SignerType.JSON_RPC }
+  )
 
   // Forge Batch
 
@@ -89,8 +104,7 @@ async function main() {
   //    - getFees -> it should provide information on the fees
 
   // Create 2nd wallet
-  const {hermezWallet2, hermezEthereumAddress2 } =
-                      await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
+  const {hermezWallet2, hermezEthereumAddress2 } = await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
   // src account
   let account = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0]
   // dst account
@@ -159,7 +173,7 @@ async function main() {
     
     // Force Exit (L1)
     const from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
-    const forceExitTx = await hermez.Tx.forceExit(amount, 'hez:TKN:256', tokenERC20)
+    const forceExitTx = await hermez.Tx.forceExit(amount, 'hez:TKN:256', tokenERC20, { type: SignerType.JSON_RPC })
     //const forceExitTx = await hermez.Tx.forceExit(amount, from.accountIndex, tokenERC20)
     console.log(forceExitTx)
 
@@ -167,7 +181,15 @@ async function main() {
 
     // Withdraw
     const exitInfo = await hermez.CoordinatorAPI.getExit(txExitConf.batchNum, txExitConf.fromAccountIndex)
-    const withdrawInfo = await hermez.Tx.withdraw(amount, 'hez:TKN:256', tokenERC20, hermezWallet.publicKeyCompressedHex, ethers.BigNumber.from('4'), [])
+    const withdrawInfo = await hermez.Tx.withdraw(
+      amount,
+      'hez:TKN:256',
+      tokenERC20,
+      hermezWallet.publicKeyCompressedHex,
+      ethers.BigNumber.from('4'),
+      [],
+      { type: SignerType.JSON_RPC }
+    )
     // const withdrawInfo = await hermez.Tx.withdraw(amount, from.accountIndex, tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
     console.log(withdrawInfo)
 
@@ -175,7 +197,6 @@ async function main() {
 }
 
 function tmpUpdateToken(token, id) {
-
   if (id === 1){
     // ERC20
     token.tokens[0].ethereumAddress = '0xf4e77E5Da47AC3125140c470c71cBca77B5c638c'
