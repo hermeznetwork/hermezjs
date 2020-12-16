@@ -74,7 +74,7 @@ export class LedgerSigner extends ethers.Signer {
    * @param {Object} options - Additional data to set up the signer, e.g. hw wallet path
    * @returns {Promise} - Promise of a new LedgerSigner instance
    */
-  connect (provider, options) {
+  static connect (provider, options) {
     return TransportU2F.create()
       .then((transport) => new LedgerSigner(transport, provider, options))
   }

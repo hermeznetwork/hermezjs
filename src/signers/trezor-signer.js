@@ -72,7 +72,7 @@ export class TrezorSigner extends ethers.Signer {
    * @param {Object} options - Additional data to set up the signer, e.g. hw wallet path
    * @returns {Promise} - Promise of a new LedgerSigner instance
    */
-  connect (provider, options) {
+  static connect (provider, options) {
     return new TrezorSigner(provider, options)
   }
 }
