@@ -13,11 +13,12 @@ import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
 
 /**
  * Get current average gas price from the last ethereum blocks and multiply it
- * @param {Number} multiplier - multiply the average gas price by this parameter
- * @returns {Promise} - promise will return the gas price obtained.
+ * @param {number} multiplier - multiply the average gas price by this parameter
+ * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @returns {promise} - promise will return the gas price obtained.
 */
-async function getGasPrice (multiplier) {
-  const provider = getProvider()
+async function getGasPrice (multiplier, providerUrl) {
+  const provider = getProvider(providerUrl)
   const strAvgGas = await provider.getGasPrice()
   const avgGas = Scalar.e(strAvgGas)
   const res = (avgGas * Scalar.e(multiplier))
@@ -32,7 +33,7 @@ async function getGasPrice (multiplier) {
  * @param {BigInt} amount - The amount to be deposited
  * @param {string} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {object} token - The token information object as returned from the API
- * @param {string} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @param {string} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {number} gasLimit - Optional gas limit
  * @param {number} gasMultiplier - Optional gas multiplier
