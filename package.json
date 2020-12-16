@@ -73,6 +73,6 @@
     }
   },
   "lint-staged": {
-    "*.{js}": "standard --fix"
+    "*.{js,mjs}": "standard --fix"
   }
 }
