@@ -149,10 +149,6 @@ async function getToken (tokenId) {
  */
 async function getState () {
   const state = await extractJSON(axios.get(`${baseApiUrl}/state`))
-  // Remove once hermez-node is ready
-  // state.withdrawalDelayer.emergencyMode = true
-  // state.withdrawalDelayer.withdrawalDelay = 60
-  // state.rollup.buckets[0].withdrawals = 0
   return state
 }
 

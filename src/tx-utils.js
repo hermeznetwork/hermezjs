@@ -230,8 +230,6 @@ async function generateL2Transaction (tx, bjj, token) {
 
   const encodedTransaction = await encodeTransaction(transaction)
   transaction.id = getTxId(encodedTransaction.fromAccountIndex, encodedTransaction.nonce)
-  // TODO: Remove once we have hermez-node
-  transaction.id = '0x00000000000001e240004700'
 
   return { transaction, encodedTransaction }
 }

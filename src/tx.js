@@ -44,8 +44,6 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUr
 
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   let account = (await getAccounts(ethereumAddress, [token.id])).accounts[0]
-  // TODO Remove once the hermez-node is ready
-  account = undefined
 
   const overrides = {
     gasLimit,
