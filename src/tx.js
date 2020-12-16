@@ -49,7 +49,7 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUr
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
@@ -88,7 +88,7 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
   const transactionParameters = [
@@ -123,7 +123,7 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
   const transactionParameters = [
@@ -155,7 +155,7 @@ const delayedWithdraw = async (hezEthereumAddress, token, gasLimit = GAS_LIMIT, 
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
   const transactionParameters = [
