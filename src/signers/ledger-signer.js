@@ -60,11 +60,11 @@ export class LedgerSigner extends ethers.Signer {
         const unsignedTx = ethers.utils.serializeTransaction(tx).substr(2)
 
         return this.eth.signTransaction(this.path, unsignedTx)
-      })
-      .then(({ r, s, v }) => {
-        const signature = { r: `0x${r}`, s: `0x${s}`, v }
+          .then(({ r, s, v }) => {
+            const signature = { r: `0x${r}`, s: `0x${s}`, v }
 
-        return ethers.utils.serializeTransaction(transaction, signature)
+            return ethers.utils.serializeTransaction(tx, signature)
+          })
       })
   }
 
