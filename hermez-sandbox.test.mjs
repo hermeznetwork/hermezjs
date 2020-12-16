@@ -60,7 +60,7 @@ test('Hermezjs sandbox', async () => {
   //      tokens in this list can be used.
   //   - Sender Hermez address
   //   - Sender Compresed Babyjubjub
-  /*
+  
   const amountDeposit = hermez.Utils.getTokenAmountBigInt('100', 2)
 
   // make deposit of ERC20 Tokens
@@ -89,20 +89,20 @@ test('Hermezjs sandbox', async () => {
   expect(hermezEthereumAddress).toBe(tx1.accounts[0].hezEthereumAddress)
 
   expect(`hez:${tokenERC20.symbol}:256`).toBe(tx1.accounts[0].accountIndex)
-  // expect((amountDeposit * 2).toString()).toBe(tx1.accounts[0].balance)
+  expect((amountDeposit * 2).toString()).toBe(tx1.accounts[0].balance)
 
   const tx2 = hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])
-  // expect(hermezEthereumAddress2).toBe(tx2.accounts[0].hezEthereumAddress)
-  // expect(`hez:${tokenERC20.symbol}:257`).toBe(tx2.accounts[0].accountIndex)
-  // expect(amountDeposit.toString()).toBe(tx2.accounts[0].balance)
+  expect(hermezEthereumAddress2).toBe(tx2.accounts[0].hezEthereumAddress)
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(tx2.accounts[0].accountIndex)
+  expect(amountDeposit.toString()).toBe(tx2.accounts[0].balance)
 
   // Check account by accountIndex
   const tx1_1 = await hermez.CoordinatorAPI.getAccount(`hez:${tokenERC20.symbol}:256`)
   expect(`hez:${tokenERC20.symbol}:256`).toBe(tx1_1.accounts[0].accountIndex)
 
   const tx2_1 = await hermez.CoordinatorAPI.getAccount(`hez:${tokenERC20.symbol}:257`)
-  // expect(`hez:${tokenERC20.symbol}:257`).toBe(tx1_1.accounts[0].accountIndex)
-*/
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(tx1_1.accounts[0].accountIndex)
+
 
   // src account
   const srcAccount = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
@@ -114,12 +114,12 @@ test('Hermezjs sandbox', async () => {
   /// ///////////////////////////
   // Exit (L2)
   const amountExit = hermez.Utils.getTokenAmountBigInt('10', 2)
-  /*
+  
   // generate L2 transaction
   const l2ExitTx = {
     type: 'Exit',
     from: dstAccount.accountIndex,
-    to: null,
+    to: `hez:${tokenERC20.symbol}:1`,
     amount: hermez.Float16.float2Fix(hermez.Float16.floorFix2Float(amountExit)),
     fee,
     nonce: dstAccount.nonce

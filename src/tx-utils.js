@@ -105,11 +105,15 @@ function getFee (fee, amount, decimals) {
  * @return {string} transactionType
  */
 function getTransactionType (transaction) {
+  /*
   if (transaction.to && transaction.to.includes('hez:')) {
     return 'Transfer'
   } else {
     return 'Exit'
   }
+  */
+  // TODO : This check seems wrong
+  return transaction.type
 }
 
 /**
@@ -230,7 +234,7 @@ async function generateL2Transaction (tx, bjj, token) {
   const encodedTransaction = await encodeTransaction(transaction)
   transaction.id = getTxId(encodedTransaction.fromAccountIndex, encodedTransaction.nonce)
   // TODO: Remove once we have hermez-node
-  transaction.id = '0x00000000000001e240004700'
+  // transaction.id = '0x00000000000001e240004700'
 
   return { transaction, encodedTransaction }
 }
