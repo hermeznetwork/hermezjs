@@ -4,7 +4,7 @@ import circomlib from 'circomlib'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
-import { fix2Float } from './float16.js'
+import { fix2Float, float2Fix, floorFix2Float } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex } from './addresses.js'
 import { getProvider } from './providers.js'
@@ -199,7 +199,7 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @param {object} transaction - ethAddress and babyPubKey together
  * @param {string} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
  * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {string} transaction.amount - The amount being sent as a BigInt string
+ * @param {bigint} transaction.amount - The amount being sent as a BigInt
  * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {number} transaction.nonce - The current nonce of the sender's token account
  * @param {string} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender
@@ -214,7 +214,8 @@ async function generateL2Transaction (tx, bjj, token) {
     toAccountIndex: tx.to || null,
     toHezEthereumAddress: null,
     toBjj: null,
-    amount: tx.amount.toString(),
+    // Corrects precision errors using the same system used in the Coordinator
+    amount: float2Fix(floorFix2Float(tx.amount)).toString(),
     fee: getFee(tx.fee, tx.amount, token.decimals),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,
