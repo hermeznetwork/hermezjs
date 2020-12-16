@@ -18,7 +18,10 @@ async function main() {
   // In this example we create a standard wallet. It is also possible to link the hermez wallet to a existing
   // Metamask wallet
   const { hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet
-    .createWalletFromEtherAccount({ type: hermez.Signers.SignerType.JSON_RPC, addressOrIndex: 0 })
+    .createWalletFromEtherAccount({
+      type: hermez.Signers.SignerType.JSON_RPC,
+      addressOrIndex: 0
+    })
 
   // We can also create a Hermez Wallet from a hardware wallet (Ledger or Trezor) providing different data
   // to create a Signer
@@ -103,7 +106,12 @@ async function main() {
   //    - getFees -> it should provide information on the fees
 
   // Create 2nd wallet
-  const {hermezWallet2, hermezEthereumAddress2 } = await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
+  const {hermezWallet2, hermezEthereumAddress2 } =
+    await hermez.BabyJubWallet.createWalletFromEtherAccount({
+      type: hermez.Signers.SignerType.JSON_RPC,
+      addressOrIndex: 1
+    })
+
   // src account
   let account = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0]
   // dst account

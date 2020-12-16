@@ -4,24 +4,39 @@ import circomlib from 'circomlib'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
-import { fix2Float } from './float16.js'
+import { fix2Float, float2Fix, floorFix2Float } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex } from './addresses.js'
 import { getProvider } from './providers.js'
 
+export const TxType = {
+  Deposit: 'Deposit',
+  CreateAccountDeposit: 'CreateAccountDeposit',
+  Transfer: 'Transfer',
+  Withdraw: 'Withdrawn',
+  Exit: 'Exit'
+}
+
+export const TxState = {
+  Forged: 'fged',
+  Forging: 'fing',
+  Pending: 'pend',
+  Invalid: 'invl'
+}
+
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
  * Used, for example, to sign the transaction
- *
- * @param {Object} transaction - Transaction object returned by generateL2Transaction
- *
- * @returns {Object} encodedTransaction
+ * @param {object} transaction - Transaction object returned by generateL2Transaction
+ * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @returns {object} encodedTransaction
+ * @private
  */
-async function encodeTransaction (transaction) {
+async function encodeTransaction (transaction, providerUrl) {
   const encodedTransaction = Object.assign({}, transaction)
 
-  const provider = getProvider()
-  encodedTransaction.chainId = await provider.getNetwork().chainId
+  const provider = getProvider(providerUrl)
+  encodedTransaction.chainId = (await provider.getNetwork()).chainId
 
   encodedTransaction.fromAccountIndex = getAccountIndex(transaction.fromAccountIndex)
   if (transaction.toAccountIndex) {
@@ -34,15 +49,14 @@ async function encodeTransaction (transaction) {
 }
 
 /**
+ * Generates the correct Transaction Id based on the spec
  * TxID (12 bytes) for L2Tx is:
  * bytes:  |  1   |    6    |   5   |
  * values: | type | FromIdx | Nonce |
  * where type for L2Tx is '2'
- *
- * @param {Number} fromIdx
- * @param {Number} nonce
- *
- * @returns {String}
+ * @param {number} fromIdx - The account index that sends the transaction
+ * @param {number} nonce - Nonce of the transaction
+ * @returns {string} Transaction Id
  */
 function getTxId (fromIdx, nonce) {
   const fromIdxBytes = new ArrayBuffer(8)
@@ -60,11 +74,9 @@ function getTxId (fromIdx, nonce) {
 
 /**
  * Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
- *
- * @param {Number} fee - The fee in token value
- * @param {String} amount - The amount as a BigInt string
- *
- * @return {Number} feeFactor
+ * @param {number} fee - The fee in token value
+ * @param {string} amount - The amount as a BigInt string
+ * @return {number} feeFactor
  */
 function getFee (fee, amount, decimals) {
   const amountFloat = Number(amount) / Math.pow(10, decimals)
@@ -89,10 +101,8 @@ function getFee (fee, amount, decimals) {
  * If an account index is used, it will be 'Transfer'
  * If a Hermez address is used, it will be 'TransferToEthAddr'
  * If a BabyJubJub is used, it will be 'TransferToBjj'
- *
- * @param {Object} transaction - Transaction object sent to generateL2Transaction
- *
- * @return {String} transactionType
+ * @param {object} transaction - Transaction object sent to generateL2Transaction
+ * @return {string} transactionType
  */
 function getTransactionType (transaction) {
   if (transaction.to && transaction.to.includes('hez:')) {
@@ -106,12 +116,10 @@ function getTransactionType (transaction) {
  * Calculates the appropriate nonce based on the current token account nonce and existing transactions in the Pool.
  * It needs to find the lowest nonce available as transactions in the pool may fail and the Coordinator only forges
  * transactions in the order set by nonces.
- *
- * @param {Number} currentNonce - The current token account nonce
- * @param {String} bjj - The account's BabyJubJub
- * @param {Number} tokenId - The token id of the token in the transaction
- *
- * @return {Number} nonce
+ * @param {number} currentNonce - The current token account nonce returned by the Coordinator
+ * @param {string} bjj - The account's BabyJubJub
+ * @param {number} tokenId - The token id of the token in the transaction
+ * @return {number} nonce
  */
 async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
   const poolTxs = await getPoolTransactions(accountIndex, bjj)
@@ -130,8 +138,9 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
 
 /**
  * Encode tx compressed data
- * @param {Object} tx - Transaction object
+ * @param {object} tx - Transaction object returned by `encodeTransaction`
  * @returns {Scalar} Encoded tx compressed data
+ * @private
  */
 function buildTxCompressedData (tx) {
   const signatureConstant = Scalar.fromString('3322668559')
@@ -151,18 +160,31 @@ function buildTxCompressedData (tx) {
 }
 
 /**
- * Builds the message to hash
- *
- * @param {Object} encodedTransaction - Transaction object
- *
- * @returns {Scalar} message to sign
+ * Build element_1 for L2HashSignature
+ * @param {object} tx - Transaction object returned by `encodeTransaction`
+ * @returns {Scalar} element_1 L2 signature
+ */
+function buildElement1 (tx) {
+  let res = Scalar.e(0)
+
+  res = Scalar.add(res, Scalar.fromString(tx.toEthAddr || '0', 16)) // ethAddr --> 160 bits
+  res = Scalar.add(res, Scalar.shl(tx.maxNumBatch || 0, 160)) // maxNumBatch --> 32 bits
+
+  return res
+}
+
+/**
+ * Builds the message to hash. Used when signing transactions
+ * @param {object} encodedTransaction - Transaction object return from `encodeTransaction`
+ * @returns {Scalar} Message to sign
  */
 function buildTransactionHashMessage (encodedTransaction) {
   const txCompressedData = buildTxCompressedData(encodedTransaction)
+  const element1 = buildElement1(encodedTransaction)
 
   const h = circomlib.poseidon([
     txCompressedData,
-    Scalar.fromString(encodedTransaction.toEthAddr || '0', 16),
+    element1,
     Scalar.fromString(encodedTransaction.toBjjAy || '0', 16),
     Scalar.e(encodedTransaction.rqTxCompressedDataV2 || 0),
     Scalar.fromString(encodedTransaction.rqToEthAddr || '0', 16),
@@ -174,17 +196,15 @@ function buildTransactionHashMessage (encodedTransaction) {
 
 /**
  * Prepares a transaction to be ready to be sent to a Coordinator.
- *
- * @param {Object} transaction - ethAddress and babyPubKey together
- * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
- * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {String} transaction.amount - The amount being sent as a BigInt string
- * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
- * @param {Number} transaction.nonce - The current nonce of the sender's token account
- * @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender
- * @param {Object} token - The token information object as returned from the Coordinator.
- *
- * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
+ * @param {object} transaction - ethAddress and babyPubKey together
+ * @param {string} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+ * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {bigint} transaction.amount - The amount being sent as a BigInt
+ * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+ * @param {number} transaction.nonce - The current nonce of the sender's token account
+ * @param {string} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender
+ * @param {object} token - The token information object as returned from the Coordinator.
+ * @return {object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateL2Transaction (tx, bjj, token) {
   const transaction = {
@@ -194,13 +214,14 @@ async function generateL2Transaction (tx, bjj, token) {
     toAccountIndex: tx.to || null,
     toHezEthereumAddress: null,
     toBjj: null,
-    amount: tx.amount.toString(),
+    // Corrects precision errors using the same system used in the Coordinator
+    amount: float2Fix(floorFix2Float(tx.amount)).toString(),
     fee: getFee(tx.fee, tx.amount, token.decimals),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,
     requestToAccountIndex: null,
     requestToHezEthereumAddress: null,
-    requestToBJJ: null,
+    requestToBjj: null,
     requestTokenId: null,
     requestAmount: null,
     requestFee: null,
@@ -209,17 +230,27 @@ async function generateL2Transaction (tx, bjj, token) {
 
   const encodedTransaction = await encodeTransaction(transaction)
   transaction.id = getTxId(encodedTransaction.fromAccountIndex, encodedTransaction.nonce)
-  // TODO: Remove once we have hermez-node
-  transaction.id = '0x00000000000001e240004700'
 
   return { transaction, encodedTransaction }
 }
 
+/**
+ * Gets the beautified name of a transaction state
+ * @param {string} transactionState - The original transaction state from the API
+ * @return {string} - The beautified transaction state
+*/
+function beautifyTransactionState (transactionState) {
+  return Object.keys(TxState).find(key => TxState[key] === transactionState)
+}
+
 export {
+  encodeTransaction as _encodeTransaction,
   getTxId,
   getFee,
   getNonce,
   getTransactionType,
+  buildTxCompressedData as _buildTxCompressedData,
   buildTransactionHashMessage,
-  generateL2Transaction
+  generateL2Transaction,
+  beautifyTransactionState
 }

@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
@@ -31,12 +31,11 @@
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
     "@hermeznetwork/commonjs": "0.0.2",
-    "@nomiclabs/buidler": "^1.4.7",
-    "@openzeppelin/test-helpers": "^0.5.7",
+    "@openzeppelin/test-helpers": "^0.5.9",
     "babel-loader": "^8.1.0",
-    "dotenv": "^8.2.0",
     "eslint": "^7.11.0",
     "husky": "^4.3.0",
+    "jest": "^26.6.3",
     "lint-staged": "^10.4.2",
     "standard": "^15.0.0"
   },
@@ -75,5 +74,24 @@
   },
   "lint-staged": {
     "*.{js,mjs}": "standard --fix"
+  },
+  "jest": {
+    "testTimeout": 50000,
+    "verbose": true,
+    "moduleFileExtensions": [
+      "mjs",
+      "js",
+      "json",
+      "jsx",
+      "ts",
+      "tsx",
+      "node"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.[jt]s?(x)",
+      "**/?(*.)+(spec|test).[jt]s?(x)",
+      "**/tests/**/*.mjs",
+      "**/?(*.)(spec|test).mjs"
+    ]
   }
 }
