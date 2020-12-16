@@ -74,13 +74,14 @@ function verifyBabyJub (publicKeyHex, messStr, signatureHex) {
 }
 
 /**
- *
- * @param {*} AccountIndex
+ * Creates a Hermez Wallet from an Ether account
+ * @param {Object} signerData - Signer data used to build a Signer to create the walet
  */
-async function createWalletFromEtherAccount (index) {
+
+async function createWalletFromEtherAccount (signerData) {
   const provider = getProvider()
-  const signer = provider.getSigner(index)
-  const ethereumAddress = await signer.getAddress(index)
+  const signer = provider.getSigner(provider, signerData)
+  const ethereumAddress = await signer.getAddress(signerData.indexOrAccount)
   const hermezEthereumAddress = getHermezAddress(ethereumAddress)
   const signature = await signer.signMessage(METAMASK_MESSAGE)
   const hashedSignature = jsSha3.keccak256(signature)

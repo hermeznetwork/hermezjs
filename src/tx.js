@@ -1,6 +1,5 @@
 import { Scalar } from 'ffjavascript'
 
-
 import { postPoolTransaction, getAccounts } from './api.js'
 import { fix2Float } from './float16.js'
 import { addPoolTransaction } from './tx-pool.js'
@@ -49,13 +48,22 @@ async function getGasPrice (multiplier) {
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  *
  * @returns {Promise} transaction
  */
-const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
+const deposit = async (
+  amount,
+  hezEthereumAddress,
+  token,
+  babyJubJub,
+  signerData,
+  gasLimit = GAS_LIMIT,
+  gasMultiplier = GAS_MULTIPLIER
+) => {
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, signerData)
 
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   let account = (await getAccounts(ethereumAddress, [token.id])).accounts[0]
@@ -95,11 +103,19 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, gasLimit =
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  */
-const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
+const forceExit = async (
+  amount,
+  accountIndex,
+  token,
+  signerData,
+  gasLimit = GAS_LIMIT,
+  gasMultiplier = GAS_MULTIPLIER
+) => {
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, signerData)
 
   const overrides = {
     gasLimit,
@@ -129,12 +145,24 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
  * @param {BigInt} merkleRoot - The merkle root of the exit being withdrawn.
  * @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  */
-const withdraw = async (amount, accountIndex, token, babyJubJub, merkleRoot, merkleSiblings, isInstant = true, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
+const withdraw = async (
+  amount,
+  accountIndex,
+  token,
+  babyJubJub,
+  merkleRoot,
+  merkleSiblings,
+  signerData,
+  isInstant = true,
+  gasLimit = GAS_LIMIT,
+  gasMultiplier = GAS_MULTIPLIER
+) => {
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, signerData)
 
   const overrides = {
     gasLimit,
@@ -160,11 +188,18 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, merkleRoot, mer
  *
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  */
-const delayWithdraw = async (hezEthereumAddress, token, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI)
+const delayWithdraw = async (
+  hezEthereumAddress,
+  token,
+  signerData,
+  gasLimit = GAS_LIMIT,
+  gasMultiplier = GAS_MULTIPLIER
+) => {
+  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, signerData)
 
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
 
