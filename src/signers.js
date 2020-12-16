@@ -18,14 +18,17 @@ const SignerType = {
 const getSigner = (provider, signerData) => {
   console.log(signerData)
   switch (signerData.type) {
-    case SignerType.JSON_RPC: {
-      return provider.getSigner(signerData.addressOrIndex)
-    }
     case SignerType.LEDGER: {
       return LedgerSigner.connect(provider, { path: signerData.path })
     }
     case SignerType.TREZOR: {
       return TrezorSigner.connect(provider, { path: signerData.path })
+    }
+    case SignerType.JSON_RPC: {
+      return provider.getSigner(signerData.addressOrIndex)
+    }
+    default: {
+      return provider.getSigner()
     }
   }
 }

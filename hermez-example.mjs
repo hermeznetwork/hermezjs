@@ -55,14 +55,14 @@ async function main() {
   //  - ethereum account is preloaded with 1e6 ERC20Tokens
 
   // TODO : I don't understand this function
-  let amount = hermez.Utils.getTokenAmountBigInt('100',2)
+  let amount = hermez.Utils.getTokenAmountBigInt('100', 2)
 
   // retrieve token info from Hermez network
   const token = await hermez.CoordinatorAPI.getTokens()
 
   // ERC20 Token
   //  tmp function to update returned values from getToken to real ones.
-  const tokenERC20 = tmpUpdateToken(token,1)
+  const tokenERC20 = tmpUpdateToken(token, 1)
 
   // make deposit of ERC20 Tokens
   await hermez.Tx.deposit(
@@ -106,7 +106,7 @@ async function main() {
   //    - getFees -> it should provide information on the fees
 
   // Create 2nd wallet
-  const {hermezWallet2, hermezEthereumAddress2 } =
+  const { hermezWallet2, hermezEthereumAddress2 } =
     await hermez.BabyJubWallet.createWalletFromEtherAccount({
       type: hermez.Signers.SignerType.JSON_RPC,
       addressOrIndex: 1
@@ -118,14 +118,13 @@ async function main() {
   let to = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
   // fee computation
   const state = await hermez.CoordinatorAPI.getState()
-  console.log(state.recommendedFee)
   let usdTokenExchangeRate = tokenERC20.USD
   let fee = state.recommendedFee.existingAccount / usdTokenExchangeRate
   // amount to transfer
   amount = hermez.Utils.getTokenAmountBigInt('10',2)
 
   // generate L2 transaction
-  var {transaction, encodedTransaction} = await hermez.TxUtils.generateL2Transaction(
+  var { transaction, encodedTransaction} = await hermez.TxUtils.generateL2Transaction(
     {
       from: account.accountIndex,
       to: to.accountIndex,
@@ -154,7 +153,7 @@ async function main() {
   amount = hermez.Utils.getTokenAmountBigInt('10',2)
 
   // generate L2 transaction
-  var {transaction, encodedTransaction} = await hermez.TxUtils.generateL2Transaction(
+  var { transaction, encodedTransaction} = await hermez.TxUtils.generateL2Transaction(
     {
       type: 'Exit',
       from: account.accountIndex,
@@ -163,49 +162,49 @@ async function main() {
       fee,
       nonce: account.nonce
     },
-    hermezWallet.publicKeyCompressedHex, account.token)
+    hermezWallet.publicKeyCompressedHex,
+    account.token
+  )
 
-    // sign encoded transaction
-    hermezWallet.signTransaction(transaction, encodedTransaction)
-    // send transaction to coordinator
-    result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
-    console.log('EXIT',result)
+  // sign encoded transaction
+  hermezWallet.signTransaction(transaction, encodedTransaction)
+  // send transaction to coordinator
+  result = await hermez.Tx.send(transaction, hermezWallet.publicKeyCompressedHex)
+  console.log('EXIT',result)
 
-    // Check transaction in coordinator's transaction pool
-    const txExitPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
-    console.log(txExitPool)
+  // Check transaction in coordinator's transaction pool
+  const txExitPool = await hermez.CoordinatorAPI.getPoolTransaction(result.id)
+  console.log(txExitPool)
 
-    const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
-    console.log(txExitConf)
-    
-    // Force Exit (L1)
-    const from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
-    const forceExitTx = await hermez.Tx.forceExit(
-      amount,
-      'hez:TKN:256',
-      tokenERC20,
-      { type: hermez.Signers.SignerType.JSON_RPC }
-    )
-    //const forceExitTx = await hermez.Tx.forceExit(amount, from.accountIndex, tokenERC20)
-    console.log(forceExitTx)
+  const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
+  console.log(txExitConf)
+  
+  // Force Exit (L1)
+  const from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
+  const forceExitTx = await hermez.Tx.forceExit(
+    amount,
+    'hez:TKN:256',
+    tokenERC20,
+    { type: hermez.Signers.SignerType.JSON_RPC }
+  )
+  //const forceExitTx = await hermez.Tx.forceExit(amount, from.accountIndex, tokenERC20)
+  console.log(forceExitTx)
 
-    // Forge batch
+  // Forge batch
 
-    // Withdraw
-    const exitInfo = await hermez.CoordinatorAPI.getExit(txExitConf.batchNum, txExitConf.fromAccountIndex)
-    const withdrawInfo = await hermez.Tx.withdraw(
-      amount,
-      'hez:TKN:256',
-      tokenERC20,
-      hermezWallet.publicKeyCompressedHex,
-      ethers.BigNumber.from('4'),
-      [],
-      { type: hermez.Signers.SignerType.JSON_RPC }
-    )
-    // const withdrawInfo = await hermez.Tx.withdraw(amount, from.accountIndex, tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
-    console.log(withdrawInfo)
-
-
+  // Withdraw
+  const exitInfo = await hermez.CoordinatorAPI.getExit(txExitConf.batchNum, txExitConf.fromAccountIndex)
+  const withdrawInfo = await hermez.Tx.withdraw(
+    amount,
+    'hez:TKN:256',
+    tokenERC20,
+    hermezWallet.publicKeyCompressedHex,
+    ethers.BigNumber.from('4'),
+    [],
+    { type: hermez.Signers.SignerType.JSON_RPC }
+  )
+  // const withdrawInfo = await hermez.Tx.withdraw(amount, from.accountIndex, tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
+  console.log(withdrawInfo)
 }
 
 function tmpUpdateToken(token, id) {
