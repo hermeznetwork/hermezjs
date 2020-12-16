@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest -- providers.test.mjs",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest -- ",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },

@@ -39,15 +39,13 @@ async function getGasPrice (multiplier) {
  * @returns {promise} transaction parameters
  */
 const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUrl, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl)
-
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, ethereumAddress)
   let account = await getAccounts(ethereumAddress, [token.id])
-  console.log('Account', account, ethereumAddress)
+
   if (typeof account !== 'undefined') {
     account = account.accounts[0]
   }
-  console.log('Account', account, ethereumAddress)
 
   const overrides = {
     gasLimit,
@@ -62,7 +60,6 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUr
     0,
     '0x'
   ]
-  console.log('TxParamst', transactionParameters)
 
   if (token.id === 0) {
     overrides.value = amount

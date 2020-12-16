@@ -45,7 +45,12 @@ async function getAccounts (address, tokenIds, fromItem) {
  * @returns {object} Response data with the token account
  */
 async function getAccount (accountIndex) {
-  return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`))
+  try {
+    const retVal = await axios.get(`${baseApiUrl}/accounts/${accountIndex}`)
+    return retVal
+  } catch (error) {
+    return undefined
+  }
 }
 
 /**

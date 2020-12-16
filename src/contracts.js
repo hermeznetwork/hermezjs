@@ -9,15 +9,16 @@ const contractsCache = new Map()
  * @param {string} contractAddress - The smart contract address
  * @param {array} abi - The smart contract ABI
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {string} ethereumAddress - Optional
  * @return {Contract} The request contract
  */
-function getContract (contractAddress, abi, providerUrl) {
+function getContract (contractAddress, abi, providerUrl, ethereumAddress) {
   if (contractsCache.has(contractAddress)) {
     return contractsCache.get(contractAddress)
   }
 
   const provider = getProvider(providerUrl)
-  const signer = provider.getSigner()
+  const signer = provider.getSigner(ethereumAddress)
   const contract = new ethers.Contract(contractAddress, abi, signer)
 
   contractsCache.set(contractAddress, contract)

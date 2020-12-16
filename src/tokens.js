@@ -13,7 +13,7 @@ import { getContract } from './contracts.js'
  * @returns {Promise} transaction
  */
 async function approve (amount, accountAddress, contractAddress, providerUrl) {
-  const erc20Contract = getContract(contractAddress, ERC20ABI, providerUrl)
+  const erc20Contract = getContract(contractAddress, ERC20ABI, providerUrl, accountAddress)
   const allowance = await erc20Contract.allowance(accountAddress, contractAddresses.Hermez)
   if (allowance.lt(amount)) {
     return erc20Contract.approve(contractAddresses.Hermez, amount)
