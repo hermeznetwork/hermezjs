@@ -1,4 +1,4 @@
-import * as BabyJubWallet from './babyjub-wallet.js'
+import * as HermezWallet from './hermez-wallet.js'
 import * as Utils from './utils.js'
 import * as Tx from './tx.js'
 import * as TxUtils from './tx-utils.js'
@@ -10,7 +10,7 @@ import * as Addresses from './addresses.js'
 import * as Providers from './providers.js'
 
 export {
-  BabyJubWallet,
+  HermezWallet,
   Utils,
   Tx,
   TxUtils,
@@ -23,7 +23,7 @@ export {
 }
 
 export default {
-  BabyJubWallet,
+  HermezWallet,
   Utils,
   Tx,
   TxUtils,

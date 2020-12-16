@@ -38,16 +38,12 @@ function getPoolTransactions (accountIndex, bJJ) {
     .filter(transaction => transaction.fromAccountIndex === accountIndex)
     .map(({ id: transactionId }) => {
       return getPoolTransaction(transactionId)
-        .then((transaction) => {
-          return transaction
-        })
         .catch(err => {
           if (err.response.status === HttpStatusCode.NOT_FOUND) {
             removePoolTransaction(bJJ, transactionId)
           }
         })
-    }
-    )
+    })
 
   return Promise.all(accountTransactionsPromises)
     .then((transactions) => {
@@ -102,3 +98,5 @@ export {
   addPoolTransaction,
   removePoolTransaction
 }
+
+export const _storage = storage

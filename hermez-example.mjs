@@ -17,7 +17,7 @@ async function main() {
   //  Hermez ethereum address is created by appending 'hez:' to the ethereum address.
   // In this example we create a standard wallet. It is also possible to link the hermez wallet to a existing
   // Metamask wallet
-  const {hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet.createWalletFromEtherAccount(0)
+  const { hermezWallet, hermezEthereumAddress } = await hermez.HermezWallet.createWalletFromEtherAccount(0)
 
   // Deposit
   // First transaction is a deposit from the ethereum address into hermez network. Since a hermez
@@ -90,7 +90,7 @@ async function main() {
 
   // Create 2nd wallet
   const {hermezWallet2, hermezEthereumAddress2 } =
-                      await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
+                      await hermez.HermezWallet.createWalletFromEtherAccount(1)
   // src account
   let account = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0]
   // dst account

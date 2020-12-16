@@ -4,25 +4,23 @@ let provider
 
 /**
  * Set a Provider URL
- *
- * @param {String} url - Network url (i.e, http://localhost:8545)
+ * @param {string} url - Network url (i.e, http://localhost:8545)
  */
 function setProvider (url) {
   if (url || typeof window === 'undefined') {
-    provider = new ethers.getDefaultProvider(url)
+    provider = ethers.getDefaultProvider(url)
   } else {
-    provider = new ethers.providers.Web3Provider(ethereum)
+    provider = new ethers.providers.Web3Provider(window.ethereum)
   }
 }
 
 /**
  * Retrieve provider
- *
- * @returns {Object} provider
+ * @returns {object} provider
  */
-function getProvider () {
+function getProvider (url) {
   if (!provider) {
-    setProvider()
+    setProvider(url)
   }
   return provider
 }

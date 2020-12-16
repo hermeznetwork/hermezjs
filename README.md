@@ -2,22 +2,23 @@
 HermezJS is an open source SDK to interact with the Hermez Rollup network.
 
 To deploy the contracts on localhost, do:
-1. Clone contracts repo and set feature/fe-tools branch
+1. Clone contracts repo and set feature/newDeploymentScript branch
 
 ```
 git clone https://github.com/hermeznetwork/contracts.git
 cd contracts
-git checkout feature/fe-tools
-
+git checkout feature/newDeploymentScript
+npm install
 ```
-2. Launch node
+2. Launch local blockchain
 
 ```
 npx buidler node
+(Open another command line)
 cd <CONTRACTS_REPO>/scripts/fe-deploymentTest
 node deployTest.js
 ```
-
+e
 3. Copy contracts/scripts/fe-deploymentTest/.env.example to contracts/scripts/fe-deploymentTest/.env ensuring addresses provided during deployment are correct
 
 4. Ensure `HERMEZ_ADDRESS` and `ERC20_ADDRESS` in src/constants.js are set to addresses provided during deployment step
@@ -53,7 +54,7 @@ Some of the operations in Hermez network, such as sending L1 transactions, requi
 We can create a new Hermez wallet by providing the Ethereum account index associated with the provider initialized. This wallet will store the Ethereum and BabyJubJub keys for the Hermez account. The Ethereum address is used to authorize L1 transactions, and the BabyJubJub key is used to authorize L2 transactions.
 
 ```js
-  const {hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet.createWalletFromEtherAccount(0)
+  const {hermezWallet, hermezEthereumAddress } = await hermez.HermezWallet.createWalletFromEtherAccount(0)
 ```
 
 ## Check token exists in Hermez Network
@@ -135,7 +136,7 @@ First we create a second wallet following the procedure we saw earlier:
 
 ```js
    const {hermezWallet2, hermezEthereumAddress2 } =
-                      await hermez.BabyJubWallet.createWalletFromEtherAccount(1)
+                      await hermez.HermezWallet.createWalletFromEtherAccount(1)
 ```
 
 Next, we compute the fees for the transaction. For this we consult the recommended fees from the coordinator state.
@@ -344,10 +345,10 @@ Once the transaction has been forged and comes up in the History, we can get its
 const exitInfo = await hermez.CoordinatorAPI.getExit(txConf.batchNum, txConf.fromAccountIndex)
 ```
 
-And with the Exit information, we can now make a withdraw.
+And with the Exit information, we can now make a withdrawal.
 
 ```js
 const result = await hermez.Tx.withdraw(newAmount, from.accountIndex, from.token, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
 ```
 
-The funds should now appear in the Ethereum account that made the withdraw.
+The funds should now appear in the Ethereum account that made the withdrawal.
