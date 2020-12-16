@@ -1,6 +1,10 @@
 import { Scalar } from 'ffjavascript'
 
-import { postPoolTransaction, getAccounts } from './api.js'
+import {
+  postPoolTransaction,
+  getAccounts,
+  getAccount
+} from './api.js'
 import { fix2Float } from './float16.js'
 import { addPoolTransaction } from './tx-pool.js'
 import { contractAddresses, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
@@ -84,7 +88,10 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUr
  * @returns {promise} transaction parameters
  */
 const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
+  // TODO. Check call below as it can be invalid if accountIndex doesn't exist
+  const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
+  const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, null, ethereumAddress)
 
   const overrides = {
     gasLimit,
@@ -101,7 +108,8 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
     '0x'
   ]
 
-  return hermezContract.addL1Transaction(...transactionParameters, overrides)
+  // return hermezContract.addL1Transaction(...transactionParameters, overrides)
+  return hermezContract.addL1Transaction(...transactionParameters)
     .then(() => transactionParameters)
 }
 
@@ -119,7 +127,10 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
  * @returns {promise} transaction parameters
  */
 const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, merkleSiblings, isInstant = true, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI)
+  // TODO. Check call below as it can be invalid if accountIndex doesn't exist
+  const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
+  const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, null, ethereumAddress)
 
   const overrides = {
     gasLimit,
@@ -135,7 +146,9 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
     getAccountIndex(accountIndex),
     isInstant
   ]
-
+  console.log('WD PArams', transactionParameters, overrides)
+  const root = await hermezContract.exitRootsMap(batchNumber)
+  console.log('Exit Root', root.toString())
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
     .then(() => transactionParameters)
 }

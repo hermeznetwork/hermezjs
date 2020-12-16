@@ -47,7 +47,7 @@ async function getAccounts (address, tokenIds, fromItem) {
 async function getAccount (accountIndex) {
   try {
     const retVal = await axios.get(`${baseApiUrl}/accounts/${accountIndex}`)
-    return retVal
+    return retVal.data
   } catch (error) {
     return undefined
   }
