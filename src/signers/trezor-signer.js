@@ -13,7 +13,9 @@ export class TrezorSigner extends ethers.Signer {
   constructor (provider, options) {
     super()
     this.provider = provider
-    this.path = options?.path || ethers.utils.defaultPath
+    this.path = (options && options.path)
+      ? options.path
+      : ethers.utils.defaultPath
   }
 
   /**

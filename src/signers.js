@@ -1,5 +1,5 @@
-import { LedgerSigner } from './signers/ledger-signer'
-import { TrezorSigner } from './signers/trezor-signer'
+import { LedgerSigner } from './signers/ledger-signer.js'
+import { TrezorSigner } from './signers/trezor-signer.js'
 
 /**
  * Represents the different types of signers that can be built.
@@ -16,6 +16,7 @@ const SignerType = {
  * @param {Object} signerData - Data required to build a signer
  */
 const getSigner = (provider, signerData) => {
+  console.log(signerData)
   switch (signerData.type) {
     case SignerType.JSON_RPC: {
       return provider.getSigner(signerData.addressOrIndex)

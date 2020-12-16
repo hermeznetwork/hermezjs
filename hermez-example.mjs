@@ -1,7 +1,6 @@
 import ethers from 'ethers'
 
 import hermez from './src/index.js'
-import { SignerType } from './src/signers.js'
 
 async function main() {
   // Init network provider.
@@ -19,14 +18,14 @@ async function main() {
   // In this example we create a standard wallet. It is also possible to link the hermez wallet to a existing
   // Metamask wallet
   const { hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet
-    .createWalletFromEtherAccount({ type: SignerType.JSON_RPC, indexOrAccount: 0 })
+    .createWalletFromEtherAccount({ type: hermez.Signers.SignerType.JSON_RPC, addressOrIndex: 0 })
 
   // We can also create a Hermez Wallet from a hardware wallet (Ledger or Trezor) providing different data
   // to create a Signer
   // const { hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet
-  //   .createWalletFromEtherAccount({ type: SignerType.LEDGER, path: "m/44'/60'/0'/0/0" })
+  //   .createWalletFromEtherAccount({ type: hermez.Signers.SignerType.LEDGER, path: "m/44'/60'/0'/0/0" })
   // const { hermezWallet, hermezEthereumAddress } = await hermez.BabyJubWallet
-  //   .createWalletFromEtherAccount({ type: SignerType.TREZOR, path: "m/44'/60'/0'/0/0" })
+  //   .createWalletFromEtherAccount({ type: hermez.Signers.SignerType.TREZOR, path: "m/44'/60'/0'/0/0" })
 
   // Deposit
   // First transaction is a deposit from the ethereum address into hermez network. Since a hermez
@@ -68,7 +67,7 @@ async function main() {
     hermezEthereumAddress,
     tokenERC20,
     hermezWallet.publicKeyCompressedHex,
-    { type: SignerType.JSON_RPC }
+    { type: hermez.Signers.SignerType.JSON_RPC }
   )
 
   // Forge Batch
@@ -173,7 +172,12 @@ async function main() {
     
     // Force Exit (L1)
     const from = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])).accounts[0]
-    const forceExitTx = await hermez.Tx.forceExit(amount, 'hez:TKN:256', tokenERC20, { type: SignerType.JSON_RPC })
+    const forceExitTx = await hermez.Tx.forceExit(
+      amount,
+      'hez:TKN:256',
+      tokenERC20,
+      { type: hermez.Signers.SignerType.JSON_RPC }
+    )
     //const forceExitTx = await hermez.Tx.forceExit(amount, from.accountIndex, tokenERC20)
     console.log(forceExitTx)
 
@@ -188,7 +192,7 @@ async function main() {
       hermezWallet.publicKeyCompressedHex,
       ethers.BigNumber.from('4'),
       [],
-      { type: SignerType.JSON_RPC }
+      { type: hermez.Signers.SignerType.JSON_RPC }
     )
     // const withdrawInfo = await hermez.Tx.withdraw(amount, from.accountIndex, tokenERC20, hermezWallet.publicKeyCompressedHex, exitInfo.merkleProof.Root, exitInfo.merkleProof.Siblings)
     console.log(withdrawInfo)

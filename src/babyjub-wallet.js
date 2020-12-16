@@ -7,6 +7,7 @@ import { hashBuffer, hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
 import { getHermezAddress } from './addresses.js'
 import { METAMASK_MESSAGE } from './constants.js'
+import { getSigner } from './signers.js'
 
 /**
  * @class
@@ -80,8 +81,8 @@ function verifyBabyJub (publicKeyHex, messStr, signatureHex) {
 
 async function createWalletFromEtherAccount (signerData) {
   const provider = getProvider()
-  const signer = provider.getSigner(provider, signerData)
-  const ethereumAddress = await signer.getAddress(signerData.indexOrAccount)
+  const signer = getSigner(provider, signerData)
+  const ethereumAddress = await signer.getAddress(signerData.addressOrIndex)
   const hermezEthereumAddress = getHermezAddress(ethereumAddress)
   const signature = await signer.signMessage(METAMASK_MESSAGE)
   const hashedSignature = jsSha3.keccak256(signature)

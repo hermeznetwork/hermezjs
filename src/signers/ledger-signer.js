@@ -16,7 +16,9 @@ export class LedgerSigner extends ethers.Signer {
     super()
     this.eth = new Eth(transport)
     this.provider = provider
-    this.path = options?.path || ethers.utils.defaultPath
+    this.path = (options && options.path)
+      ? options.path
+      : ethers.utils.defaultPath
   }
 
   /**
