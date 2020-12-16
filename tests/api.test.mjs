@@ -6,13 +6,13 @@ test('#_getPageData', () => {
 })
 
 describe('#getAccounts', () => {
-  const hermezEthereumAddress = 'hez:0x00000000000000000000000000000000004Ab84F'
-  const hermezBjjAddress = 'hez:m9UXbJElX5OzHMM0IxgD3Qzhx2RJw18o-tiw8s1lnwx4'
-  const tokenIds = [6, 7]
+  const hermezEthereumAddress = 'hez:0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf'
+  const hermezBjjAddress = 'hez:W6x4TZOAZ9mAqdOb3Xm_hKDLspaXfEfMMN4tXOkinS-W'
+  const tokenIds = [0, 1]
 
   test('successful request', async () => {
     const res = await CoordinatorAPI.getAccounts()
-    expect(res.accounts.length).toBe(3)
+    expect(res.accounts.length).toBe(2)
     expect(res.pendingItems).toBeDefined()
   })
 
@@ -33,22 +33,23 @@ describe('#getAccounts', () => {
   })
 })
 
-test('#getAccount', async () => {
+// Skipping for now due to a bug in swagger
+test.skip('#getAccount', async () => {
   const accountIndex = 'hez:SCC:256'
   const res = await CoordinatorAPI.getAccount(accountIndex)
   expect(res.accountIndex).toBe(accountIndex)
 })
 
 describe('#getTransactions', () => {
-  const hermezEthereumAddress = 'hez:0x0000000000000000000000000000000000000114'
-  const hermezBjjAddress = 'hez:p_OohTzjzZnD3Sw93HQlK13DSxfD6lyvbfhh2kBsV6Z4'
-  const tokenIds = [0, 6]
-  const batchNum = 1
-  const accountIndex = 'hez:SCC:276'
+  const hermezEthereumAddress = 'hez:0x2B5AD5c4795c026514f8317c7a215E218DcCD6cF'
+  const hermezBjjAddress = 'hez:Mj_xDCjfN-y3h_4hbhEdtkqnz6LFF1Cf4AV_8IoQswwh'
+  const tokenIds = [0, 1]
+  const batchNum = 9
+  const accountIndex = 'hez:ETH:262'
 
   test('successful request', async () => {
     const res = await CoordinatorAPI.getTransactions()
-    expect(res.transactions.length).toBe(2)
+    expect(res.transactions.length).toBe(5)
     expect(res.pendingItems).toBeDefined()
   })
 
@@ -64,8 +65,8 @@ describe('#getTransactions', () => {
 
   test('should filter by token IDs', async () => {
     const res = await CoordinatorAPI.getTransactions(tokenIds)
-    expect(res.transactions[0].token.id).toBe(tokenIds[1])
-    expect(res.transactions[1].token.id).toBe(tokenIds[0])
+    expect(res.transactions[0].token.id).toBe(tokenIds[0])
+    expect(res.transactions[1].token.id).toBe(tokenIds[1])
   })
 
   test('should filter by batch number', async () => {
