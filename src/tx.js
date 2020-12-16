@@ -41,7 +41,7 @@ async function getGasPrice (multiplier) {
 const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUrl, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, ethereumAddress)
-  let account = await getAccounts(ethereumAddress, [token.id])
+  let account = await getAccounts(hezEthereumAddress, [token.id])
 
   if (typeof account !== 'undefined') {
     account = account.accounts[0]
