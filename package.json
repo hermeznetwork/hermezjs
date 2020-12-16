@@ -23,7 +23,8 @@
     "ethers": "^5.0.17",
     "ffjavascript": "^0.2.33",
     "js-sha3": "^0.8.0",
-    "node-localstorage": "^2.1.6"
+    "node-localstorage": "^2.1.6",
+    "trezor-connect": "^8.1.19"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
