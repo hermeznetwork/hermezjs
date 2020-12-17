@@ -29,12 +29,28 @@ function initializeTransactionPool () {
 function getPoolTransactions (accountIndex, bJJ) {
   const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
   const accountTransactionPool = transactionPool[bJJ]
+  /*
+  const txPoolLen = accountTransactionPool.length
+  console.log('PPOL LE', accountTransactionPool, txPoolLen)
+  var largestNonce = 0
+*/
 
   if (typeof accountTransactionPool === 'undefined') {
     return Promise.resolve([])
   }
+  /*
+  const poolTxsNonces = accountTransactionPool
+    .filter(tx => tx.fromAccountIndex === accountIndex)
+    .map(tx => tx.nonce)
+    .sort()
+  largestNonce = poolTxsNonces.length == 0 ? 0 : poolTxsNonces[poolTxsNonces.length - 1]
+  console.log('LN', largestNonce, poolTxsNonces, accountIndex)
+*/
 
+  // TODO : Only remove element if 2 or more elements to
+  // guarantee increasing nonce
   const accountTransactionsPromises = accountTransactionPool
+    // .filter(transaction => transaction.fromAccountIndex === accountIndex && transaction.nonce < largestNonce)
     .filter(transaction => transaction.fromAccountIndex === accountIndex)
     .map(({ id: transactionId }) => {
       return getPoolTransaction(transactionId)

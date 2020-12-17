@@ -108,8 +108,7 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
     '0x'
   ]
 
-  // return hermezContract.addL1Transaction(...transactionParameters, overrides)
-  return hermezContract.addL1Transaction(...transactionParameters)
+  return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => transactionParameters)
 }
 
@@ -122,11 +121,12 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
  * @param {BigInt} batchNumber - The batch number where the exit being withdrawn was forged
  * @param {array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
  * @param {boolean} isInstant - Whether it should be an Instant Withdrawal
+ * @param {boolean} filterSiblings - Whether siblings should be filtered
  * @param {number} gasLimit - Optional gas limit
  * @param {number} gasMultiplier - Optional gas multiplier
  * @returns {promise} transaction parameters
  */
-const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, merkleSiblings, isInstant = true, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
+const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, merkleSiblings, isInstant = true, filterSibling = false, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
   // TODO. Check call below as it can be invalid if accountIndex doesn't exist
   const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
   const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
@@ -137,20 +137,43 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
     gasPrice: await getGasPrice(gasMultiplier)
   }
 
+  // TODO - filter Merkle Siblings
+  const filteredSiblings = filterSiblings(merkleSiblings, filterSiblings)
+
   const transactionParameters = [
     token.id,
     amount,
     `0x${babyJubJub}`,
     batchNumber,
-    merkleSiblings,
+    filteredSiblings,
     getAccountIndex(accountIndex),
     isInstant
   ]
-  console.log('WD PArams', transactionParameters, overrides)
-  const root = await hermezContract.exitRootsMap(batchNumber)
-  console.log('Exit Root', root.toString())
+
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
     .then(() => transactionParameters)
+}
+
+/**
+ * Removes 0's from Siblings
+ * @param {array} siblings - Array of sibling strings
+ * @param {boolean} enable -  Whether siblings should be filtered
+ * @returns {array} Array of filtered sibling strings
+ */
+function filterSiblings (siblings, enable) {
+  if (!enable) {
+    return siblings
+  }
+
+  const filteredSiblings = []
+  for (var i = 0; i < siblings.length; i++) {
+    if (siblings[i] !== '0') {
+      filteredSiblings.push(siblings[i])
+    } else {
+      break
+    }
+  }
+  return filteredSiblings
 }
 
 /**
@@ -162,9 +185,8 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
  * @returns {promise} transaction parameters
  */
 const delayedWithdraw = async (hezEthereumAddress, token, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
-  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI)
-
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
+  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, null, ethereumAddress)
 
   const overrides = {
     gasLimit,

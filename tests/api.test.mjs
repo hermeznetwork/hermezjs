@@ -114,8 +114,8 @@ test('#postPoolTransaction', async () => {
 })
 
 describe('getExits', () => {
-  const hermezEthereumAddress = 'hez:0x0000000000000000000000000000000000000114'
-  const hermezBjjAddress = 'hez:p_OohTzjzZnD3Sw93HQlK13DSxfD6lyvbfhh2kBsV6Z4'
+  // const hermezEthereumAddress = 'hez:0x0000000000000000000000000000000000000114'
+  // const hermezBjjAddress = 'hez:p_OohTzjzZnD3Sw93HQlK13DSxfD6lyvbfhh2kBsV6Z4'
 
   test('successful request', async () => {
     const res = await CoordinatorAPI.getExits()

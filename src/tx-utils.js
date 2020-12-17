@@ -37,6 +37,8 @@ async function encodeTransaction (transaction, providerUrl) {
 
   const provider = getProvider(providerUrl)
   encodedTransaction.chainId = (await provider.getNetwork()).chainId
+  // TODO
+  encodedTransaction.chainId = 0
 
   encodedTransaction.fromAccountIndex = getAccountIndex(transaction.fromAccountIndex)
   if (transaction.toAccountIndex) {
@@ -132,7 +134,9 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
     .map(tx => tx.nonce)
     .sort()
 
-  let nonce = currentNonce + 1
+  // TODO
+  // let nonce = currentNonce + 1
+  let nonce = currentNonce
   while (poolTxsNonces.indexOf(nonce) !== -1) {
     nonce++
   }
