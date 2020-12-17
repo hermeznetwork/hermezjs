@@ -2,6 +2,7 @@ import { jest } from '@jest/globals'
 import axios from 'axios'
 import { Scalar } from 'ffjavascript'
 
+import { TRANSACTION_POOL_KEY } from '../src/constants.js'
 import * as TransactionPool from '../src/tx-pool.js'
 import * as TxUtils from '../src/tx-utils.js'
 
@@ -14,7 +15,7 @@ const transferTransaction = {
   toBjj: null,
   amount: '3400000000',
   fee: 25,
-  nonce: 3,
+  nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
   requestToHezEthereumAddress: null,
@@ -26,7 +27,7 @@ const transferTransaction = {
 }
 
 const transferTransactionEncoded = Object.assign({}, transferTransaction, {
-  chainId: 31337,
+  chainId: 0,
   fromAccountIndex: 4444,
   toAccountIndex: 1234
 })
@@ -40,7 +41,7 @@ const exitTransaction = {
   toBjj: null,
   amount: '3400000000',
   fee: 25,
-  nonce: 3,
+  nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
   requestToHezEthereumAddress: null,
@@ -52,7 +53,7 @@ const exitTransaction = {
 }
 
 const exitTransactionEncoded = Object.assign({}, exitTransaction, {
-  chainId: 31337,
+  chainId: 0,
   fromAccountIndex: 4444,
   toAccountIndex: 1
 })
@@ -72,7 +73,7 @@ describe('#encodeTransaction', () => {
 
 test('#getTxId', () => {
   const txId = TxUtils.getTxId(transferTransactionEncoded.fromAccountIndex, transferTransactionEncoded.nonce)
-  expect(txId).toBe('0x0200000000115c0000000003')
+  expect(txId).toBe('0x0200000000115c0000000002')
 })
 
 test('#getFee', () => {
@@ -80,21 +81,21 @@ test('#getFee', () => {
   expect(fee).toBe(26)
 })
 
-describe('#getTransactionType', () => {
-  test('Returns Transfer', () => {
-    const transferTx = {
-      to: 'hez:dfasdfasdfasdffasfdf'
-    }
-    expect(TxUtils.getTransactionType(transferTx)).toBe('Transfer')
-  })
+// describe('#getTransactionType', () => {
+//   test('Returns Transfer', () => {
+//     const transferTx = {
+//       to: 'hez:dfasdfasdfasdffasfdf'
+//     }
+//     expect(TxUtils.getTransactionType(transferTx)).toBe('Transfer')
+//   })
 
-  test('Returns Exit', () => {
-    const exitTx = {
-      to: null
-    }
-    expect(TxUtils.getTransactionType(exitTx)).toBe('Exit')
-  })
-})
+//   test('Returns Exit', () => {
+//     const exitTx = {
+//       to: null
+//     }
+//     expect(TxUtils.getTransactionType(exitTx)).toBe('Exit')
+//   })
+// })
 
 describe('#getNonce', () => {
   const bjj1 = 'bjj1'
@@ -151,8 +152,13 @@ describe('#getNonce', () => {
     TransactionPool.addPoolTransaction(localTx, bjj1)
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
+    // return current nonce since it is still not used
     const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
-    expect(nonce).toBe(4)
+    expect(nonce).toBe(1)
+
+    // return nonce + 1, since nonce 2 is in pending transactions
+    const nonce2 = await TxUtils.getNonce(2, accountIndex1, bjj1, tokenId1)
+    expect(nonce2).toBe(3)
   })
 
   test('ignores transactions for other account indexes', async () => {
@@ -163,11 +169,11 @@ describe('#getNonce', () => {
     TransactionPool.addPoolTransaction(localTx, bjj1)
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
-    const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
+    const nonce = await TxUtils.getNonce(2, accountIndex1, bjj1, tokenId1)
     expect(nonce).toBe(3)
   })
 
-  test('returns current nonce plus one if no transactions for account index', async () => {
+  test('returns current nonce if no transactions for account index', async () => {
     axios.get = jest.fn()
       .mockResolvedValue({ data: poolTx3 })
 
@@ -175,7 +181,7 @@ describe('#getNonce', () => {
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
     const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
-    expect(nonce).toBe(2)
+    expect(nonce).toBe(1)
   })
 })
 
@@ -365,8 +371,8 @@ describe('#generateL2Transaction', () => {
   }
 
   beforeEach(() => {
-    transferTransaction.id = '0x00000000000001e240004700'
-    exitTransaction.id = '0x00000000000001e240004700'
+    transferTransaction.id = '0x0200000000115c0000000002'
+    exitTransaction.id = '0x0200000000115c0000000002'
     TransactionPool.initializeTransactionPool()
   })
 
