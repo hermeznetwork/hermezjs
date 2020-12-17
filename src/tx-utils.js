@@ -37,7 +37,7 @@ async function encodeTransaction (transaction, providerUrl) {
 
   const provider = getProvider(providerUrl)
   encodedTransaction.chainId = (await provider.getNetwork()).chainId
-  // TODO
+  // TODO: https://github.com/hermeznetwork/hermezjs/issues/16
   encodedTransaction.chainId = 0
 
   encodedTransaction.fromAccountIndex = getAccountIndex(transaction.fromAccountIndex)

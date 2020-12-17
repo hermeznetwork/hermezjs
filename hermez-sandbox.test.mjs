@@ -62,6 +62,7 @@ test('getTokens', async () => {
   //   - Sender Hermez address
   //   - Sender Compresed Babyjubjub
 
+  console.log('Deposit')
   const amountDeposit = hermez.Utils.getTokenAmountBigInt('100', 2)
 
   // make deposit of ERC20 Tokens
@@ -81,72 +82,19 @@ test('getTokens', async () => {
 
   // Check accounts status
   const tx1 = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])
-  /*
-    TX1 {
-      accounts: [
-        {
-          accountIndex: 'hez:20_2:256',
-          balance: '10000',
-          bjj: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-          hezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-          itemId: 1,
-          nonce: 0,
-          token: [Object]
-        }
-      ],
-      pendingItems: 0
-    }
-  */
-
   expect(`hez:${tokenERC20.symbol}:256`).toBe(tx1.accounts[0].accountIndex)
   expect(amountDeposit.toString()).toBe(tx1.accounts[0].balance)
   // TODO check BJJ
   expect(hermezEthereumAddress).toBe(tx1.accounts[0].hezEthereumAddress)
-  // TODO check nonce -> always 0 so dont
-  // TODO check token
-  /*
-    Token {
-      USD: null,
-      decimals: 18,
-      ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-      ethereumBlockNum: 61,
-      fiatUpdate: null,
-      id: 3,
-      itemId: 4,
-      name: 'ERC20_2',
-      symbol: '20_2'
-    }
-  */
 
   const tx2 = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id])
-  expect(hermezEthereumAddress2).toBe(tx2.accounts[0].hezEthereumAddress)
   expect(`hez:${tokenERC20.symbol}:257`).toBe(tx2.accounts[0].accountIndex)
+  expect(hermezEthereumAddress2).toBe(tx2.accounts[0].hezEthereumAddress)
+  // TODO check BJJ
   expect(amountDeposit.toString()).toBe(tx2.accounts[0].balance)
 
   // Check account by accountIndex
   const tx11 = await hermez.CoordinatorAPI.getAccount(`hez:${tokenERC20.symbol}:256`)
-  /*
-    TX11 {
-      accountIndex: 'hez:20_2:256',
-      balance: '10000',
-      bjj: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-      hezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-      itemId: 1,
-      nonce: 0,
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      }
-    }
-  */
-
   expect(`hez:${tokenERC20.symbol}:256`).toBe(tx11.accountIndex)
   expect(amountDeposit.toString()).toBe(tx11.balance)
   // TODO : bjj
@@ -167,6 +115,7 @@ test('getTokens', async () => {
 
   /// /////////////////////
   // Force Exit (L1)
+  console.log('Force Exit')
   const amountExit = hermez.Utils.getTokenAmountBigInt('10', 2)
   await hermez.Tx.forceExit(amountExit, srcAccount.accountIndex, tokenERC20)
   await hermez.Tx.forceExit(amountExit, dstAccount.accountIndex, tokenERC20)
@@ -180,6 +129,7 @@ test('getTokens', async () => {
 
   /// //////////////////
   // Withdraw from both accounts
+  console.log('Withdrawal')
   const exitInfoSrc = (await hermez.CoordinatorAPI.getExits(srcAccount.hezEthereumAddress, true)).exits[0]
   await hermez.Tx.withdraw(amountExit,
     srcAccount.accountIndex,
@@ -187,43 +137,10 @@ test('getTokens', async () => {
     hermezWallet.publicKeyCompressedHex,
     exitInfoSrc.batchNum,
     exitInfoSrc.merkleProof.siblings,
-    true,
     true)
-  /*
-    ExitISrc {
-      accountIndex: 'hez:20_2:256',
-      balance: '1000',
-      batchNum: 44,
-      delayedWithdrawRequest: null,
-      delayedWithdrawn: null,
-      instantWithdrawn: null,
-      itemId: 1,
-      merkleProof: {
-        root: '15930773634968394848237533688003473773942383021984352642025769371194419863398',
-        siblings: [
-          '20237069565860242721214833379834325487539366600821058428836422236689460816735',
-          '0'
-        ],
-        oldKey: '0',
-        oldValue: '0',
-        isOld0: false,
-        key: '256',
-        value: '3233189796127090573603784718448359930448209299931418775008529513224557435764',
-        fnc: 0
-      },
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      }
-    }
-    */
+  expect(`hez:${tokenERC20.symbol}:256`).toBe(exitInfoSrc.accountIndex)
+  expect(amountExit.toString()).toBe(exitInfoSrc.balance)
+  // TODO: check L1 account balance
 
   const exitInfoDst = (await hermez.CoordinatorAPI.getExits(dstAccount.hezEthereumAddress, true)).exits[0]
   await hermez.Tx.withdraw(amountExit,
@@ -232,8 +149,10 @@ test('getTokens', async () => {
     hermezWallet2.publicKeyCompressedHex,
     exitInfoDst.batchNum,
     exitInfoDst.merkleProof.siblings,
-    true,
     true)
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(exitInfoDst.accountIndex)
+  expect(amountExit.toString()).toBe(exitInfoDst.balance)
+  // TODO: check L1 account balance
 
   /// ////////////////
   // Transfer
@@ -258,8 +177,9 @@ test('getTokens', async () => {
   //      was a signature function signTransaction()
   //   - Send the transaction to the coordinator
 
+  console.log('Transfer')
   // amount to transfer
-  const amountXfer = hermez.Utils.getTokenAmountBigInt('10', 2)
+  const amountXfer = hermez.Utils.getTokenAmountBigInt('20', 2)
 
   // generate L2 transaction
   const l2Tx = {
@@ -276,89 +196,42 @@ test('getTokens', async () => {
     srcAccount.token)
   hermezWallet.signTransaction(xferTx.transaction, xferTx.encodedTransaction)
   const XferResult = await hermez.Tx.sendL2Transaction(xferTx.transaction, hermezWallet.publicKeyCompressedHex)
-  // XferResult { status: 200, id: '0x020000000001000000000000', nonce: 0 }
+  expect(XferResult.status).toBe(200)
 
   // Check transaction in coordinator's transaction pool
   const txXferPool = await hermez.CoordinatorAPI.getPoolTransaction(XferResult.id)
-  /*
-    txXferPool {
-      amount: '1000',
-      batchNum: null,
-      fee: 1,
-      fromAccountIndex: 'hez:20_2:256',
-      fromBJJ: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-      fromHezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-      id: '0x020000000001000000000000',
-      nonce: 0,
-      requestAmount: null,
-      requestFee: null,
-      requestFromAccountIndex: null,
-      requestNonce: null,
-      requestToAccountIndex: null,
-      requestToBJJ: null,
-      requestToHezEthereumAddress: null,
-      requestTokenId: null,
-      signature: '7d3b80fb99117dc53cee880dcac001e96b3c28c8df8dfbc17aad70e9578abc157f03bc894e14cf09d5a85d4a467c384ec12535263844e20c42d592b736920905',
-      state: 'pend',
-      timestamp: '2020-12-17T06:35:04.791194Z',
-      toAccountIndex: 'hez:20_2:257',
-      toBjj: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      toHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Transfer'
-    }
-   */
+  expect(tokenERC20.name).toBe(txXferPool.token.name)
+  expect(amountXfer.toString()).toBe(txXferPool.amount)
+  expect(`hez:${tokenERC20.symbol}:256`).toBe(txXferPool.fromAccountIndex)
+  // TODO fromBJJ
+  expect('Transfer').toBe(txXferPool.type)
+  expect(XferResult.id).toBe(txXferPool.id)
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(txXferPool.toAccountIndex)
+  // TODO toBJJ
+  expect(hermezEthereumAddress2).toBe(txXferPool.toHezEthereumAddress)
+  expect(tokenERC20.id).toBe(txXferPool.token.id)
+  expect(tokenERC20.name).toBe(txXferPool.token.name)
 
   await waitNBatches(3)
 
   // Check transaction has been processed
   const txXferConf = await hermez.CoordinatorAPI.getHistoryTransaction(txXferPool.id)
-  /*
-  txXferConf {
-      L1Info: null,
-      L1orL2: 'L2',
-      L2Info: { fee: 1, historicFeeUSD: null, nonce: 1 },
-      amount: '1000',
-      batchNum: 47,
-      fromAccountIndex: 'hez:20_2:256',
-      fromBJJ: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-      fromHezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-      historicUSD: null,
-      id: '0x020000000001000000000000',
-      itemId: 9,
-      position: 0,
-      timestamp: '2020-12-17T06:35:20Z',
-      toAccountIndex: 'hez:20_2:257',
-      toBJJ: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      toHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Transfer'
-    }
-  */
+  expect(null).toBe(txXferConf.L1Info)
+  expect('L2').toBe(txXferConf.L1orL2)
+  expect(amountXfer.toString()).toBe(txXferConf.amount)
+  expect(`hez:${tokenERC20.symbol}:256`).toBe(txXferConf.fromAccountIndex)
+  expect(hermezEthereumAddress).toBe(txXferConf.fromHezEthereumAddress)
+  expect(XferResult.id).toBe(txXferConf.id)
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(txXferConf.toAccountIndex)
+  expect(hermezEthereumAddress2).toBe(txXferConf.toHezEthereumAddress)
+  expect(tokenERC20.id).toBe(txXferConf.token.id)
+  expect(tokenERC20.name).toBe(txXferConf.token.name)
+  expect('Transfer').toBe(txXferConf.type)
 
   /// ///////////////////////////
   // Exit (L2)
 
+  console.log('Exit')
   // generate L2 transaction
   const l2ExitTx = {
     type: 'Exit',
@@ -376,135 +249,51 @@ test('getTokens', async () => {
   hermezWallet2.signTransaction(exitTx.transaction, exitTx.encodedTransaction)
   const l2TxExitResult = await hermez.Tx.sendL2Transaction(exitTx.transaction,
     hermezWallet2.publicKeyCompressedHex)
-  // l2TxExitResult { status: 200, id: '0x020000000001010000000000', nonce: 0 }
+  expect(l2TxExitResult.status).toBe(200)
 
   // Check transaction in coordinator's transaction pool
   const txExitPool = await hermez.CoordinatorAPI.getPoolTransaction(l2TxExitResult.id)
-  /*
- txExitPool {
-      amount: '1000',
-      batchNum: null,
-      fee: 1,
-      fromAccountIndex: 'hez:20_2:257',
-      fromBJJ: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      fromHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      id: '0x020000000001010000000000',
-      nonce: 0,
-      requestAmount: null,
-      requestFee: null,
-      requestFromAccountIndex: null,
-      requestNonce: null,
-      requestToAccountIndex: null,
-      requestToBJJ: null,
-      requestToHezEthereumAddress: null,
-      requestTokenId: null,
-      signature: 'f3c73394b3c167d9fc259081dbe69ff742a52c9db0cd3feb9bff5603487aae042d90a4d46becc7dbe4245c2bfd28f62b590236470338f1687840b82d990c4e05',
-      state: 'pend',
-      timestamp: '2020-12-17T06:37:07.679496Z',
-      toAccountIndex: 'hez:20_2:1',
-      toBjj: null,
-      toHezEthereumAddress: null,
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Exit'
-    }
-  */
+  expect(tokenERC20.name).toBe(txExitPool.token.name)
+  expect(amountExit.toString()).toBe(txExitPool.amount)
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(txExitPool.fromAccountIndex)
+  // TODO fromBJJ
+  expect('Exit').toBe(txExitPool.type)
+  expect(l2TxExitResult.id).toBe(txExitPool.id)
+  expect(hermezEthereumAddress2).toBe(txExitPool.fromHezEthereumAddress)
+  expect(tokenERC20.id).toBe(txExitPool.token.id)
+  expect(tokenERC20.name).toBe(txExitPool.token.name)
 
   await waitNBatches(3)
 
   // Check transaction has been processed
   const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
-  /*
- txExitConf {
-      L1Info: null,
-      L1orL2: 'L2',
-      L2Info: { fee: 1, historicFeeUSD: null, nonce: 1 },
-      amount: '1000',
-      batchNum: 54,
-      fromAccountIndex: 'hez:20_2:257',
-      fromBJJ: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      fromHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      historicUSD: null,
-      id: '0x020000000001010000000000',
-      itemId: 10,
-      position: 0,
-      timestamp: '2020-12-17T06:37:23Z',
-      toAccountIndex: 'hez:20_2:1',
-      toBJJ: null,
-      toHezEthereumAddress: null,
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Exit'
-    }
-  */
+  expect(null).toBe(txExitConf.L1Info)
+  expect('L2').toBe(txExitConf.L1orL2)
+  expect(amountExit.toString()).toBe(txExitConf.amount)
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(txExitConf.fromAccountIndex)
+  expect(hermezEthereumAddress2).toBe(txExitConf.fromHezEthereumAddress)
+  expect(l2TxExitResult.id).toBe(txExitConf.id)
+  expect(`hez:${tokenERC20.symbol}:1`).toBe(txExitConf.toAccountIndex)
+  expect(null).toBe(txExitConf.toHezEthereumAddress)
+  expect(tokenERC20.id).toBe(txExitConf.token.id)
+  expect(tokenERC20.name).toBe(txExitConf.token.name)
+  expect('Exit').toBe(txExitConf.type)
 
   /// ////////////////////
   // Withdraw
+  console.log('Withdrawal')
   const exitInfo = (await hermez.CoordinatorAPI.getExits(dstAccount.hezEthereumAddress, true)).exits[0]
-  /*
- exitInfo {
-      accountIndex: 'hez:20_2:257',
-      balance: '1000',
-      batchNum: 54,
-      delayedWithdrawRequest: null,
-      delayedWithdrawn: null,
-      instantWithdrawn: null,
-      itemId: 3,
-      merkleProof: {
-        root: '20237069565860242721214833379834325487539366600821058428836422236689460816735',
-        siblings: [
-          '0', '0', '0', '0', '0', '0',
-          '0', '0', '0', '0', '0', '0',
-          '0', '0', '0', '0', '0', '0',
-          '0', '0', '0', '0', '0', '0',
-          '0', '0', '0', '0', '0', '0',
-          '0', '0', '0'
-        ],
-        oldKey: '0',
-        oldValue: '0',
-        isOld0: false,
-        key: '257',
-        value: '713350510735653878340100485826090483179576041267077696317320125549707814496',
-        fnc: 0
-      },
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      }
-    }
-  */
+  expect(`hez:${tokenERC20.symbol}:257`).toBe(exitInfo.accountIndex)
+  expect(amountExit.toString()).toBe(exitInfo.balance)
+  expect(tokenERC20.id).toBe(exitInfo.token.id)
+  expect(tokenERC20.name).toBe(exitInfo.token.name)
+
   await hermez.Tx.withdraw(amountExit,
     dstAccount.accountIndex,
     tokenERC20,
     hermezWallet2.publicKeyCompressedHex,
     exitInfo.batchNum,
     exitInfo.merkleProof.siblings,
-    true,
     true)
 }, 3000000)
 

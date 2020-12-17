@@ -126,7 +126,7 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
  * @param {number} gasMultiplier - Optional gas multiplier
  * @returns {promise} transaction parameters
  */
-const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, merkleSiblings, isInstant = true, filterSibling = false, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
+const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, merkleSiblings, isInstant = true, filterSibling = true, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER) => {
   // TODO. Check call below as it can be invalid if accountIndex doesn't exist
   const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
   const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
@@ -137,7 +137,7 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
     gasPrice: await getGasPrice(gasMultiplier)
   }
 
-  // TODO - filter Merkle Siblings
+  // TODO : https://github.com/hermeznetwork/hermezjs/issues/17
   const filteredSiblings = filterSiblings(merkleSiblings, filterSiblings)
 
   const transactionParameters = [
