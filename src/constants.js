@@ -15,7 +15,7 @@ const contractAddresses = {
 
 const DEFAULT_PAGE_SIZE = 20
 
-const baseApiUrl = 'http://localhost:8086'
+const baseApiUrl = 'http://0.0.0.0:8086'
 
 export {
   TRANSACTION_POOL_KEY,

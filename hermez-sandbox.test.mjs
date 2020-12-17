@@ -1,6 +1,6 @@
 import hermez from './src/index.js'
 
-test('getTokens', async () => {
+test('Hermez Tx flow', async () => {
   var i
 
   // Init network provider.
@@ -121,6 +121,7 @@ test('getTokens', async () => {
   await hermez.Tx.forceExit(amountExit, dstAccount.accountIndex, tokenERC20)
 
   await waitNBatches(3)
+  const acco = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
   const finalBalance = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
     .accounts[0]
     .balance
@@ -187,8 +188,8 @@ test('getTokens', async () => {
     from: srcAccount.accountIndex,
     to: dstAccount.accountIndex,
     amount: hermez.Float16.float2Fix(hermez.Float16.floorFix2Float(amountXfer)),
-    fee,
-    nonce: srcAccount.nonce
+    fee
+    // nonce: srcAccount.nonce
   }
 
   const xferTx = await hermez.TxUtils.generateL2Transaction(l2Tx,
@@ -211,20 +212,27 @@ test('getTokens', async () => {
   expect(hermezEthereumAddress2).toBe(txXferPool.toHezEthereumAddress)
   expect(tokenERC20.id).toBe(txXferPool.token.id)
   expect(tokenERC20.name).toBe(txXferPool.token.name)
+  console.log('1')
 
   await waitNBatches(3)
-
+  console.log('2')
   // Check transaction has been processed
   const txXferConf = await hermez.CoordinatorAPI.getHistoryTransaction(txXferPool.id)
+  console.log('XferConf', txXferConf)
+  console.log('3')
   expect(null).toBe(txXferConf.L1Info)
+  console.log('4')
   expect('L2').toBe(txXferConf.L1orL2)
+  console.log('6')
   expect(amountXfer.toString()).toBe(txXferConf.amount)
   expect(`hez:${tokenERC20.symbol}:256`).toBe(txXferConf.fromAccountIndex)
   expect(hermezEthereumAddress).toBe(txXferConf.fromHezEthereumAddress)
   expect(XferResult.id).toBe(txXferConf.id)
   expect(`hez:${tokenERC20.symbol}:257`).toBe(txXferConf.toAccountIndex)
+  console.log('7')
   expect(hermezEthereumAddress2).toBe(txXferConf.toHezEthereumAddress)
   expect(tokenERC20.id).toBe(txXferConf.token.id)
+  console.log('8')
   expect(tokenERC20.name).toBe(txXferConf.token.name)
   expect('Transfer').toBe(txXferConf.type)
 
@@ -236,10 +244,11 @@ test('getTokens', async () => {
   const l2ExitTx = {
     type: 'Exit',
     from: dstAccount.accountIndex,
+    // TODO : Hermezjs should calculate exit account
     to: `hez:${tokenERC20.symbol}:1`,
     amount: hermez.Float16.float2Fix(hermez.Float16.floorFix2Float(amountExit)),
-    fee,
-    nonce: dstAccount.nonce
+    fee
+    // nonce: dstAccount.nonce
   }
 
   const exitTx = await hermez.TxUtils.generateL2Transaction(
