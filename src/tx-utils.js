@@ -7,6 +7,7 @@ import { bufToHex } from './utils.js'
 import { fix2Float } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex } from './addresses.js'
+import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 
 export const TxType = {
@@ -137,12 +138,17 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
     .map(tx => tx.nonce)
     .sort()
 
-  // return current nonce if no transactions are pending
   let nonce = currentNonce
 
-  if (poolTxsNonces.length){
-    while (poolTxsNonces.indexOf(nonce) !== -1) {
-      nonce++
+  if (typeof nonce === "undefined"){
+    const accountData = await getAccount(accountIndex)
+    nonce = accountData.nonce
+  
+    // return current nonce if no transactions are pending
+    if (poolTxsNonces.length){
+      while (poolTxsNonces.indexOf(nonce) !== -1) {
+        nonce++
+      }
     }
   }
 
