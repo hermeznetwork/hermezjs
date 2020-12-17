@@ -12,13 +12,14 @@ import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
 import { getProvider } from './providers.js'
+import { generateL2Transaction } from './tx-utils.js'
 import HermezABI from './abis/HermezABI.js'
 import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
 
 /**
  * Get current average gas price from the last ethereum blocks and multiply it
- * @param {Number} multiplier - multiply the average gas price by this parameter
- * @returns {Promise} - promise will return the gas price obtained.
+ * @param {number} multiplier - multiply the average gas price by this parameter
+ * @returns {promise} - promise will return the gas price obtained.
 */
 async function getGasPrice (multiplier) {
   const provider = getProvider()
@@ -36,7 +37,7 @@ async function getGasPrice (multiplier) {
  * @param {BigInt} amount - The amount to be deposited
  * @param {string} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {object} token - The token information object as returned from the API
- * @param {string} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @param {string} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {number} gasLimit - Optional gas limit
  * @param {number} gasMultiplier - Optional gas multiplier
@@ -46,14 +47,13 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUr
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, ethereumAddress)
   let account = await getAccounts(hezEthereumAddress, [token.id])
-
   if (typeof account !== 'undefined') {
     account = account.accounts[0]
   }
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
@@ -95,7 +95,7 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, null)
   }
 
   const transactionParameters = [
@@ -222,10 +222,32 @@ async function sendL2Transaction (transaction, bJJ) {
   }
 }
 
+/**
+ * Compact L2 transaction generated and sent to a Coordinator.
+ * @param {object} transaction - ethAddress and babyPubKey together
+ * @param {string} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+ * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {bigint} transaction.amount - The amount being sent as a BigInt
+ * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+ * @param {number} transaction.nonce - The current nonce of the sender's token account
+ * @param {object} wallet - Transaction sender Hermez Wallet
+ * @param {object} token - The token information object as returned from the Coordinator.
+*/
+async function l2Tx (tx, wallet, token) {
+  const l2TxParams = await generateL2Transaction(tx, wallet.publicKeyCompressedHex, token)
+
+  wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
+
+  const l2TxResult = await sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
+
+  return l2TxResult
+}
+
 export {
   deposit,
   forceExit,
   withdraw,
   delayedWithdraw,
-  sendL2Transaction
+  sendL2Transaction,
+  l2Tx
 }

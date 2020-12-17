@@ -45,12 +45,7 @@ async function getAccounts (address, tokenIds, fromItem) {
  * @returns {object} Response data with the token account
  */
 async function getAccount (accountIndex) {
-  try {
-    const retVal = await axios.get(`${baseApiUrl}/accounts/${accountIndex}`)
-    return retVal.data
-  } catch (error) {
-    return undefined
-  }
+  return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`))
 }
 
 /**
@@ -157,10 +152,6 @@ async function getToken (tokenId) {
  */
 async function getState () {
   const state = await extractJSON(axios.get(`${baseApiUrl}/state`))
-  // Remove once hermez-node is ready
-  // state.withdrawalDelayer.emergencyMode = true
-  // state.withdrawalDelayer.withdrawalDelay = 60
-  // state.rollup.buckets[0].withdrawals = 0
   return state
 }
 

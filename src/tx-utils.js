@@ -4,11 +4,10 @@ import circomlib from 'circomlib'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
-import { fix2Float } from './float16.js'
+import { fix2Float, float2Fix, floorFix2Float } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex } from './addresses.js'
 import { getAccount } from './api.js'
-import { getProvider } from './providers.js'
 
 export const TxType = {
   Deposit: 'Deposit',
@@ -38,7 +37,7 @@ async function encodeTransaction (transaction, providerUrl) {
 
   // const provider = getProvider(providerUrl)
   // encodedTransaction.chainId = (await provider.getNetwork()).chainId
-  
+
   // hardcode chainID to 0 since it is pretended to be used only in sandbox
   // TODO: https://github.com/hermeznetwork/hermezjs/issues/16
   encodedTransaction.chainId = 0
@@ -132,7 +131,7 @@ function getTransactionType (transaction) {
  */
 async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
   const poolTxs = await getPoolTransactions(accountIndex, bjj)
-  
+
   const poolTxsNonces = poolTxs
     .filter(tx => tx.token.id === tokenId)
     .map(tx => tx.nonce)
@@ -140,12 +139,12 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
 
   let nonce = currentNonce
 
-  if (typeof nonce === "undefined"){
+  if (typeof nonce === 'undefined') {
     const accountData = await getAccount(accountIndex)
     nonce = accountData.nonce
-  
+
     // return current nonce if no transactions are pending
-    if (poolTxsNonces.length){
+    if (poolTxsNonces.length) {
       while (poolTxsNonces.indexOf(nonce) !== -1) {
         nonce++
       }
@@ -218,7 +217,7 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @param {object} transaction - ethAddress and babyPubKey together
  * @param {string} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
  * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {string} transaction.amount - The amount being sent as a BigInt string
+ * @param {bigint} transaction.amount - The amount being sent as a BigInt
  * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {number} transaction.nonce - The current nonce of the sender's token account
  * @param {string} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender
@@ -230,10 +229,12 @@ async function generateL2Transaction (tx, bjj, token) {
     type: getTransactionType(tx),
     tokenId: token.id,
     fromAccountIndex: tx.from,
-    toAccountIndex: tx.to || null,
+    // toAccountIndex: tx.to || null,
+    toAccountIndex: tx.type === 'Exit' ? `hez:${token.symbol}:1` : tx.to,
     toHezEthereumAddress: null,
     toBjj: null,
-    amount: tx.amount.toString(),
+    // Corrects precision errors using the same system used in the Coordinator
+    amount: float2Fix(floorFix2Float(tx.amount)).toString(),
     fee: getFee(tx.fee, tx.amount, token.decimals),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,
@@ -248,8 +249,6 @@ async function generateL2Transaction (tx, bjj, token) {
 
   const encodedTransaction = await encodeTransaction(transaction)
   transaction.id = getTxId(encodedTransaction.fromAccountIndex, encodedTransaction.nonce)
-  // TODO: Remove once we have hermez-node
-  // transaction.id = '0x00000000000001e240004700'
 
   return { transaction, encodedTransaction }
 }

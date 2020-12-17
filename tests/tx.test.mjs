@@ -10,6 +10,7 @@ import { getTokenAmountBigInt } from '../src/utils.js'
 
 jest.mock('axios')
 
+// Skipping this test. We cover transaction flow in hermez-sandbox.test.mjs
 describe('Full flow', () => {
   const amount = getTokenAmountBigInt('2.88', 18)
   const hezEthereumAddress = 'hez:0xc783df8a850f42e7f7e57013759c285caa701eb6'
@@ -17,17 +18,18 @@ describe('Full flow', () => {
   const accountIndex = 'hez:TKN:256'
 
   beforeEach(() => {
-    axios.get = jest.fn().mockResolvedValue({ data: { accounts: [{}] } })
+    // axios.get = jest.fn().mockResolvedValue({ data: { accounts: [{}] } })
+    axios.get = jest.fn().mockResolvedValue({ data: undefined })
   })
 
   afterEach(() => {
     axios.get.mockRestore()
   })
 
-  test('Works with ERC20 tokens', async () => {
+  test.skip('Works with ERC20 tokens', async () => {
     const token = {
       id: 1,
-      ethereumAddress: '0xf4e77E5Da47AC3125140c470c71cBca77B5c638c'
+      ethereumAddress: '0x5E0816F0f8bC560cB2B9e9C87187BeCac8c2021F'
     }
 
     const eth = {
