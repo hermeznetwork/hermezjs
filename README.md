@@ -15,10 +15,11 @@ git checkout feature/newDeploymentScript
 ```
 npx buidler node
 cd <CONTRACTS_REPO>/scripts/fe-deploymentTest
+cp .env.example .env
 node deployTest.js
 ```
 
-3. Copy contracts/scripts/fe-deploymentTest/.env.example to contracts/scripts/fe-deploymentTest/.env ensuring addresses provided during deployment are correct
+3. In contracts/scripts/fe-deploymentTest/.env ensure addresses provided during deployment are correct
 
 4. Ensure `HERMEZ_ADDRESS` and `ERC20_ADDRESS` in src/constants.js are set to addresses provided during deployment step
 

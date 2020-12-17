@@ -35,8 +35,10 @@ export const TxState = {
 async function encodeTransaction (transaction, providerUrl) {
   const encodedTransaction = Object.assign({}, transaction)
 
-  const provider = getProvider(providerUrl)
-  encodedTransaction.chainId = (await provider.getNetwork()).chainId
+  // const provider = getProvider(providerUrl)
+  // encodedTransaction.chainId = (await provider.getNetwork()).chainId
+  
+  // hardcode chainID to 0 since it is pretended to be used only in sandbox
   // TODO: https://github.com/hermeznetwork/hermezjs/issues/16
   encodedTransaction.chainId = 0
 
@@ -129,16 +131,19 @@ function getTransactionType (transaction) {
  */
 async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
   const poolTxs = await getPoolTransactions(accountIndex, bjj)
+  
   const poolTxsNonces = poolTxs
     .filter(tx => tx.token.id === tokenId)
     .map(tx => tx.nonce)
     .sort()
 
-  // TODO
-  // let nonce = currentNonce + 1
+  // return current nonce if no transactions are pending
   let nonce = currentNonce
-  while (poolTxsNonces.indexOf(nonce) !== -1) {
-    nonce++
+
+  if (poolTxsNonces.length){
+    while (poolTxsNonces.indexOf(nonce) !== -1) {
+      nonce++
+    }
   }
 
   return nonce
