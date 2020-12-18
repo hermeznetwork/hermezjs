@@ -5,3 +5,5 @@ package-lock.json
 auxdata
 contracts
 tests/.testlog
+.vscode
+.testlog
