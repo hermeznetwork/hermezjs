@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 
 import ERC20ABI from '../src/abis/ERC20ABI.js'
 import * as Contracts from '../src/contracts.js'
