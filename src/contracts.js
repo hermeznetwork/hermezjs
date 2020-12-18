@@ -13,7 +13,7 @@ const contractsCache = new Map()
  * @return {Contract} The request contract
  */
 function getContract (contractAddress, abi, providerUrl, ethereumAddress) {
-  // TODO cache not valid if using different EtherAddress
+  // TODO cache not valid if using different EtherAddress Disable for now
   /*
   if (contractsCache.has(contractAddress)) {
     return contractsCache.get(contractAddress)

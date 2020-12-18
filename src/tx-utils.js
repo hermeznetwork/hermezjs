@@ -38,8 +38,8 @@ async function encodeTransaction (transaction, providerUrl) {
   // const provider = getProvider(providerUrl)
   // encodedTransaction.chainId = (await provider.getNetwork()).chainId
 
-  // hardcode chainID to 0 since it is pretended to be used only in sandbox
-  // TODO: https://github.com/hermeznetwork/hermezjs/issues/16
+  // hardcode chainID to 0
+  // https://github.com/hermeznetwork/hermezjs/issues/16
   encodedTransaction.chainId = 0
 
   encodedTransaction.fromAccountIndex = getAccountIndex(transaction.fromAccountIndex)
@@ -101,31 +101,11 @@ function getFee (fee, amount, decimals) {
 }
 
 /**
- * Gets the transaction type depending on the information in the transaction object
- * If an account index is used, it will be 'Transfer'
- * If a Hermez address is used, it will be 'TransferToEthAddr'
- * If a BabyJubJub is used, it will be 'TransferToBjj'
- * @param {object} transaction - Transaction object sent to generateL2Transaction
- * @return {string} transactionType
- */
-function getTransactionType (transaction) {
-  /*
-  if (transaction.to && transaction.to.includes('hez:')) {
-    return 'Transfer'
-  } else {
-    return 'Exit'
-  }
-  */
-  // TODO : This check seems wrong
-  return transaction.type
-}
-
-/**
  * Calculates the appropriate nonce based on the current token account nonce and existing transactions in the Pool.
  * It needs to find the lowest nonce available as transactions in the pool may fail and the Coordinator only forges
  * transactions in the order set by nonces.
- * @param {number} currentNonce - The current token account nonce returned by the Coordinator
- * @param {string} bjj - The account's BabyJubJub
+ * @param {number} currentNonce - The current token account nonce returned by the Coordinator (optional)
+ * @param {string} accountIndex - The account index
  * @param {number} tokenId - The token id of the token in the transaction
  * @return {number} nonce
  */
@@ -219,14 +199,14 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
  * @param {bigint} transaction.amount - The amount being sent as a BigInt
  * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
- * @param {number} transaction.nonce - The current nonce of the sender's token account
- * @param {string} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender
+ * @param {number} transaction.nonce - The current nonce of the sender's token account (optional)
+ * @param {string} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
  * @param {object} token - The token information object as returned from the Coordinator.
  * @return {object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateL2Transaction (tx, bjj, token) {
   const transaction = {
-    type: getTransactionType(tx),
+    type: tx.type,
     tokenId: token.id,
     fromAccountIndex: tx.from,
     // toAccountIndex: tx.to || null,
@@ -267,7 +247,6 @@ export {
   getTxId,
   getFee,
   getNonce,
-  getTransactionType,
   buildTxCompressedData as _buildTxCompressedData,
   buildTransactionHashMessage,
   generateL2Transaction,

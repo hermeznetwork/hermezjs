@@ -45,10 +45,10 @@ git clone https://github.com/hermeznetwork/sandbox-coordinator.git
 ```
  module.exports = {
      paths: {
-        sources: "/home/david/iden3/tmp/integration-testing/contracts/contracts",
-        tests: "/home/david/iden3/tmp/integration-testing/contracts/test",
-        cache: "/home/david/iden3/tmp/integration-testing/contracts/cache",
-        artifacts: "/home/david/iden3/tmp/integration-testing/contracts/artifacts"
+        sources: "<ADD PATH>",
+        tests: "<ADD PATH>",
+        cache: "<ADD PATH>",
+        artifacts: "<ADD PATH>"
      },
      defaultNetwork: "localhostMnemonic",
      networks: {
@@ -68,5 +68,10 @@ git checkout feature/sandbox
 
 8. In HermezJs root folder, run hermez-example.mjs test
 ```
-npm test hermez-sandbox.test.mjs
+NODE_OPTIONS=--experimental-vm-modules npx jest -- tests/hermez-sandbox.test.mjs 
+```
+
+**NOTE** To run all tests, type:
+```
+npm run test
 ```

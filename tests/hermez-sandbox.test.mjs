@@ -1,4 +1,5 @@
 import hermez from '../src/index.js'
+import * as utilsSandbox from './helpers/utils-sandbox.js'
 
 test('Hermez Tx flow', async () => {
   var i
@@ -78,7 +79,7 @@ test('Hermez Tx flow', async () => {
     hermezWallet2.publicKeyCompressedHex)
 
   // Wait until transaction is forged
-  await waitNBatches(3)
+  await utilsSandbox.waitNBatches(3)
 
   // Check accounts status
   const tx1 = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])
@@ -120,7 +121,7 @@ test('Hermez Tx flow', async () => {
   await hermez.Tx.forceExit(amountExit, srcAccount.accountIndex, tokenERC20)
   await hermez.Tx.forceExit(amountExit, dstAccount.accountIndex, tokenERC20)
 
-  await waitNBatches(3)
+  await utilsSandbox.waitNBatches(3)
   const finalBalance = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
     .accounts[0]
     .balance
@@ -207,7 +208,7 @@ test('Hermez Tx flow', async () => {
   expect(tokenERC20.id).toBe(txXferPool.token.id)
   expect(tokenERC20.name).toBe(txXferPool.token.name)
 
-  await waitNBatches(3)
+  await utilsSandbox.waitNBatches(3)
 
   // Check transaction has been processed
   const txXferConf = await hermez.CoordinatorAPI.getHistoryTransaction(txXferPool.id)
@@ -231,8 +232,6 @@ test('Hermez Tx flow', async () => {
   const l2ExitTx = {
     type: 'Exit',
     from: dstAccount.accountIndex,
-    // TODO : Hermezjs should calculate exit account
-    // to: `hez:${tokenERC20.symbol}:1`,
     amount: amountExit,
     fee
   }
@@ -252,7 +251,7 @@ test('Hermez Tx flow', async () => {
   expect(tokenERC20.id).toBe(txExitPool.token.id)
   expect(tokenERC20.name).toBe(txExitPool.token.name)
 
-  await waitNBatches(3)
+  await utilsSandbox.waitNBatches(3)
 
   // Check transaction has been processed
   const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
@@ -285,29 +284,3 @@ test('Hermez Tx flow', async () => {
     exitInfo.merkleProof.siblings,
     true)
 }, 3000000)
-
-// Wait some batches
-async function waitNBatches (nBatches) {
-  // TODO . lastBatch is null many times
-  var lastBatch = (await hermez.CoordinatorAPI.getState()).network.lastBatch
-  while (true) {
-    var currentBatch = (await hermez.CoordinatorAPI.getState()).network.lastBatch
-    if (lastBatch != null &&
-        currentBatch != null &&
-        currentBatch.batchNum - lastBatch.batchNum > nBatches) {
-      break
-    }
-    if (lastBatch == null) {
-      lastBatch = (await hermez.CoordinatorAPI.getState()).network.lastBatch
-      currentBatch = lastBatch
-    }
-    if (currentBatch == null) {
-      currentBatch = (await hermez.CoordinatorAPI.getState()).network.lastBatch
-    }
-    await sleep(2000)
-  }
-}
-
-async function sleep (timeout) {
-  await new Promise(resolve => setTimeout(resolve, timeout))
-}

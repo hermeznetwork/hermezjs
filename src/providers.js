@@ -4,6 +4,7 @@ let provider
 
 /**
  * Set a Provider URL
+ * @param {string} url - Network url
  * @param {string} url - Network url (i.e, http://localhost:8545)
  */
 function setProvider (url) {
@@ -22,6 +23,7 @@ function getProvider (url) {
   if (!provider) {
     setProvider(url)
   }
+
   return provider
 }
 

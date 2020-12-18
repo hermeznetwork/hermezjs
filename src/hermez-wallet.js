@@ -43,6 +43,7 @@ class HermezWallet {
   /**
    * To sign transaction with babyjubjub keys
    * @param {object} transaction - Transaction object
+   * @param {object} encodedTransaction - Transaction encoded object
    * @returns {object} The signed transaction object
    */
   signTransaction (transaction, encodedTransaction) {

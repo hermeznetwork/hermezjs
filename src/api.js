@@ -31,6 +31,7 @@ async function getAccounts (address, tokenIds, fromItem) {
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ..._getPageData(fromItem)
   }
+
   try {
     const retVal = await axios.get(`${baseApiUrl}/accounts`, { params })
     return retVal.data
@@ -66,6 +67,7 @@ async function getTransactions (address, tokenIds, batchNum, accountIndex, fromI
     ...(accountIndex ? { accountIndex } : {}),
     ..._getPageData(fromItem)
   }
+
   return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { params }))
 }
 
@@ -110,8 +112,6 @@ async function getExits (address, onlyPendingWithdraws) {
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/exits`, { params }))
-  // exit.batchNum = 5432
-  // exit.instantWithdrawn = null
 }
 
 /**
@@ -152,6 +152,7 @@ async function getToken (tokenId) {
  */
 async function getState () {
   const state = await extractJSON(axios.get(`${baseApiUrl}/state`))
+
   return state
 }
 
@@ -168,6 +169,7 @@ async function getBatches (forgerAddr, slotNum, fromItem) {
     ...(slotNum ? { slotNum } : {}),
     ..._getPageData(fromItem)
   }
+
   return extractJSON(axios.get(`${baseApiUrl}/batches`, { params }))
 }
 
@@ -211,6 +213,7 @@ async function getBids (slotNum, bidderAddr, fromItem) {
     ...(bidderAddr ? { bidderAddr } : {}),
     ..._getPageData(fromItem)
   }
+
   return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
 }
 

@@ -20,7 +20,7 @@ import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
  * Get current average gas price from the last ethereum blocks and multiply it
  * @param {number} multiplier - multiply the average gas price by this parameter
  * @returns {promise} - promise will return the gas price obtained.
-*/
+ */
 async function getGasPrice (multiplier) {
   const provider = getProvider()
   const strAvgGas = await provider.getGasPrice()
@@ -113,7 +113,7 @@ const forceExit = async (amount, accountIndex, token, gasLimit = GAS_LIMIT, gasM
 }
 
 /**
- * Finalise the withdraw. This a L1 transaction.
+ * Finalise the withdraw. This is a L1 transaction.
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {string} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {object} token - The token information object as returned from the API
@@ -137,7 +137,7 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
     gasPrice: await getGasPrice(gasMultiplier)
   }
 
-  // TODO : https://github.com/hermeznetwork/hermezjs/issues/17
+  // https://github.com/hermeznetwork/hermezjs/issues/17
   const filteredSiblings = filterSiblings(merkleSiblings, filterSiblings)
 
   const transactionParameters = [
@@ -157,7 +157,7 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
 /**
  * Removes 0's from Siblings
  * @param {array} siblings - Array of sibling strings
- * @param {boolean} enable -  Whether siblings should be filtered
+ * @param {boolean} enable - Whether siblings should be filtered
  * @returns {array} Array of filtered sibling strings
  */
 function filterSiblings (siblings, enable) {

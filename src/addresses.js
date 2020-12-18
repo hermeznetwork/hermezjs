@@ -5,7 +5,7 @@ const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
 /**
  * Get the hermez address representation of an ethereum address
  * @param {string} ethereumAddress
- * @returns {string}
+ * @returns {string} hezEthereumAddress
  */
 function getHermezAddress (ethereumAddress) {
   return `${hermezPrefix}${ethereumAddress}`
@@ -14,7 +14,7 @@ function getHermezAddress (ethereumAddress) {
 /**
  * Gets the Ethereum address part of a Hermez address
  * @param {string} hezEthereumAddress
- * @returns {string}
+ * @returns {string} ethereumAddress
  */
 function getEthereumAddress (hezEthereumAddress) {
   if (hezEthereumAddress.includes('hez:')) {

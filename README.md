@@ -29,6 +29,11 @@ cd <HERMEZJS_FOLDER>
 NODE_OPTIONS=--experimental-vm-modules npx jest -- tests/hermez-sandbox.test.mjs 
 ```
 
+**NOTE** To run all tests, type:
+```
+npm run test
+```
+
 ## Import modules
 Load hermezjs library
 

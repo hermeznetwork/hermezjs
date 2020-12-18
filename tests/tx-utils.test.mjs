@@ -35,7 +35,7 @@ const exitTransaction = {
   type: 'Exit',
   tokenId: 0,
   fromAccountIndex: 'hez:DAI:4444',
-  toAccountIndex: null,
+  toAccountIndex: 'hez:DAI:1',
   toHezEthereumAddress: null,
   toBjj: null,
   amount: '3400000000',
@@ -79,22 +79,6 @@ test('#getFee', () => {
   const fee = TxUtils.getFee(0.000143, transferTransaction.amount, 8)
   expect(fee).toBe(26)
 })
-
-// describe('#getTransactionType', () => {
-//   test('Returns Transfer', () => {
-//     const transferTx = {
-//       to: 'hez:dfasdfasdfasdffasfdf'
-//     }
-//     expect(TxUtils.getTransactionType(transferTx)).toBe('Transfer')
-//   })
-
-//   test('Returns Exit', () => {
-//     const exitTx = {
-//       to: null
-//     }
-//     expect(TxUtils.getTransactionType(exitTx)).toBe('Exit')
-//   })
-// })
 
 describe('#getNonce', () => {
   const bjj1 = 'bjj1'
@@ -355,7 +339,7 @@ describe('#generateL2Transaction', () => {
 
   const exitTx = {
     from: 'hez:DAI:4444',
-    to: null,
+    to: 'hez:DAI:1',
     toHezEthereumAddress: null,
     toBjj: null,
     amount: Scalar.fromString('3400000000'),

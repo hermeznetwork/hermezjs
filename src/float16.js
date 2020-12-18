@@ -20,12 +20,10 @@ function float2Fix (fl) {
 }
 
 /**
-* Convert a fix to a float, always rounding down
-*
-* @param {String} _f - Scalar encoded in fix
-*
-* @returns {Scalar} Scalar encoded in float
-* @private
+ * Convert a fix to a float, always rounding down
+ * @param {String} _f - Scalar encoded in fix
+ * @returns {Scalar} Scalar encoded in float
+ * @private
 */
 function _floorFix2Float (_f) {
   const f = Scalar.e(_f)
@@ -44,9 +42,9 @@ function _floorFix2Float (_f) {
 }
 
 /**
-* Convert a fix to a float
-* @param {String} _f - Scalar encoded in fix
-* @returns {Scalar} Scalar encoded in float
+ * Convert a fix to a float
+ * @param {String} _f - Scalar encoded in fix
+ * @returns {Scalar} Scalar encoded in float
 */
 function fix2Float (_f) {
   const f = Scalar.e(_f)
@@ -89,9 +87,9 @@ function fix2Float (_f) {
 }
 
 /**
-* Convert a float to a fix, always rounding down
-* @param {Scalar} fl - Scalar encoded in float
-* @returns {Scalar} Scalar encoded in fix
+ * Convert a float to a fix, always rounding down
+ * @param {Scalar} fl - Scalar encoded in float
+ * @returns {Scalar} Scalar encoded in fix
 */
 function floorFix2Float (_f) {
   const f = Scalar.e(_f)
