@@ -62,7 +62,7 @@ test('Hermez Tx flow', async () => {
   //   - Sender Compresed Babyjubjub
 
   console.log('Deposit')
-  const amountDeposit = hermez.Utils.getTokenAmountBigInt('100', 2)
+  const amountDeposit = hermez.Utils.getTokenAmountBigInt('100', 18)
 
   // make deposit of ERC20 Tokens
   await hermez.Tx.deposit(amountDeposit,
@@ -115,7 +115,7 @@ test('Hermez Tx flow', async () => {
   /// /////////////////////
   // Force Exit (L1)
   console.log('Force Exit')
-  const amountExit = hermez.Utils.getTokenAmountBigInt('10', 2)
+  const amountExit = hermez.Utils.getTokenAmountBigInt('10', 18)
   await hermez.Tx.forceExit(amountExit, srcAccount.accountIndex, tokenERC20)
   await hermez.Tx.forceExit(amountExit, dstAccount.accountIndex, tokenERC20)
 
@@ -178,7 +178,7 @@ test('Hermez Tx flow', async () => {
 
   console.log('Transfer')
   // amount to transfer
-  const amountXfer = hermez.Utils.getTokenAmountBigInt('20', 2)
+  const amountXfer = hermez.Utils.getTokenAmountBigInt('20', 18)
 
   // generate L2 transaction
   const l2Tx = {
