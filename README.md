@@ -324,13 +324,13 @@ The `Exit` transaction status can be verified using the API.
 
 The information reported will be necessary to complete the `withdraw` stage.
 
-## Withdrawing funds from Hermez
+### Withdrawing funds from Hermez
 
 After doing any type of `Exit` transaction, which moves the user's funds from their token account to a specific Exit merkle tree, one needs to do a `withdraw` of those funds to an Ethereum L1 account.
 To do a `withdraw` we need to indicate the `accountIndex` the includes the Ethereum address where the funds will be transferred, the amount and type of tokens, and some information
 to verify the ownership of those tokens. Additionally, there is one boolean flag. If set to true, the `withdraw` will be instantaneous.
 
-´´´js
+```js
   await hermez.Tx.withdraw(
     amountExit,
     account1.accountIndex,
