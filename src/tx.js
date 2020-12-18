@@ -47,6 +47,7 @@ const deposit = async (amount, hezEthereumAddress, token, babyJubJub, providerUr
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, ethereumAddress)
   let account = await getAccounts(hezEthereumAddress, [token.id])
+
   if (typeof account !== 'undefined') {
     account = account.accounts[0]
   }
@@ -233,7 +234,7 @@ async function sendL2Transaction (transaction, bJJ) {
  * @param {object} wallet - Transaction sender Hermez Wallet
  * @param {object} token - The token information object as returned from the Coordinator.
 */
-async function l2Tx (tx, wallet, token) {
+async function generateAndSendL2Tx (tx, wallet, token) {
   const l2TxParams = await generateL2Transaction(tx, wallet.publicKeyCompressedHex, token)
 
   wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
@@ -249,5 +250,5 @@ export {
   withdraw,
   delayedWithdraw,
   sendL2Transaction,
-  l2Tx
+  generateAndSendL2Tx
 }

@@ -2,8 +2,6 @@ import hermez from '../src/index.js'
 import * as utilsSandbox from './helpers/utils-sandbox.js'
 
 test('Hermez Tx flow', async () => {
-  var i
-
   // Init network provider.
   hermez.Providers.setProvider('http://localhost:8545')
 
@@ -43,11 +41,11 @@ test('Hermez Tx flow', async () => {
   // Ether.
   expect(token.tokens[0].ethereumAddress).toBe('0x0000000000000000000000000000000000000000')
 
-  for (i = 1; i < 6; i++) {
+  for (var i = 1; i < 6; i++) {
     expect(token.tokens[i].name).toBe('ERC20_'.concat(i - 1).toString())
   }
-  for (i = 6; i < 11; i++) {
-    expect(token.tokens[i].name).toBe('ERC20P_'.concat(i - 6).toString())
+  for (var j = 6; j < 11; j++) {
+    expect(token.tokens[j].name).toBe('ERC20P_'.concat(j - 6).toString())
   }
 
   /// ///
@@ -191,7 +189,7 @@ test('Hermez Tx flow', async () => {
     fee
   }
 
-  const XferResult = await hermez.Tx.l2Tx(l2Tx, hermezWallet, srcAccount.token)
+  const XferResult = await hermez.Tx.generateAndSendL2Tx(l2Tx, hermezWallet, srcAccount.token)
   expect(XferResult.status).toBe(200)
 
   // Check transaction in coordinator's transaction pool
@@ -236,7 +234,7 @@ test('Hermez Tx flow', async () => {
     fee
   }
 
-  const l2TxExitResult = await hermez.Tx.l2Tx(l2ExitTx, hermezWallet2, dstAccount.token)
+  const l2TxExitResult = await hermez.Tx.generateAndSendL2Tx(l2ExitTx, hermezWallet2, dstAccount.token)
   expect(l2TxExitResult.status).toBe(200)
 
   // Check transaction in coordinator's transaction pool

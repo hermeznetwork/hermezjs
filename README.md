@@ -451,7 +451,7 @@ At this point, the transactions is still in the coordinator's transaction pool a
 3. **fged** : Forged
 4. **invl** : Invalid
 
-After a few seconds, we verify transaction status in the list of forged transactions to check if transaction has been processed:
+After a few seconds, we verify tthe ransaction status in the list of forged transactions to check if the transaction has been processed:
 
 ```js
     // Get transaction confirmation
@@ -496,7 +496,7 @@ If the API returns an object, it means that the transaction has been forged.
 
 ### Exit
 
-A different alternative to retrieve the funds back is by using a L2 `Exit` transaction. The steps
+A different alternative to retrieve the funds back is by using an L2 `Exit` transaction. The steps
 involved to generate an `Exit` transaction are the same as for the `Transfer` transaction we already saw.
 The only difference  is that there is no `to` account recipient.
 

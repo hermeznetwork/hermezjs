@@ -209,7 +209,6 @@ async function generateL2Transaction (tx, bjj, token) {
     type: tx.type,
     tokenId: token.id,
     fromAccountIndex: tx.from,
-    // toAccountIndex: tx.to || null,
     toAccountIndex: tx.type === 'Exit' ? `hez:${token.symbol}:1` : tx.to,
     toHezEthereumAddress: null,
     toBjj: null,
