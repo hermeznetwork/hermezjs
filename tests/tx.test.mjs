@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import axios from 'axios'
-import { ethers } from 'ethers'
+import * as ethers from 'ethers'
 
 import { forgeBatch, advanceTime } from './helpers/helpers.js'
 import * as Tx from '../src/tx.js'

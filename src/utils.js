@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import * as ethers from 'ethers'
 
 /**
  * Converts a buffer to a hexadecimal representation

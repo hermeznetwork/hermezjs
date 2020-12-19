@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import * as ethers from 'ethers'
 
 import * as Providers from '../src/providers.js'
 

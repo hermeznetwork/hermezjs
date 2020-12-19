@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import * as ethers from 'ethers'
 
 import * as tokens from '../src/tokens.js'
 import * as utils from '../src/utils.js'
