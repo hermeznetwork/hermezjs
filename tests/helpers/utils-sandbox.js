@@ -2,7 +2,7 @@ import hermez from '../../src/index.js'
 
 /**
  * wait a specific number of batches to be forged
- * @param {Number} nBatches
+ * @param {number} nBatches
  */
 async function waitNBatches (nBatches) {
   var lastBatch = (await hermez.CoordinatorAPI.getState()).network.lastBatch
@@ -26,13 +26,24 @@ async function waitNBatches (nBatches) {
 
 /**
  * wait timeout
- * @param {Number} timeout
+ * @param {number} timeout
  */
 async function sleep (timeout) {
   await new Promise(resolve => setTimeout(resolve, timeout))
 }
 
+/**
+ * Converts BigInt balance to string standard form. Issue exists whenre number > 1e22 it is represented
+ * in scientific notation
+ * @param {string} balanceBigInt - String representing a large number as a BigInt
+ * @returns {string}
+*/
+function balanceToString (balanceBigInt) {
+  return (balanceBigInt).toLocaleString('fullwide', { userGrouping: false }).replace(/,/g, '')
+}
+
 export {
   waitNBatches,
-  sleep
+  sleep,
+  balanceToString
 }
