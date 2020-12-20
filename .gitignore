@@ -7,3 +7,4 @@ contracts
 tests/.testlog
 .vscode
 .testlog
+dist
