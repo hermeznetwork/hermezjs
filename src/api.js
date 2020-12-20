@@ -188,7 +188,11 @@ async function getBatch (batchNum) {
  * @returns {object} Response data with a specific coordinator
  */
 async function getCoordinator (bidderAddr) {
-  return extractJSON(axios.get(`${BASE_API_URL}/coordinators/${bidderAddr}`))
+  const params = {
+    ...(bidderAddr ? { bidderAddr } : {})
+  }
+
+  return extractJSON(axios.get(`${BASE_API_URL}/coordinators`, { params }))
 }
 
 /**
