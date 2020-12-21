@@ -143,7 +143,7 @@ describe('Flow sandbox', () => {
       .balance
 
     // check balance sender
-    const expectedBalance = utilsSandbox.balanceToString(depositAmount - exitAmount)
+    const expectedBalance = utilsSandbox.normalizaBigIntString(depositAmount - exitAmount)
     expect(finalBalanceReceiver.toString()).toBe(expectedBalance)
   }, 300000)
 
