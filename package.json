@@ -16,6 +16,8 @@
     "build-browser": "cp -R src/ dist/browser",
     "prebuild": "rm -rf dist",
     "build": "npm run build-node && npm run build-browser",
+    "copy-prepublish": "cp package.json README.md README_sandbox.md hermez.js.LICENSE.txt dist",
+    "build-publish": "npm run build && npm run copy-prepublish && npm publish dist",
     "test": "./tests/launch-test.sh",
     "lint": "standard",
     "lint:fix": "standard --fix"
@@ -105,7 +107,7 @@
   "babel": {
     "presets": [
       [
-      "@babel/env",
+        "@babel/env",
         {
           "targets": [
             "last 2 versions",
