@@ -139,7 +139,7 @@ const withdraw = async (amount, accountIndex, token, babyJubJub, batchNumber, me
   }
 
   // https://github.com/hermeznetwork/hermezjs/issues/17
-  const filteredSiblings = filterSiblings(merkleSiblings, filterSiblings)
+  const filteredSiblings = filterSiblings(merkleSiblings, filterSibling)
 
   const transactionParameters = [
     token.id,
