@@ -3,6 +3,7 @@
   "version": "1.0.0-beta.2",
   "description": "Hermez SDK",
   "main": "dist/node/index.js",
+  "module": "dist/browser/index.js",
   "exports": {
     "import": "./dist/browser/index.js",
     "require": "./dist/node/index.js"
