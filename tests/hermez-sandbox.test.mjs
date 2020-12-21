@@ -202,7 +202,6 @@ describe('Flow sandbox', () => {
 
     // check transaction in coordinator's transaction pool
     const transferPool = await hermez.CoordinatorAPI.getPoolTransaction(transferResult.id)
-    console.log('TransferPool', transferPool)
 
     expect(tokenERC20.name).toBe(transferPool.token.name)
     expect(transferAmount.toString()).toBe(transferPool.amount)
@@ -218,7 +217,6 @@ describe('Flow sandbox', () => {
     await utilsSandbox.waitNBatches(3)
 
     const txProcessed = await hermez.CoordinatorAPI.getTransactions()
-    console.log('Proce Transaction', txProcessed)
     nProcessedTransactions = txProcessed.transactions.length
     expect(nProcessedTransactions).toBe(nExpectedProcessedTransactions)
     nExpectedProcessedTransactions = nProcessedTransactions
@@ -351,7 +349,6 @@ describe('Flow sandbox', () => {
 
       // check transaction in coordinator's transaction pool
       transferPool.push(await hermez.CoordinatorAPI.getPoolTransaction(transferResult.id))
-      console.log('TransferPool', transferPool[i])
 
       expect(tokenERC20.name).toBe(transferPool[i].token.name)
       expect(transferAmount.toString()).toBe(transferPool[i].amount)
@@ -368,7 +365,6 @@ describe('Flow sandbox', () => {
     await utilsSandbox.waitNBatches(3)
 
     const txProcessed = await hermez.CoordinatorAPI.getTransactions()
-    console.log('Tx Proveeded', txProcessed)
     nProcessedTransactions = txProcessed.transactions.length
     expect(nProcessedTransactions).toBe(nExpectedProcessedTransactions)
     nExpectedProcessedTransactions = nProcessedTransactions
