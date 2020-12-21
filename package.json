@@ -102,6 +102,21 @@
       "**/?(*.)(spec|test).mjs"
     ]
   },
+  "babel": {
+    "presets": [
+      [
+      "@babel/env",
+        {
+          "targets": [
+            "last 2 versions",
+            "maintained node versions"
+          ],
+          "useBuiltIns": "usage",
+          "corejs": "3.8.1"
+        }
+      ]
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hermeznetwork/hermezjs.git"
