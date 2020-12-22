@@ -1,6 +1,10 @@
 import { Scalar } from 'ffjavascript'
 
-import { postPoolTransaction, getAccounts } from './api.js'
+import {
+  postPoolTransaction,
+  getAccounts,
+  getAccount
+} from './api.js'
 import { fix2Float } from './float16.js'
 import { addPoolTransaction } from './tx-pool.js'
 import { contractAddresses, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
@@ -8,17 +12,18 @@ import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
 import { getProvider } from './providers.js'
+import { generateL2Transaction } from './tx-utils.js'
 import HermezABI from './abis/HermezABI.js'
 import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
+import { SignerType } from './signers.js'
 
 /**
  * Get current average gas price from the last ethereum blocks and multiply it
  * @param {number} multiplier - multiply the average gas price by this parameter
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @returns {promise} - promise will return the gas price obtained.
-*/
-async function getGasPrice (multiplier, providerUrl) {
-  const provider = getProvider(providerUrl)
+ */
+async function getGasPrice (multiplier) {
+  const provider = getProvider()
   const strAvgGas = await provider.getGasPrice()
   const avgGas = Scalar.e(strAvgGas)
   const res = (avgGas * Scalar.e(multiplier))
@@ -51,10 +56,14 @@ const deposit = async (
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, signerData)
-
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
-  const account = (await getAccounts(ethereumAddress, [token.id])).accounts[0]
+  const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
+  let account = await getAccounts(hezEthereumAddress, [token.id])
+
+  if (typeof account !== 'undefined') {
+    account = account.accounts[0]
+  }
 
   const overrides = {
     gasLimit,
@@ -105,11 +114,15 @@ const forceExit = async (
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, signerData)
+  // TODO. Check call below as it can be invalid if accountIndex doesn't exist
+  const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
+  const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
+  const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
+    gasPrice: await getGasPrice(gasMultiplier, null)
   }
 
   const transactionParameters = [
@@ -127,17 +140,17 @@ const forceExit = async (
 }
 
 /**
- * Finalise the withdraw. This a L1 transaction.
+ * Finalise the withdraw. This is a L1 transaction.
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
  * @param {BigInt} batchNumber - The batch number where the exit being withdrawn was forged
- * @param {BigInt} merkleRoot - The merkle root of the exit being withdrawn.
  * @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
+ * @param {boolean} filterSiblings - Whether siblings should be filtered
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  *
@@ -149,33 +162,62 @@ const withdraw = async (
   token,
   babyJubJub,
   batchNumber,
-  merkleRoot,
   merkleSiblings,
   providerUrl,
   signerData,
   isInstant = true,
+  filterSibling = true,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, signerData)
+  // TODO. Check call below as it can be invalid if accountIndex doesn't exist
+  const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
+  const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
+  const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
+    gasPrice: await getGasPrice(gasMultiplier)
   }
+
+  // https://github.com/hermeznetwork/hermezjs/issues/17
+  const filteredSiblings = filterSiblings(merkleSiblings, filterSibling)
 
   const transactionParameters = [
     token.id,
     amount,
     `0x${babyJubJub}`,
     batchNumber,
-    merkleSiblings,
+    filteredSiblings,
     getAccountIndex(accountIndex),
     isInstant
   ]
 
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
     .then(() => transactionParameters)
+}
+
+/**
+ * Removes 0's from Siblings
+ * @param {array} siblings - Array of sibling strings
+ * @param {boolean} enable - Whether siblings should be filtered
+ * @returns {array} Array of filtered sibling strings
+ */
+function filterSiblings (siblings, enable) {
+  if (!enable) {
+    return siblings
+  }
+
+  const filteredSiblings = []
+  for (var i = 0; i < siblings.length; i++) {
+    if (siblings[i] !== '0') {
+      filteredSiblings.push(siblings[i])
+    } else {
+      break
+    }
+  }
+  return filteredSiblings
 }
 
 /**
@@ -198,13 +240,13 @@ const delayedWithdraw = async (
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
-  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, providerUrl, signerData)
-
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
+  const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
+  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, providerUrl, txSignerData)
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
+    gasPrice: await getGasPrice(gasMultiplier)
   }
 
   const transactionParameters = [
@@ -236,10 +278,32 @@ async function sendL2Transaction (transaction, bJJ) {
   }
 }
 
+/**
+ * Compact L2 transaction generated and sent to a Coordinator.
+ * @param {object} transaction - ethAddress and babyPubKey together
+ * @param {string} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+ * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {bigint} transaction.amount - The amount being sent as a BigInt
+ * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+ * @param {number} transaction.nonce - The current nonce of the sender's token account
+ * @param {object} wallet - Transaction sender Hermez Wallet
+ * @param {object} token - The token information object as returned from the Coordinator.
+*/
+async function generateAndSendL2Tx (tx, wallet, token) {
+  const l2TxParams = await generateL2Transaction(tx, wallet.publicKeyCompressedHex, token)
+
+  wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
+
+  const l2TxResult = await sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
+
+  return l2TxResult
+}
+
 export {
   deposit,
   forceExit,
   withdraw,
   delayedWithdraw,
-  sendL2Transaction
+  sendL2Transaction,
+  generateAndSendL2Tx
 }

@@ -20,10 +20,8 @@ function initializeTransactionPool () {
 
 /**
  * Fetches the transaction details for each transaction in the pool for the specified account index and bjj
- *
  * @param {String} accountIndex - The account index
  * @param {String} bjj - The account's BabyJubJub
- *
  * @returns {Array}
  */
 function getPoolTransactions (accountIndex, bJJ) {
@@ -54,7 +52,6 @@ function getPoolTransactions (accountIndex, bJJ) {
 
 /**
  * Adds a transaction to the transaction pool
- *
  * @param {string} transaction - The transaction to add to the pool
  * @param {string} bJJ - The account with which the transaction was made
  * @returns {void}

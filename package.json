@@ -1,15 +1,24 @@
 {
-  "name": "hermezjs",
-  "version": "1.0.0",
+  "name": "@hermeznetwork/hermezjs",
+  "version": "1.0.0-beta.4",
   "description": "Hermez SDK",
-  "main": "src/index.js",
-  "module": "src/index.js",
-  "type": "module",
+  "main": "dist/node/index.js",
+  "module": "dist/browser/index.js",
+  "exports": {
+    "import": "./dist/browser/index.js",
+    "require": "./dist/node/index.js"
+  },
   "directories": {
-    "test": "test"
+    "test": "tests"
   },
   "scripts": {
-    "test": "jest",
+    "build-node": "babel src --out-dir dist/node",
+    "build-browser": "cp -R src/ dist/browser",
+    "prebuild": "rm -rf dist",
+    "build": "npm run build-node && npm run build-browser",
+    "build-publish": "npm run build && npm publish",
+    "jest": "jest",
+    "test": "NODE_ENV=test npm run jest",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
@@ -18,9 +27,11 @@
   "dependencies": {
     "@ledgerhq/hw-app-eth": "^5.35.1",
     "@ledgerhq/hw-transport-u2f": "^5.36.0-deprecated",
+    "@babel/polyfill": "^7.12.1",
     "axios": "^0.20.0",
     "babel-eslint": "^10.1.0",
     "circomlib": "^0.2.4",
+    "core-js": "^3.8.1",
     "ethers": "^5.0.17",
     "ffjavascript": "^0.2.33",
     "js-sha3": "^0.8.0",
@@ -28,6 +39,7 @@
     "trezor-connect": "^8.1.19"
   },
   "devDependencies": {
+    "@babel/cli": "^7.12.10",
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@hermeznetwork/commonjs": "0.0.2",
@@ -75,5 +87,13 @@
   },
   "lint-staged": {
     "*.{js,cjs,mjs}": "standard --fix"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hermeznetwork/hermezjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hermeznetwork/hermezjs/issues"
+  },
+  "homepage": "https://github.com/hermeznetwork/hermezjs#readme"
 }

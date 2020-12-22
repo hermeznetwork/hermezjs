@@ -1,10 +1,10 @@
 import ERC20ABI from './abis/ERC20ABI.js'
 import { contractAddresses } from './constants.js'
 import { getContract } from './contracts.js'
+import { SignerType } from './signers.js'
 
 /**
  * Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
- *
  * @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
  * @param {String} accountAddress - The Ethereum address of the transaction sender
  * @param {String} contractAddress - The token smart contract address
@@ -14,8 +14,10 @@ import { getContract } from './contracts.js'
  * @returns {Promise} transaction
  */
 async function approve (amount, accountAddress, contractAddress, providerUrl, signerData) {
-  const erc20Contract = getContract(contractAddress, ERC20ABI, providerUrl, signerData)
+  const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: accountAddress }
+  const erc20Contract = getContract(contractAddress, ERC20ABI, providerUrl, txSignerData)
   const allowance = await erc20Contract.allowance(accountAddress, contractAddresses.Hermez)
+
   if (allowance.lt(amount)) {
     return erc20Contract.approve(contractAddresses.Hermez, amount)
   }

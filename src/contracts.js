@@ -16,9 +16,12 @@ const contractsCache = new Map()
  * @return {Contract} The request contract
  */
 function getContract (contractAddress, abi, providerUrl, signerData) {
+  // TODO cache not valid if using different EtherAddress Disable for now
+  /*
   if (contractsCache.has(contractAddress)) {
     return contractsCache.get(contractAddress)
   }
+  */
 
   const provider = getProvider(providerUrl)
   const signer = getSigner(provider, signerData)

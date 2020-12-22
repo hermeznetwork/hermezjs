@@ -22,6 +22,7 @@ function getProvider (url) {
   if (!provider) {
     setProvider(url)
   }
+
   return provider
 }
 

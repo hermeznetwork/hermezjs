@@ -1,10 +1,8 @@
 import axios from 'axios'
 
 import { extractJSON } from './http.js'
-import { DEFAULT_PAGE_SIZE } from './constants.js'
+import { DEFAULT_PAGE_SIZE, BASE_API_URL } from './constants.js'
 import { isHermezEthereumAddress, isHermezBjjAddress } from './addresses.js'
-
-const baseApiUrl = 'https://apimock.hermez.network'
 
 /**
  * Sets the query parameters related to pagination
@@ -33,7 +31,13 @@ async function getAccounts (address, tokenIds, fromItem) {
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ..._getPageData(fromItem)
   }
-  return extractJSON(axios.get(`${baseApiUrl}/accounts`, { params }))
+
+  try {
+    const retVal = await axios.get(`${BASE_API_URL}/accounts`, { params })
+    return retVal.data
+  } catch (error) {
+    return undefined
+  }
 }
 
 /**
@@ -42,7 +46,7 @@ async function getAccounts (address, tokenIds, fromItem) {
  * @returns {object} Response data with the token account
  */
 async function getAccount (accountIndex) {
-  return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`))
+  return extractJSON(axios.get(`${BASE_API_URL}/accounts/${accountIndex}`))
 }
 
 /**
@@ -63,7 +67,8 @@ async function getTransactions (address, tokenIds, batchNum, accountIndex, fromI
     ...(accountIndex ? { accountIndex } : {}),
     ..._getPageData(fromItem)
   }
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { params }))
+
+  return extractJSON(axios.get(`${BASE_API_URL}/transactions-history`, { params }))
 }
 
 /**
@@ -72,7 +77,7 @@ async function getTransactions (address, tokenIds, batchNum, accountIndex, fromI
  * @returns {object} Response data with the transaction
  */
 async function getHistoryTransaction (transactionId) {
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-history/${transactionId}`))
+  return extractJSON(axios.get(`${BASE_API_URL}/transactions-history/${transactionId}`))
 }
 
 /**
@@ -81,7 +86,7 @@ async function getHistoryTransaction (transactionId) {
  * @returns {object} Response data with the transaction
  */
 async function getPoolTransaction (transactionId) {
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-pool/${transactionId}`))
+  return extractJSON(axios.get(`${BASE_API_URL}/transactions-pool/${transactionId}`))
 }
 
 /**
@@ -90,7 +95,7 @@ async function getPoolTransaction (transactionId) {
  * @returns {string} Transaction id
  */
 async function postPoolTransaction (transaction) {
-  return axios.post(`${baseApiUrl}/transactions-pool`, transaction)
+  return axios.post(`${BASE_API_URL}/transactions-pool`, transaction)
 }
 
 /**
@@ -106,9 +111,7 @@ async function getExits (address, onlyPendingWithdraws) {
     ...(onlyPendingWithdraws ? { onlyPendingWithdraws } : {})
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/exits`, { params }))
-  // exit.batchNum = 5432
-  // exit.instantWithdrawn = null
+  return extractJSON(axios.get(`${BASE_API_URL}/exits`, { params }))
 }
 
 /**
@@ -118,7 +121,7 @@ async function getExits (address, onlyPendingWithdraws) {
  * @returns {object} Response data with the specific exit
  */
 async function getExit (batchNum, accountIndex) {
-  return await extractJSON(axios.get(`${baseApiUrl}/exits/${batchNum}/${accountIndex}`))
+  return await extractJSON(axios.get(`${BASE_API_URL}/exits/${batchNum}/${accountIndex}`))
 }
 
 /**
@@ -131,7 +134,7 @@ async function getTokens (tokenIds) {
     ...(tokenIds ? { ids: tokenIds.join(',') } : {})
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/tokens`, { params }))
+  return extractJSON(axios.get(`${BASE_API_URL}/tokens`, { params }))
 }
 
 /**
@@ -140,7 +143,7 @@ async function getTokens (tokenIds) {
  * @returns {object} Response data with a specific token
  */
 async function getToken (tokenId) {
-  return extractJSON(axios.get(`${baseApiUrl}/tokens/${tokenId}`))
+  return extractJSON(axios.get(`${BASE_API_URL}/tokens/${tokenId}`))
 }
 
 /**
@@ -148,7 +151,8 @@ async function getToken (tokenId) {
  * @returns {object} Response data with the current state of the coordinator
  */
 async function getState () {
-  const state = await extractJSON(axios.get(`${baseApiUrl}/state`))
+  const state = await extractJSON(axios.get(`${BASE_API_URL}/state`))
+
   return state
 }
 
@@ -165,7 +169,8 @@ async function getBatches (forgerAddr, slotNum, fromItem) {
     ...(slotNum ? { slotNum } : {}),
     ..._getPageData(fromItem)
   }
-  return extractJSON(axios.get(`${baseApiUrl}/batches`, { params }))
+
+  return extractJSON(axios.get(`${BASE_API_URL}/batches`, { params }))
 }
 
 /**
@@ -174,7 +179,7 @@ async function getBatches (forgerAddr, slotNum, fromItem) {
  * @returns {object} Response data with a specific batch
  */
 async function getBatch (batchNum) {
-  return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`))
+  return extractJSON(axios.get(`${BASE_API_URL}/batches/${batchNum}`))
 }
 
 /**
@@ -183,7 +188,11 @@ async function getBatch (batchNum) {
  * @returns {object} Response data with a specific coordinator
  */
 async function getCoordinator (bidderAddr) {
-  return extractJSON(axios.get(`${baseApiUrl}/coordinators/${bidderAddr}`))
+  const params = {
+    ...(bidderAddr ? { bidderAddr } : {})
+  }
+
+  return extractJSON(axios.get(`${BASE_API_URL}/coordinators`, { params }))
 }
 
 /**
@@ -192,7 +201,7 @@ async function getCoordinator (bidderAddr) {
  * @returns {object} Response data with a specific slot
  */
 async function getSlot (slotNum) {
-  return extractJSON(axios.get(`${baseApiUrl}/slots/${slotNum}`))
+  return extractJSON(axios.get(`${BASE_API_URL}/slots/${slotNum}`))
 }
 
 /**
@@ -208,7 +217,8 @@ async function getBids (slotNum, bidderAddr, fromItem) {
     ...(bidderAddr ? { bidderAddr } : {}),
     ..._getPageData(fromItem)
   }
-  return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
+
+  return extractJSON(axios.get(`${BASE_API_URL}/bids`, { params }))
 }
 
 /**
@@ -219,7 +229,7 @@ async function getBids (slotNum, bidderAddr, fromItem) {
  * @returns {object} Response data
  */
 async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature) {
-  return axios.post(`${baseApiUrl}/account-creation-authorization`, {
+  return axios.post(`${BASE_API_URL}/account-creation-authorization`, {
     hezEthereumAddress,
     bjj: bJJ,
     signature

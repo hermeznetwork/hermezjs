@@ -17,7 +17,7 @@ test.skip('Check Allowance', async () => {
    * 3 - Check allowance
    */
   const txAddress = '0xc783df8a850f42e7f7e57013759c285caa701eb6'
-  const ERC20Address = '0xf4e77E5Da47AC3125140c470c71cBca77B5c638c'
+  const ERC20Address = '0x8196263D97DE9A1198Da2A1830b5A49cBe6eb3FE'
 
   // Initialize providers
   const provider = providers.getProvider('http://localhost:8545')
