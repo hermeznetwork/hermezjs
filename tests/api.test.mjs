@@ -199,8 +199,10 @@ test('#getBatch', async () => {
 
 test('#getCoordinator', async () => {
   const bidderAddr = '0xaa942cfcd25ad4d90a62358b0dd84f33b398262a'
-  const res = await CoordinatorAPI.getCoordinator(bidderAddr)
-  expect(res.bidderAddr).toBe(bidderAddr)
+  const res = await CoordinatorAPI.getCoordinator()
+  // TODO: change required due to
+  // https://github.com/hermeznetwork/hermezjs/commit/3b8e8842b630b2d84a56132bd1c4460791bb1d60
+  expect(res.coordinators[0].bidderAddr).toBe(bidderAddr)
 })
 
 test('#getSlot', async () => {
