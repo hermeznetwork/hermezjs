@@ -34,8 +34,8 @@ async function getGasPrice (multiplier, providerUrl) {
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
- * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  *
@@ -46,8 +46,8 @@ const deposit = async (
   hezEthereumAddress,
   token,
   babyJubJub,
-  signerData,
   providerUrl,
+  signerData,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
@@ -89,8 +89,8 @@ const deposit = async (
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
- * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
  *
@@ -135,8 +135,8 @@ const forceExit = async (
  * @param {BigInt} batchNumber - The batch number where the exit being withdrawn was forged
  * @param {BigInt} merkleRoot - The merkle root of the exit being withdrawn.
  * @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
- * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
@@ -151,8 +151,8 @@ const withdraw = async (
   batchNumber,
   merkleRoot,
   merkleSiblings,
-  signerData,
   providerUrl,
+  signerData,
   isInstant = true,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
@@ -183,8 +183,8 @@ const withdraw = async (
  *
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
- * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
  *
@@ -193,8 +193,8 @@ const withdraw = async (
 const delayedWithdraw = async (
   hezEthereumAddress,
   token,
-  signerData,
   providerUrl,
+  signerData,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {

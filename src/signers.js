@@ -16,6 +16,10 @@ const SignerType = {
  * @param {Object} signerData - Data required to build a signer
  */
 const getSigner = (provider, signerData) => {
+  if (!signerData) {
+    return provider.getSigner()
+  }
+
   switch (signerData.type) {
     case SignerType.LEDGER: {
       return LedgerSigner.connect(provider, { path: signerData.path })

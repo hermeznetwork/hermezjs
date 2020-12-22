@@ -93,7 +93,7 @@ describe('HermezWallet', () => {
 })
 
 test('#createWalletFromEtherAccount', async () => {
-  const { hermezWallet, hermezEthereumAddress } = await createWalletFromEtherAccount(0, 'http://localhost:8545')
+  const { hermezWallet, hermezEthereumAddress } = await createWalletFromEtherAccount('http://localhost:8545')
   expect(hermezWallet).toBeInstanceOf(HermezWallet)
   expect(isHermezEthereumAddress(hermezEthereumAddress)).toBe(true)
 })
