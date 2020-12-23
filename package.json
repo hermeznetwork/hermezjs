@@ -2,6 +2,14 @@
   "name": "@hermeznetwork/hermezjs",
   "version": "1.0.0-beta.4",
   "description": "Hermez SDK",
+  "homepage": "https://github.com/hermeznetwork/hermezjs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hermeznetwork/hermezjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hermeznetwork/hermezjs/issues"
+  },
   "main": "dist/node/index.js",
   "module": "dist/browser/index.js",
   "exports": {
@@ -52,22 +60,6 @@
     "lint-staged": "^10.4.2",
     "standard": "^15.0.0"
   },
-  "standard": {
-    "parser": "babel-eslint",
-    "env": [
-      "browser",
-      "jest",
-      "node"
-    ],
-    "ignore": [
-      "hermez.js",
-      "hermez-example.mjs",
-      "deploy.js",
-      "buidler.config.js",
-      "/src/abis/",
-      "fee-factors.js"
-    ]
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -80,20 +72,24 @@
       "last 1 safari version"
     ]
   },
+  "standard": {
+    "parser": "babel-eslint",
+    "env": [
+      "browser",
+      "jest",
+      "node"
+    ],
+    "ignore": [
+      "src/abis",
+      "fee-factors.js"
+    ]
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
-    "*.{js,cjs,mjs}": "standard --fix"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hermeznetwork/hermezjs.git"
-  },
-  "bugs": {
-    "url": "https://github.com/hermeznetwork/hermezjs/issues"
-  },
-  "homepage": "https://github.com/hermeznetwork/hermezjs#readme"
+    "*.{js,cjs}": "standard --fix"
+  }
 }

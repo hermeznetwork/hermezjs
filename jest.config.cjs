@@ -1,21 +1,10 @@
 module.exports = {
   testTimeout: 50000,
   verbose: true,
-  moduleFileExtensions: [
-    'mjs',
-    'js',
-    'json',
-    'jsx',
-    'ts',
-    'tsx',
-    'node'
-  ],
-  testMatch: [
-    '<rootDir>/tests/**/**.test.mjs'
-  ],
+  moduleFileExtensions: ['js'],
+  testMatch: ['<rootDir>/tests/**/**.test.js'],
   transform: {
-    '^.+\\.js?$': 'babel-jest',
-    '^.+\\.mjs?$': 'babel-jest'
+    '^.+\\.js?$': 'babel-jest'
   },
   transformIgnorePatterns: [
     'node_modules/(?!(@ledgerhq))/'
