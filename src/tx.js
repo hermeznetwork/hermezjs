@@ -86,7 +86,7 @@ const deposit = async (
       })
   }
 
-  await approve(amount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
+  await approve(amount, ethereumAddress, token.ethereumAddress, providerUrl, signerData)
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => transactionParameters)
