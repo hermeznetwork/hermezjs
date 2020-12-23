@@ -12,7 +12,6 @@ const contractsCache = new Map()
  * @param {Array} abi - The smart contract ABI
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send any deployment transaction
- *
  * @return {Contract} The request contract
  */
 function getContract (contractAddress, abi, providerUrl, signerData) {
