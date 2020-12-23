@@ -43,7 +43,6 @@ async function getGasPrice (multiplier) {
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
- *
  * @returns {Promise} transaction parameters
  */
 const deposit = async (
@@ -102,7 +101,6 @@ const deposit = async (
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
- *
  * @returns {Promise} transaction parameters
  */
 const forceExit = async (
@@ -153,7 +151,6 @@ const forceExit = async (
  * @param {boolean} filterSiblings - Whether siblings should be filtered
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
- *
  * @returns {Promise} transaction parameters
  */
 const withdraw = async (
@@ -229,7 +226,6 @@ function filterSiblings (siblings, enable) {
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Bumber} gasMultiplier - Optional gas multiplier
- *
  * @returns {promise} transaction parameters
  */
 const delayedWithdraw = async (
