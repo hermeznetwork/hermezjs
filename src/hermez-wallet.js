@@ -37,7 +37,7 @@ class HermezWallet {
 
     const compressedPublicKey = utils.leBuff2int(circomlib.babyJub.packPoint(publicKey))
     this.publicKeyCompressed = compressedPublicKey.toString()
-    this.publicKeyCompressedHex = compressedPublicKey.toString(16)
+    this.publicKeyCompressedHex = ethers.utils.hexZeroPad(`0x${compressedPublicKey.toString(16)}`, 32).slice(2)
 
     this.hermezEthereumAddress = hermezEthereumAddress
   }
@@ -59,17 +59,19 @@ class HermezWallet {
   /**
    * Generates the signature necessary for /create-account-authorization endpoint
    * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+   * @param {Object} signerData - Signer data used to build a Signer to create the walet
    * @returns {String} The generated signature
    */
-  async signCreateAccountAuthorization (providerUrl) {
+  async signCreateAccountAuthorization (providerUrl, signerData) {
     const provider = getProvider(providerUrl)
-    const signer = provider.getSigner()
+    const signer = getSigner(provider, signerData)
 
     const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE)
-    const chainIdHex = (await provider.getNetwork()).chainId
+    const chainId = (await provider.getNetwork()).chainId.toString(16)
+    const chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`
     const messageHex =
       ethers.utils.hexlify(accountCreationAuthMsgArray) +
-      this.publicKeyCompressedHex.slice(2) +
+      this.publicKeyCompressedHex +
       ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
       getEthereumAddress(this.hermezEthereumAddress).slice(2)
 
@@ -84,7 +86,7 @@ class HermezWallet {
 
 /**
  * Creates a HermezWallet from one of the Ethereum wallets in the provider
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to create the walet
  * @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
  */
