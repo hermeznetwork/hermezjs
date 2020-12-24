@@ -5,6 +5,13 @@ test('#_getPageData', () => {
   expect(pageData).toEqual({ fromItem: 32, limit: 20 })
 })
 
+test('#getBaseApiUrl & #setBaseApiUrl', () => {
+  const url = 'http://localhost:8086'
+  expect(CoordinatorAPI.getBaseApiUrl()).toBe(url)
+  CoordinatorAPI.setBaseApiUrl(url)
+  expect(CoordinatorAPI.getBaseApiUrl()).toBe(url)
+})
+
 describe('#getAccounts', () => {
   const hermezEthereumAddress = 'hez:0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf'
   const hermezBjjAddress = 'hez:W6x4TZOAZ9mAqdOb3Xm_hKDLspaXfEfMMN4tXOkinS-W'

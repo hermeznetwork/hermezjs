@@ -1,12 +1,13 @@
 import circomlib from 'circomlib'
 import jsSha3 from 'js-sha3'
 import { utils } from 'ffjavascript'
+import { ethers } from 'ethers'
 
 import { buildTransactionHashMessage } from './tx-utils.js'
 import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
-import { getHermezAddress, isHermezEthereumAddress } from './addresses.js'
-import { METAMASK_MESSAGE } from './constants.js'
+import { getEthereumAddress, getHermezAddress, isHermezEthereumAddress } from './addresses.js'
+import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE } from './constants.js'
 
 /**
  * @class
@@ -52,6 +53,31 @@ class HermezWallet {
     const packedSignature = circomlib.eddsa.packSignature(signature)
     transaction.signature = packedSignature.toString('hex')
     return transaction
+  }
+
+  /**
+   * Generates the signature necessary for /create-account-authorization endpoint
+   * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+   * @returns {String} The generated signature
+   */
+  async signCreateAccountAuthorization (providerUrl) {
+    const provider = getProvider(providerUrl)
+    const signer = provider.getSigner()
+
+    const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE)
+    const chainIdHex = (await provider.getNetwork()).chainId
+    const messageHex =
+      ethers.utils.hexlify(accountCreationAuthMsgArray) +
+      this.publicKeyCompressedHex.slice(2) +
+      ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
+      getEthereumAddress(this.hermezEthereumAddress).slice(2)
+
+    const messageArray = ethers.utils.arrayify(messageHex)
+    const signature = await signer.signMessage(messageArray)
+    // Generate the signature from params as there's a bug in ethers
+    // that generates the base signature wrong
+    const signatureParams = ethers.utils.splitSignature(signature)
+    return signatureParams.r + signatureParams.s + signatureParams.v
   }
 }
 

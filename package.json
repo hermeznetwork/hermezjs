@@ -3,9 +3,9 @@
   "version": "1.0.0-beta.4",
   "description": "Hermez SDK",
   "main": "dist/node/index.js",
-  "module": "dist/browser/index.js",
+  "module": "src/index.js",
   "exports": {
-    "import": "./dist/browser/index.js",
+    "import": "./src/index.js",
     "require": "./dist/node/index.js"
   },
   "directories": {
@@ -13,11 +13,9 @@
   },
   "scripts": {
     "build-node": "babel src --out-dir dist/node",
-    "build-browser": "cp -R src/ dist/browser",
     "prebuild": "rm -rf dist",
-    "build": "npm run build-node && npm run build-browser",
-    "build-publish": "npm run build && npm publish",
-    "test": "./tests/launch-test.sh",
+    "build-publish": "npm run build-node && npm publish",
+    "test": "npx jest -- hermez-wallet",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
