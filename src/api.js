@@ -190,8 +190,8 @@ async function getBatch (batchNum) {
  */
 async function getCoordinators (forgerAddr, bidderAddr) {
   const params = {
-    ...(bidderAddr ? { bidderAddr } : {}),
-    ...(forgerAddr ? { forgerAddr } : {})
+    ...(forgerAddr ? { forgerAddr } : {}),
+    ...(bidderAddr ? { bidderAddr } : {})
   }
 
   return extractJSON(axios.get(`${BASE_API_URL}/coordinators`, { params }))
