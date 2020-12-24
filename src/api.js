@@ -184,11 +184,13 @@ async function getBatch (batchNum) {
 
 /**
  * GET request to the /coordinators/:bidderAddr endpoint. Returns a specific coordinator information
- * @param {string} bidderAddr - A coordinator address
+ * @param {string} forgerAddr - A coordinator forger address
+ * @param {string} bidderAddr - A coordinator bidder address
  * @returns {object} Response data with a specific coordinator
  */
-async function getCoordinator (bidderAddr) {
+async function getCoordinators (forgerAddr, bidderAddr) {
   const params = {
+    ...(forgerAddr ? { forgerAddr } : {}),
     ...(bidderAddr ? { bidderAddr } : {})
   }
 
@@ -251,7 +253,7 @@ export {
   getState,
   getBatches,
   getBatch,
-  getCoordinator,
+  getCoordinators,
   getSlot,
   getBids,
   postCreateAccountAuthorization
