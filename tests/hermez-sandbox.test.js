@@ -328,7 +328,7 @@ describe('Flow sandbox', () => {
 
     nExpectedProcessedTransactions += nTransfers
 
-    for (var i = 0; i < nTransfers; i++) {
+    for (let i = 0; i < nTransfers; i++) {
       // Tx params
       const transferParams = {
         type: 'Transfer',
@@ -364,7 +364,7 @@ describe('Flow sandbox', () => {
     expect(nProcessedTransactions).toBe(nExpectedProcessedTransactions)
     nExpectedProcessedTransactions = nProcessedTransactions
 
-    for (var j = 0; j < nTransfers; j++) {
+    for (let j = 0; j < nTransfers; j++) {
       // check transaction has been processed
       const transferProcessed = await hermez.CoordinatorAPI.getHistoryTransaction(transferPool[j].id)
 

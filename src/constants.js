@@ -15,7 +15,9 @@ const contractAddresses = {
 
 const DEFAULT_PAGE_SIZE = 20
 
-const BASE_API_URL = process.env.API_MODE === 'MOCK' ? 'https://apimock.hermez.network' : 'http://0.0.0.0:8086'
+const BASE_API_URL = process.env.API_MODE === 'MOCK' || process.env.NODE_ENV === 'test'
+  ? 'https://apimock.hermez.network'
+  : 'http://0.0.0.0:8086'
 
 export {
   TRANSACTION_POOL_KEY,
