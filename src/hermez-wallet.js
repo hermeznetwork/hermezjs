@@ -1,12 +1,13 @@
 import circomlib from 'circomlib'
 import jsSha3 from 'js-sha3'
 import { utils } from 'ffjavascript'
+import { ethers } from 'ethers'
 
 import { buildTransactionHashMessage } from './tx-utils.js'
 import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
-import { getHermezAddress, isHermezEthereumAddress } from './addresses.js'
-import { METAMASK_MESSAGE } from './constants.js'
+import { getEthereumAddress, getHermezAddress, isHermezEthereumAddress } from './addresses.js'
+import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE } from './constants.js'
 import { getSigner } from './signers.js'
 
 /**
@@ -36,7 +37,7 @@ class HermezWallet {
 
     const compressedPublicKey = utils.leBuff2int(circomlib.babyJub.packPoint(publicKey))
     this.publicKeyCompressed = compressedPublicKey.toString()
-    this.publicKeyCompressedHex = compressedPublicKey.toString(16)
+    this.publicKeyCompressedHex = ethers.utils.hexZeroPad(`0x${compressedPublicKey.toString(16)}`, 32).slice(2)
 
     this.hermezEthereumAddress = hermezEthereumAddress
   }
@@ -54,11 +55,38 @@ class HermezWallet {
     transaction.signature = packedSignature.toString('hex')
     return transaction
   }
+
+  /**
+   * Generates the signature necessary for /create-account-authorization endpoint
+   * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+   * @param {Object} signerData - Signer data used to build a Signer to create the walet
+   * @returns {String} The generated signature
+   */
+  async signCreateAccountAuthorization (providerUrl, signerData) {
+    const provider = getProvider(providerUrl)
+    const signer = getSigner(provider, signerData)
+
+    const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE)
+    const chainId = (await provider.getNetwork()).chainId.toString(16)
+    const chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`
+    const messageHex =
+      ethers.utils.hexlify(accountCreationAuthMsgArray) +
+      this.publicKeyCompressedHex +
+      ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
+      getEthereumAddress(this.hermezEthereumAddress).slice(2)
+
+    const messageArray = ethers.utils.arrayify(messageHex)
+    const signature = await signer.signMessage(messageArray)
+    // Generate the signature from params as there's a bug in ethers
+    // that generates the base signature wrong
+    const signatureParams = ethers.utils.splitSignature(signature)
+    return signatureParams.r + signatureParams.s + signatureParams.v
+  }
 }
 
 /**
  * Creates a HermezWallet from one of the Ethereum wallets in the provider
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to create the walet
  * @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
  */

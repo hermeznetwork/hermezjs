@@ -44,7 +44,7 @@ describe('HermezWallet', () => {
     })
   })
 
-  describe('#signtransaction', () => {
+  test('#signtransaction', () => {
     const tx = {
       amount: '2340000000',
       fee: 235,
@@ -89,6 +89,11 @@ describe('HermezWallet', () => {
 
     const signedTransaction = wallet.signTransaction(tx, encodedTx)
     expect(signedTransaction.signature.length).toBe(128)
+  })
+
+  test('#signCreateAccountAuthorization', async () => {
+    const signature = await wallet.signCreateAccountAuthorization('http://localhost:8545')
+    expect(signature).toBe('0xfdf796eed1921593ba64bcbf69ff5abd1be0a26e3fb1538cd3a674b75cd280b00x5713c202e72747e9b8c62c0603b1cf1542f907326226f70cf65ca8dfde7cff0f28')
   })
 })
 

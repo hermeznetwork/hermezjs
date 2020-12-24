@@ -6,8 +6,8 @@ import { SignerType } from './signers.js'
 /**
  * Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
  * @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
- * @param {String} accountAddress - The Ethereum address of the transaction sender
- * @param {String} contractAddress - The token smart contract address
+ * @param {string} accountAddress - The Ethereum address of the transaction sender
+ * @param {string} contractAddress - The token smart contract address
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  *

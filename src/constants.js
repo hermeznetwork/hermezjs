@@ -2,6 +2,8 @@ const TRANSACTION_POOL_KEY = 'transactionPool'
 
 const METAMASK_MESSAGE = 'HERMEZ_ACCOUNT. Don\'t share this signature with anyone as this would reveal your Hermez private key. Unless you are in a trusted application, DO NOT SIGN THIS'
 
+const CREATE_ACCOUNT_AUTH_MESSAGE = 'I authorize this babyjubjub key for hermez rollup account creation'
+
 const ETHER_TOKEN_ID = 0
 
 const GAS_LIMIT = 5000000
@@ -17,11 +19,12 @@ const DEFAULT_PAGE_SIZE = 20
 
 const BASE_API_URL = process.env.API_MODE === 'MOCK' || process.env.NODE_ENV === 'test'
   ? 'https://apimock.hermez.network'
-  : 'http://0.0.0.0:8086'
+  : 'http://localhost:8086'
 
 export {
   TRANSACTION_POOL_KEY,
   METAMASK_MESSAGE,
+  CREATE_ACCOUNT_AUTH_MESSAGE,
   ETHER_TOKEN_ID,
   GAS_LIMIT,
   GAS_MULTIPLIER,

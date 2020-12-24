@@ -12,21 +12,19 @@ const contractsCache = new Map()
  * @param {Array} abi - The smart contract ABI
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send any deployment transaction
- * @return {Contract} The request contract
+ * @return {ethers.Contract} The request contract
  */
 function getContract (contractAddress, abi, providerUrl, signerData) {
-  // TODO cache not valid if using different EtherAddress Disable for now
-  /*
-  if (contractsCache.has(contractAddress)) {
-    return contractsCache.get(contractAddress)
+  const signerId = signerData.addressOrIndex || signerData.path
+  if (contractsCache.has(contractAddress + signerId)) {
+    return contractsCache.get(contractAddress + signerId)
   }
-  */
 
   const provider = getProvider(providerUrl)
   const signer = getSigner(provider, signerData)
   const contract = new ethers.Contract(contractAddress, abi, signer)
 
-  contractsCache.set(contractAddress, contract)
+  contractsCache.set(contractAddress + signerId, contract)
 
   return contract
 }

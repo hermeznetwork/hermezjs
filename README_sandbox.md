@@ -6,7 +6,6 @@ Instructions to run HermezJS in the sandbox
 ``` 
 git clone https://github.com/hermeznetwork/integration-testing.git
 cd integration-testing
-git checkout feature/doker-config
 make build
 make start
 ```
@@ -64,12 +63,7 @@ node ./src/server/coordinator.js --pc config-coordinator.json
 git clone https://github.com/hermeznetwork/hermezjs.git
 cd hermezjs
 git checkout feature/sandbox
-```
-
-8. In HermezJs root folder, run hermez-example.mjs test
-```
-NODE_OPTIONS=--experimental-vm-modules npx jest -- tests/hermez-sandbox.test.mjs 
-```
+``` 
 
 **NOTE** To run all tests, type:
 ```
