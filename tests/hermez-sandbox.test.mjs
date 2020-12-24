@@ -133,11 +133,6 @@ describe('Flow sandbox', () => {
     expect(nProcessedTransactions).toBe(nExpectedProcessedTransactions)
     nExpectedProcessedTransactions = nProcessedTransactions
 
-    // check balances
-    const finalBalanceSender = (await hermez.CoordinatorAPI.getAccounts(accounts[0].hermezEthereumAddress, [tokenERC20.id]))
-      .accounts[0]
-      .balance
-
     const finalBalanceReceiver = (await hermez.CoordinatorAPI.getAccounts(accounts[1].hermezEthereumAddress, [tokenERC20.id]))
       .accounts[0]
       .balance
@@ -297,15 +292,15 @@ describe('Flow sandbox', () => {
     nExpectedProcessedTransactions = nProcessedTransactions
 
     // check transaction has been processed
-    const transferProcessed1 = await hermez.CoordinatorAPI.getHistoryTransaction(updatedTxId1)
-    const transferProcessed2 = await hermez.CoordinatorAPI.getHistoryTransaction(updatedTxId2)
+    const transferProcessed1 = await hermez.CoordinatorAPI.getHistoryTransaction(transferPool1.id)
+    const transferProcessed2 = await hermez.CoordinatorAPI.getHistoryTransaction(transferPool2.id)
 
     expect(null).toBe(transferProcessed1.L1Info)
     expect('L2').toBe(transferProcessed1.L1orL2)
     expect(transferAmount.toString()).toBe(transferProcessed1.amount)
     expect(`hez:${tokenERC20.symbol}:256`).toBe(transferProcessed1.fromAccountIndex)
     expect(accounts[0].hermezEthereumAddress).toBe(transferProcessed1.fromHezEthereumAddress)
-    expect(updatedTxId1).toBe(transferProcessed1.id)
+    expect(transferPool1.id).toBe(transferProcessed1.id)
     expect(`hez:${tokenERC20.symbol}:257`).toBe(transferProcessed1.toAccountIndex)
     expect(accounts[1].hermezEthereumAddress).toBe(transferProcessed1.toHezEthereumAddress)
     expect(tokenERC20.id).toBe(transferProcessed1.token.id)
@@ -317,7 +312,7 @@ describe('Flow sandbox', () => {
     expect(transferAmount.toString()).toBe(transferProcessed2.amount)
     expect(`hez:${tokenERC20.symbol}:257`).toBe(transferProcessed2.fromAccountIndex)
     expect(accounts[1].hermezEthereumAddress).toBe(transferProcessed2.fromHezEthereumAddress)
-    expect(updatedTxId2).toBe(transferProcessed2.id)
+    expect(transferPool2.id).toBe(transferProcessed2.id)
     expect(`hez:${tokenERC20.symbol}:256`).toBe(transferProcessed2.toAccountIndex)
     expect(accounts[0].hermezEthereumAddress).toBe(transferProcessed2.toHezEthereumAddress)
     expect(tokenERC20.id).toBe(transferProcessed2.token.id)
@@ -369,16 +364,16 @@ describe('Flow sandbox', () => {
     expect(nProcessedTransactions).toBe(nExpectedProcessedTransactions)
     nExpectedProcessedTransactions = nProcessedTransactions
 
-    for (var i = 0; i < nTransfers; i++) {
+    for (var j = 0; j < nTransfers; j++) {
       // check transaction has been processed
-      const transferProcessed = await hermez.CoordinatorAPI.getHistoryTransaction(transferPool[i].id)
+      const transferProcessed = await hermez.CoordinatorAPI.getHistoryTransaction(transferPool[j].id)
 
       expect(null).toBe(transferProcessed.L1Info)
       expect('L2').toBe(transferProcessed.L1orL2)
       expect(transferAmount.toString()).toBe(transferProcessed.amount)
       expect(`hez:${tokenERC20.symbol}:256`).toBe(transferProcessed.fromAccountIndex)
       expect(accounts[0].hermezEthereumAddress).toBe(transferProcessed.fromHezEthereumAddress)
-      expect(transferPool[i].id).toBe(transferProcessed.id)
+      expect(transferPool[j].id).toBe(transferProcessed.id)
       expect(`hez:${tokenERC20.symbol}:257`).toBe(transferProcessed.toAccountIndex)
       expect(accounts[1].hermezEthereumAddress).toBe(transferProcessed.toHezEthereumAddress)
       expect(tokenERC20.id).toBe(transferProcessed.token.id)
@@ -391,7 +386,7 @@ describe('Flow sandbox', () => {
   test('Check Multiple L2 transfer Different batches', async () => {
     const nTransfers = 4
 
-    for (var i = 0; i < nTransfers; i++) {
+    for (var k = 0; k < nTransfers; k++) {
       // Transfer Params
       const transferParams = {
         type: 'Transfer',
