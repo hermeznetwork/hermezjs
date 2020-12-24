@@ -206,8 +206,8 @@ test('#getBatch', async () => {
 
 test('#getCoordinator', async () => {
   const bidderAddr = '0xaa942cfcd25ad4d90a62358b0dd84f33b398262a'
-  const res = await CoordinatorAPI.getCoordinator(bidderAddr)
-  expect(res.bidderAddr).toBe(bidderAddr)
+  const res = await CoordinatorAPI.getCoordinator()
+  expect(res.coordinators[0].bidderAddr).toBe(bidderAddr)
 })
 
 test('#getSlot', async () => {

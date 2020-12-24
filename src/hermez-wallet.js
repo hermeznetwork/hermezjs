@@ -8,6 +8,7 @@ import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
 import { getEthereumAddress, getHermezAddress, isHermezEthereumAddress } from './addresses.js'
 import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE } from './constants.js'
+import { getSigner } from './signers.js'
 
 /**
  * @class
@@ -83,14 +84,14 @@ class HermezWallet {
 
 /**
  * Creates a HermezWallet from one of the Ethereum wallets in the provider
- * @param {number} accountIndex - Index of the Ethereum wallet in the provider
  * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
- * @returns {object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
+ * @param {Object} signerData - Signer data used to build a Signer to create the walet
+ * @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
  */
-async function createWalletFromEtherAccount (accountIndex, providerUrl) {
+async function createWalletFromEtherAccount (providerUrl, signerData) {
   const provider = getProvider(providerUrl)
-  const signer = provider.getSigner(accountIndex)
-  const ethereumAddress = await signer.getAddress(accountIndex)
+  const signer = getSigner(provider, signerData)
+  const ethereumAddress = await signer.getAddress(signerData && signerData.addressOrIndex)
   const hermezEthereumAddress = getHermezAddress(ethereumAddress)
   const signature = await signer.signMessage(METAMASK_MESSAGE)
   const hashedSignature = jsSha3.keccak256(signature)

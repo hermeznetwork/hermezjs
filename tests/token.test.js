@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 import * as tokens from '../src/tokens.js'
 import * as utils from '../src/utils.js'
 import * as providers from '../src/providers.js'
+import * as signers from '../src/signers.js'
 import { contractAddresses } from '../src/constants.js'
 import ERC20ABI from '../src/abis/ERC20ABI.js'
 
@@ -29,7 +30,8 @@ test.skip('Check Allowance', async () => {
   for (var i = 0; i < 10; i++) {
     const amountStr = Math.floor(Math.random() * 10000).toString()
     const amount = utils.getTokenAmountBigInt(amountStr, 2)
-    await tokens.approve(amount, txAddress, ERC20Address)
+    const signerData = { type: signers.SignerType.JSON_RPC }
+    await tokens.approve(amount, txAddress, ERC20Address, signerData)
     const allowance = await erc20Contract.allowance(txAddress, contractAddresses.Hermez)
 
     expect(allowance.toString()).toBe(amount.toString())
