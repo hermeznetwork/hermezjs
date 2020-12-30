@@ -18,8 +18,8 @@ import { getSigner } from './signers.js'
 class HermezWallet {
   /**
    * Initialize Babyjubjub wallet from private key
-   * @param {buffer} privateKey - 32 bytes buffer
-   * @param {string} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
+   * @param {Buffer} privateKey - 32 bytes buffer
+   * @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
    */
   constructor (privateKey, hermezEthereumAddress) {
     if (privateKey.length !== 32) {
@@ -44,9 +44,9 @@ class HermezWallet {
 
   /**
    * To sign transaction with babyjubjub keys
-   * @param {object} transaction - Transaction object
-   * @param {object} encodedTransaction - Transaction encoded object
-   * @returns {object} The signed transaction object
+   * @param {Object} transaction - Transaction object
+   * @param {Object} encodedTransaction - Transaction encoded object
+   * @returns {Object} The signed transaction object
    */
   signTransaction (transaction, encodedTransaction) {
     const hashMessage = buildTransactionHashMessage(encodedTransaction)

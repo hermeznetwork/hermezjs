@@ -1,32 +1,13 @@
 # HermezJS
 HermezJS is an open source SDK to interact with the Hermez Rollup network.
 
-To deploy the contracts on localhost, do:
-1. Clone contracts repo and set feature/newDeploymentScript branch
+To deploy a local setup of a Hermez Coordinator with the Hermez smart contracts we recommend using our sandbox. To do so:
 
-```
-git clone https://github.com/hermeznetwork/contracts.git
-cd contracts
-git checkout feature/newDeploymentScript
-npm install
-```
-2. Launch local blockchain
-
-```
-npx buidler node
-(Open another command line)
-cd <CONTRACTS_REPO>/scripts/fe-deploymentTest
-node deployTest.js
-```
-
-3. Copy contracts/scripts/fe-deploymentTest/.env.example to contracts/scripts/fe-deploymentTest/.env ensuring addresses provided during deployment are correct
-
-4. Ensure `HERMEZ_ADDRESS` and `ERC20_ADDRESS` in src/constants.js are set to addresses provided during deployment step
-
-5. Launch example
-```
-cd <HERMEZJS_FOLDER>
-NODE_OPTIONS=--experimental-vm-modules npx jest -- tests/hermez-sandbox.test.mjs 
+```sh
+git clone https://github.com/hermeznetwork/integration-testing.git
+cd integration-testing
+make build
+make start
 ```
 
 **NOTE** To run all tests, type:
@@ -376,18 +357,17 @@ The last part is to make the actual transfer.
 
 ```js
   // amount to transfer
-  const amountXfer = hermez.Utils.getTokenAmountBigInt('20', 2)
+  const amountTransfer = hermez.Utils.getTokenAmountBigInt('20', 2)
 
   // generate L2 transaction
   const l2Tx = {
-    type: 'Transfer',
     from: account1.accountIndex,
     to: account2.accountIndex,
-    amount: amountXfer,
+    amount: amountTransfer,
     fee
   }
 
-  const XferResult = await hermez.Tx.l2Tx(l2Tx, hermezWallet, srcAccount.token)
+  const XferResult = await hermez.Tx.generateAndSendL2Tx(l2Tx, hermezWallet, srcAccount.token)
   console.log(xferResult)
 
 >>>>>
@@ -502,13 +482,12 @@ The only difference  is that there is no `to` account recipient.
 
 ```js
   const l2ExitTx = {
-    type: 'Exit',
     from: account2.accountIndex,
     amount: amountExit,
     fee
   }
 
-  const l2TxExitResult = await hermez.Tx.l2Tx(l2ExitTx, hermezWallet2, dstAccount.token)
+  const l2TxExitResult = await hermez.Tx.generateAndSendL2Tx(l2ExitTx, hermezWallet2, dstAccount.token)
   console.log(l2TxExitResult)
 
 >>>>

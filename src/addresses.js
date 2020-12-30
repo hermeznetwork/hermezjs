@@ -4,8 +4,8 @@ const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
 
 /**
  * Get the hermez address representation of an ethereum address
- * @param {string} ethereumAddress
- * @returns {string} hezEthereumAddress
+ * @param {String} ethereumAddress
+ * @returns {String} hezEthereumAddress
  */
 function getHermezAddress (ethereumAddress) {
   return `${hermezPrefix}${ethereumAddress}`
@@ -13,8 +13,8 @@ function getHermezAddress (ethereumAddress) {
 
 /**
  * Gets the Ethereum address part of a Hermez address
- * @param {string} hezEthereumAddress
- * @returns {string} ethereumAddress
+ * @param {String} hezEthereumAddress
+ * @returns {String} ethereumAddress
  */
 function getEthereumAddress (hezEthereumAddress) {
   if (hezEthereumAddress.includes('hez:')) {
@@ -26,8 +26,8 @@ function getEthereumAddress (hezEthereumAddress) {
 
 /**
  * Checks if given string matches regex of a Hermez address
- * @param {string} test
- * @returns {boolean}
+ * @param {String} test
+ * @returns {Boolean}
  */
 function isHermezEthereumAddress (test) {
   if (hezEthereumAddressPattern.test(test)) {
@@ -38,8 +38,8 @@ function isHermezEthereumAddress (test) {
 
 /**
  * Checks if given string matches regex of a Hermez BJJ address
- * @param {string} test
- * @returns {boolean}
+ * @param {String} test
+ * @returns {Boolean}
  */
 function isHermezBjjAddress (test) {
   if (bjjAddressPattern.test(test)) {
@@ -50,8 +50,8 @@ function isHermezBjjAddress (test) {
 
 /**
  * Extracts the account index from the address with the hez prefix
- * @param {string} hezAccountIndex - Account index with hez prefix e.g. hez:DAI:4444
- * @returns {string} accountIndex - e.g. 4444
+ * @param {String} hezAccountIndex - Account index with hez prefix e.g. hez:DAI:4444
+ * @returns {String} accountIndex - e.g. 4444
  */
 function getAccountIndex (hezAccountIndex) {
   const colonIndex = hezAccountIndex.lastIndexOf(':') + 1

@@ -10,11 +10,11 @@ const contractsCache = new Map()
  *
  * @param {String} contractAddress - The smart contract address
  * @param {Array} abi - The smart contract ABI
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send any deployment transaction
  * @return {ethers.Contract} The request contract
  */
-function getContract (contractAddress, abi, providerUrl, signerData) {
+function getContract (contractAddress, abi, providerUrl, signerData = {}) {
   const signerId = signerData.addressOrIndex || signerData.path
   if (contractsCache.has(contractAddress + signerId)) {
     return contractsCache.get(contractAddress + signerId)

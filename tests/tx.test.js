@@ -1,82 +1,80 @@
 import { jest } from '@jest/globals'
 import axios from 'axios'
-import { ethers } from 'ethers'
 
-import { forgeBatch, advanceTime } from './helpers/helpers.js'
+import { advanceTime, waitNBatches } from './helpers/helpers.js'
 import * as Tx from '../src/tx.js'
 import * as TransactionPool from '../src/tx-pool.js'
+import * as CoordinatorAPI from '../src/api.js'
 import { TRANSACTION_POOL_KEY } from '../src/constants.js'
 import { getTokenAmountBigInt } from '../src/utils.js'
+import { getAccountIndex, getEthereumAddress } from '../src/addresses.js'
+import { createWalletFromEtherAccount } from '../src/hermez-wallet.js'
 
-jest.mock('axios')
-
-// Skipping this test. We cover transaction flow in hermez-sandbox.test.mjs
 describe('Full flow', () => {
-  const amount = getTokenAmountBigInt('2.88', 18)
-  const hezEthereumAddress = 'hez:0xc783df8a850f42e7f7e57013759c285caa701eb6'
-  const bjj = 'bc440c1c501f3476c50f39ce1f872e6a13560ebddc10791e980813bea95134d'
-  const accountIndex = 'hez:TKN:256'
+  test('Works with ERC20 tokens', async () => {
+    const depositAmount = getTokenAmountBigInt('1000', 18)
+    const depositEthAmount = getTokenAmountBigInt('10', 18)
+    const exitAmount = getTokenAmountBigInt('10', 18)
 
-  beforeEach(() => {
-    // axios.get = jest.fn().mockResolvedValue({ data: { accounts: [{}] } })
-    axios.get = jest.fn().mockResolvedValue({ data: undefined })
-  })
+    const account = await createWalletFromEtherAccount('http://localhost:8545', { addressOrIndex: 1 })
+    const tokensResponse = await CoordinatorAPI.getTokens()
+    const tokens = tokensResponse.tokens
 
-  afterEach(() => {
-    axios.get.mockRestore()
-  })
+    // Deposit. tokens[0] is Eth, tokens[1] is an ERC20
+    const depositTokenParams = await Tx.deposit(depositAmount, account.hermezEthereumAddress,
+      tokens[1], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
+    expect(depositTokenParams).toEqual([`0x${account.hermezWallet.publicKeyCompressedHex}`, 0, 37864,
+      0, tokens[1].id, 0, '0x'])
+    const depositEthParams = await Tx.deposit(depositEthAmount, account.hermezEthereumAddress,
+      tokens[0], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
+    expect(depositEthParams).toEqual([`0x${account.hermezWallet.publicKeyCompressedHex}`, 0, 33768,
+      0, tokens[0].id, 0, '0x'])
 
-  test.skip('Works with ERC20 tokens', async () => {
-    const token = {
-      id: 1,
-      ethereumAddress: '0x5E0816F0f8bC560cB2B9e9C87187BeCac8c2021F'
-    }
+    await waitNBatches(3)
 
-    const eth = {
-      id: 0
-    }
-
-    // Deposit
-    const depositTokenParams = await Tx.deposit(amount, hezEthereumAddress, token, bjj, 'http://localhost:8545')
-    expect(depositTokenParams).toEqual([`0x${bjj}`, 0, 33056, 0, token.id, 0, '0x'])
-    const depositEthParams = await Tx.deposit(amount, hezEthereumAddress, eth, bjj, 'http://localhost:8545')
-    expect(depositEthParams).toEqual([`0x${bjj}`, 0, 33056, 0, eth.id, 0, '0x'])
-
-    await forgeBatch()
-    await forgeBatch()
+    const tokenAccount = (await CoordinatorAPI.getAccounts(account.hermezEthereumAddress, [tokens[1].id]))
+      .accounts[0]
+    const hezAccountIndex = tokenAccount.accountIndex
+    const accountIndex = getAccountIndex(hezAccountIndex)
 
     // Force Exit
-    const exitAmount = getTokenAmountBigInt('0.8', 18)
-    const forceExitTokenParams = await Tx.forceExit(exitAmount, accountIndex, token)
-    expect(forceExitTokenParams).toEqual([0, 256, 0, 31520, token.id, 1, '0x'])
+    const forceExitTokenParams = await Tx.forceExit(exitAmount, hezAccountIndex, tokens[1])
+    expect(forceExitTokenParams).toEqual([0, accountIndex, 0, 33768, tokens[1].id, 1, '0x'])
 
-    await forgeBatch()
-    const forgedBatch = await forgeBatch()
+    await waitNBatches(2)
 
-    const forceExitTokenParams2 = await Tx.forceExit(exitAmount, accountIndex, token)
-    expect(forceExitTokenParams2).toEqual([0, 256, 0, 31520, token.id, 1, '0x'])
+    const forceExitTokenParams2 = await Tx.forceExit(exitAmount, hezAccountIndex, tokens[1])
+    expect(forceExitTokenParams2).toEqual([0, accountIndex, 0, 33768, tokens[1].id, 1, '0x'])
 
-    await forgeBatch()
-    const forgedBatch2 = await forgeBatch()
+    await waitNBatches(3)
 
     // Withdraw
-    const batchNumber1 = ethers.BigNumber.from(forgedBatch.batchForged.toString())
-    const instantWithdrawParams = await Tx.withdraw(exitAmount, accountIndex, token, bjj, batchNumber1, forgedBatch.exits[0].siblings)
-    expect(instantWithdrawParams).toEqual([token.id, exitAmount, `0x${bjj}`, batchNumber1, forgedBatch.exits[0].siblings, 256, true])
+    const exitsResponse = await CoordinatorAPI.getExits(account.hermezEthereumAddress, true).catch(() => { throw new Error('Exit 1 not found') })
+    const exits = exitsResponse.exits
+
+    const instantWithdrawParams = await Tx.withdraw(exitAmount, hezAccountIndex, tokens[1],
+      account.hermezWallet.publicKeyCompressedHex, exits[0].batchNum, exits[0].merkleProof.siblings)
+    expect(instantWithdrawParams).toEqual([tokens[1].id, exitAmount,
+      `0x${account.hermezWallet.publicKeyCompressedHex}`, exits[0].batchNum,
+      Tx.filterSiblings(exits[0].merkleProof.siblings, true), accountIndex, true])
 
     // WithdrawalDelayer
-    const batchNumber2 = ethers.BigNumber.from(forgedBatch2.batchForged.toString())
-    const nonInstantWithdrawParams = await Tx.withdraw(exitAmount, accountIndex, token, bjj, batchNumber2, forgedBatch2.exits[0].siblings, false)
-    expect(nonInstantWithdrawParams).toEqual([token.id, exitAmount, `0x${bjj}`, batchNumber2, forgedBatch2.exits[0].siblings, 256, false])
+    const nonInstantWithdrawParams = await Tx.withdraw(exitAmount, hezAccountIndex, tokens[1],
+      account.hermezWallet.publicKeyCompressedHex, exits[1].batchNum, exits[1].merkleProof.siblings, false)
+    expect(nonInstantWithdrawParams).toEqual([tokens[1].id, exitAmount,
+      `0x${account.hermezWallet.publicKeyCompressedHex}`, exits[1].batchNum,
+      Tx.filterSiblings(exits[1].merkleProof.siblings, true), accountIndex, false])
 
     await advanceTime()
 
-    const delayedWithdrawParams = await Tx.delayedWithdraw(hezEthereumAddress, token)
-    expect(delayedWithdrawParams).toEqual(['0xc783df8a850f42e7f7e57013759c285caa701eb6', token.ethereumAddress])
+    const delayedWithdrawParams = await Tx.delayedWithdraw(account.hermezEthereumAddress, tokens[1])
+    expect(delayedWithdrawParams).toEqual([getEthereumAddress(account.hermezEthereumAddress), tokens[1].ethereumAddress])
   })
 })
 
 test('#sendL2Transaction', async () => {
+  jest.mock('axios')
+
   const txId = '0x000000000000000007000300'
   const bjj = ''
   const tx = {

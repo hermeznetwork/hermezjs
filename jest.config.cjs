@@ -1,7 +1,7 @@
 module.exports = {
-  testTimeout: 50000,
+  testTimeout: 300000,
   verbose: true,
-  moduleFileExtensions: ['js'],
+  moduleFileExtensions: ['js', 'json'],
   testMatch: ['<rootDir>/tests/**/**.test.js'],
   transform: {
     '^.+\\.js?$': 'babel-jest'
