@@ -17,9 +17,7 @@ describe('Full flow', () => {
     const exitAmount = getTokenAmountBigInt('10', 18)
 
     const account = await createWalletFromEtherAccount('http://localhost:8545', { addressOrIndex: 1 })
-    console.log(account)
     const tokensResponse = await CoordinatorAPI.getTokens()
-    console.log('here')
     const tokens = tokensResponse.tokens
 
     // Deposit. tokens[0] is Eth, tokens[1] is an ERC20
