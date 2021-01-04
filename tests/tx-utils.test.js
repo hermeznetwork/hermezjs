@@ -26,7 +26,7 @@ const transferTransaction = {
 }
 
 const transferTransactionEncoded = Object.assign({}, transferTransaction, {
-  chainId: 0,
+  chainId: 1337,
   fromAccountIndex: 4444,
   toAccountIndex: 1234
 })
@@ -52,7 +52,7 @@ const exitTransaction = {
 }
 
 const exitTransactionEncoded = Object.assign({}, exitTransaction, {
-  chainId: 0,
+  chainId: 1337,
   fromAccountIndex: 4444,
   toAccountIndex: 1
 })
@@ -78,6 +78,22 @@ test('#getTxId', () => {
 test('#getFee', () => {
   const fee = TxUtils.getFee(0.000143, transferTransaction.amount, 8)
   expect(fee).toBe(26)
+})
+
+describe('#getTransactionType', () => {
+  test('Returns Transfer', () => {
+    const transferTx = {
+      to: 'hez:dfasdfasdfasdffasfdf'
+    }
+    expect(TxUtils.getTransactionType(transferTx)).toBe('Transfer')
+  })
+
+  test('Returns Exit', () => {
+    const exitTx = {
+      to: null
+    }
+    expect(TxUtils.getTransactionType(exitTx)).toBe('Exit')
+  })
 })
 
 describe('#getNonce', () => {
@@ -378,7 +394,7 @@ describe('#generateL2Transaction', () => {
     transaction.type = 'Exit'
     encodedTransaction.type = 'Exit'
     expect(transaction).toEqual(exitTransaction)
-    // expect(encodedTransaction).toEqual(exitTransactionEncoded)
+    expect(encodedTransaction).toEqual(exitTransactionEncoded)
   })
 })
 

@@ -19,11 +19,12 @@ import { SignerType } from './signers.js'
 
 /**
  * Get current average gas price from the last ethereum blocks and multiply it
- * @param {number} multiplier - multiply the average gas price by this parameter
- * @returns {promise} - promise will return the gas price obtained.
+ * @param {Number} multiplier - multiply the average gas price by this parameter
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @returns {Promise} - promise will return the gas price obtained.
  */
-async function getGasPrice (multiplier) {
-  const provider = getProvider()
+async function getGasPrice (multiplier, providerUrl) {
+  const provider = getProvider(providerUrl)
   const strAvgGas = await provider.getGasPrice()
   const avgGas = Scalar.e(strAvgGas)
   const res = (avgGas * Scalar.e(multiplier))
@@ -39,10 +40,10 @@ async function getGasPrice (multiplier) {
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
- * @param {Bumber} gasMultiplier - Optional gas multiplier
+ * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
  */
 const deposit = async (
@@ -58,11 +59,10 @@ const deposit = async (
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
-  let account = await getAccounts(hezEthereumAddress, [token.id])
 
-  if (typeof account !== 'undefined') {
-    account = account.accounts[0]
-  }
+  const accounts = await getAccounts(hezEthereumAddress, [token.id])
+    .catch(() => undefined)
+  const account = typeof accounts !== 'undefined' ? accounts.accounts[0] : null
 
   const overrides = {
     gasLimit,
@@ -97,11 +97,12 @@ const deposit = async (
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
+ * @throws {Error} Throws an error if account index isn't valid
  */
 const forceExit = async (
   amount,
@@ -112,15 +113,17 @@ const forceExit = async (
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
-  // TODO. Check call below as it can be invalid if accountIndex doesn't exist
-  const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
-  const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
+  const account = await getAccount(accountIndex)
+    .catch(() => {
+      throw new Error('Invalid account index')
+    })
+  const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier, null)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
   const transactionParameters = [
@@ -145,13 +148,14 @@ const forceExit = async (
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
  * @param {BigInt} batchNumber - The batch number where the exit being withdrawn was forged
  * @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
- * @param {boolean} filterSiblings - Whether siblings should be filtered
+ * @param {Boolean} filterSiblings - Whether siblings should be filtered
  * @param {Number} gasLimit - Optional gas limit
- * @param {Bumber} gasMultiplier - Optional gas multiplier
+ * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
+ * @throws {Error} Throws an error if account index isn't valid
  */
 const withdraw = async (
   amount,
@@ -160,25 +164,27 @@ const withdraw = async (
   babyJubJub,
   batchNumber,
   merkleSiblings,
-  providerUrl,
-  signerData,
   isInstant = true,
   filterSibling = true,
+  providerUrl,
+  signerData,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
-  // TODO. Check call below as it can be invalid if accountIndex doesn't exist
-  const hermezEthereumAddress = (await getAccount(accountIndex)).hezEthereumAddress
-  const ethereumAddress = getEthereumAddress(hermezEthereumAddress)
+  const account = await getAccount(accountIndex)
+    .catch(() => {
+      throw new Error('Invalid account index')
+    })
+  const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
-  // https://github.com/hermeznetwork/hermezjs/issues/17
+  // TODO https://github.com/hermeznetwork/hermezjs/issues/17
   const filteredSiblings = filterSiblings(merkleSiblings, filterSibling)
 
   const transactionParameters = [
@@ -197,9 +203,9 @@ const withdraw = async (
 
 /**
  * Removes 0's from Siblings
- * @param {array} siblings - Array of sibling strings
- * @param {boolean} enable - Whether siblings should be filtered
- * @returns {array} Array of filtered sibling strings
+ * @param {Array} siblings - Array of sibling strings
+ * @param {Boolean} enable - Whether siblings should be filtered
+ * @returns {Array} Array of filtered sibling strings
  */
 function filterSiblings (siblings, enable) {
   if (!enable) {
@@ -222,11 +228,11 @@ function filterSiblings (siblings, enable) {
  *
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Number} gasLimit - Optional gas limit
- * @param {Bumber} gasMultiplier - Optional gas multiplier
- * @returns {promise} transaction parameters
+ * @param {Number} gasMultiplier - Optional gas multiplier
+ * @returns {Promise} transaction parameters
  */
 const delayedWithdraw = async (
   hezEthereumAddress,
@@ -242,7 +248,7 @@ const delayedWithdraw = async (
 
   const overrides = {
     gasLimit,
-    gasPrice: await getGasPrice(gasMultiplier)
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
   const transactionParameters = [
@@ -256,9 +262,9 @@ const delayedWithdraw = async (
 
 /**
  * Sends a L2 transaction to the Coordinator
- * @param {object} transaction - Transaction object prepared by TxUtils.generateL2Transaction
- * @param {string} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
- * @return {object} - Object with the response status, transaction id and the transaction nonce
+ * @param {Object} transaction - Transaction object prepared by TxUtils.generateL2Transaction
+ * @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @return {Object} - Object with the response status, transaction id and the transaction nonce
 */
 async function sendL2Transaction (transaction, bJJ) {
   const result = await postPoolTransaction(transaction)
@@ -276,14 +282,14 @@ async function sendL2Transaction (transaction, bJJ) {
 
 /**
  * Compact L2 transaction generated and sent to a Coordinator.
- * @param {object} transaction - ethAddress and babyPubKey together
- * @param {string} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
- * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {bigint} transaction.amount - The amount being sent as a BigInt
- * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
- * @param {number} transaction.nonce - The current nonce of the sender's token account
- * @param {object} wallet - Transaction sender Hermez Wallet
- * @param {object} token - The token information object as returned from the Coordinator.
+ * @param {Object} transaction - ethAddress and babyPubKey together
+ * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+ * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {BigInt} transaction.amount - The amount being sent as a BigInt
+ * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+ * @param {Number} transaction.nonce - The current nonce of the sender's token account
+ * @param {Object} wallet - Transaction sender Hermez Wallet
+ * @param {Object} token - The token information object as returned from the Coordinator.
 */
 async function generateAndSendL2Tx (tx, wallet, token) {
   const l2TxParams = await generateL2Transaction(tx, wallet.publicKeyCompressedHex, token)
@@ -301,5 +307,6 @@ export {
   withdraw,
   delayedWithdraw,
   sendL2Transaction,
-  generateAndSendL2Tx
+  generateAndSendL2Tx,
+  filterSiblings
 }

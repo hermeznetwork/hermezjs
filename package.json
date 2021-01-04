@@ -23,8 +23,7 @@
     "build-node": "babel src --out-dir dist/node",
     "prebuild": "rm -rf dist",
     "build-publish": "npm run build-node && npm publish",
-    "jest": "npx jest",
-    "test": "NODE_ENV=test npm run jest",
+    "test": "jest",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },

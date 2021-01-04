@@ -1,18 +1,21 @@
 import * as CoordinatorAPI from '../src/api'
 
-test('#_getPageData', () => {
+// All API tests are skipped until we transition to testnet
+// They can be activated to test with Swagger endpoints
+
+test.skip('#_getPageData', () => {
   const pageData = CoordinatorAPI._getPageData(32)
   expect(pageData).toEqual({ fromItem: 32, limit: 20 })
 })
 
-test('#getBaseApiUrl & #setBaseApiUrl', () => {
+test.skip('#getBaseApiUrl & #setBaseApiUrl', () => {
   const url = 'http://localhost:8086'
   expect(CoordinatorAPI.getBaseApiUrl()).toBe(url)
   CoordinatorAPI.setBaseApiUrl(url)
   expect(CoordinatorAPI.getBaseApiUrl()).toBe(url)
 })
 
-describe('#getAccounts', () => {
+describe.skip('#getAccounts', () => {
   const hermezEthereumAddress = 'hez:0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf'
   const hermezBjjAddress = 'hez:W6x4TZOAZ9mAqdOb3Xm_hKDLspaXfEfMMN4tXOkinS-W'
   const tokenIds = [0, 1]
@@ -47,7 +50,7 @@ test.skip('#getAccount', async () => {
   expect(res.accountIndex).toBe(accountIndex)
 })
 
-describe('#getTransactions', () => {
+describe.skip('#getTransactions', () => {
   const hermezEthereumAddress = 'hez:0x2B5AD5c4795c026514f8317c7a215E218DcCD6cF'
   const hermezBjjAddress = 'hez:Mj_xDCjfN-y3h_4hbhEdtkqnz6LFF1Cf4AV_8IoQswwh'
   const tokenIds = [0, 1]
@@ -87,19 +90,19 @@ describe('#getTransactions', () => {
   })
 })
 
-test('#getHistoryTransaction', async () => {
+test.skip('#getHistoryTransaction', async () => {
   const transactionId = '0x00000000000000000a000400'
   const res = await CoordinatorAPI.getHistoryTransaction(transactionId)
   expect(res.id).toBe(transactionId)
 })
 
-test('#getPoolTransaction', async () => {
+test.skip('#getPoolTransaction', async () => {
   const transactionId = '0x020000000001000000000006'
   const res = await CoordinatorAPI.getPoolTransaction(transactionId)
   expect(res.id).toBe(transactionId)
 })
 
-test('#postPoolTransaction', async () => {
+test.skip('#postPoolTransaction', async () => {
   const transactionId = '0x020000000001000000000006'
   const exampleTx = {
     id: transactionId,
@@ -121,7 +124,7 @@ test('#postPoolTransaction', async () => {
   expect(resGet.id).toBe(transactionId)
 })
 
-describe('getExits', () => {
+describe.skip('getExits', () => {
   // const hermezEthereumAddress = 'hez:0x0000000000000000000000000000000000000114'
   // const hermezBjjAddress = 'hez:p_OohTzjzZnD3Sw93HQlK13DSxfD6lyvbfhh2kBsV6Z4'
 
@@ -149,7 +152,7 @@ describe('getExits', () => {
   })
 })
 
-test('#getExit', async () => {
+test.skip('#getExit', async () => {
   const batchNum = 7394
   const accountIndex = 'hez:DAI:4444'
   const res = await CoordinatorAPI.getExit(batchNum, accountIndex)
@@ -157,7 +160,7 @@ test('#getExit', async () => {
   expect(res.accountIndex).toBe(accountIndex)
 })
 
-describe('#getTokens', () => {
+describe.skip('#getTokens', () => {
   const tokenIds = [98765]
 
   test('successful request', async () => {
@@ -172,12 +175,12 @@ describe('#getTokens', () => {
   })
 })
 
-test('#getState', async () => {
+test.skip('#getState', async () => {
   const res = await CoordinatorAPI.getState()
   expect(res).toBeDefined()
 })
 
-describe('#getBatches', () => {
+describe.skip('#getBatches', () => {
   const forgerAddr = '0xaa942cfcd25ad4d90a62358b0dd84f33b398262a'
   const slotNum = 784
 
@@ -198,25 +201,25 @@ describe('#getBatches', () => {
   })
 })
 
-test('#getBatch', async () => {
+test.skip('#getBatch', async () => {
   const slotNum = 784
   const res = await CoordinatorAPI.getBatch(slotNum)
   expect(res.slotNum).toBe(slotNum)
 })
 
-test('#getCoordinators', async () => {
+test.skip('#getCoordinators', async () => {
   const bidderAddr = '0xaa942cfcd25ad4d90a62358b0dd84f33b398262a'
   const res = await CoordinatorAPI.getCoordinators()
   expect(res.coordinators[0].bidderAddr).toBe(bidderAddr)
 })
 
-test('#getSlot', async () => {
+test.skip('#getSlot', async () => {
   const slotNum = 784
   const res = await CoordinatorAPI.getSlot(slotNum)
   expect(res.slotNum).toBe(slotNum)
 })
 
-describe('#getBids', () => {
+describe.skip('#getBids', () => {
   const slotNum = 784
   const bidderAddr = '0xaa942cfcd25ad4d90a62358b0dd84f33b398262a'
 
@@ -237,7 +240,7 @@ describe('#getBids', () => {
   })
 })
 
-test('#postCreateAccountAuthorization', async () => {
+test.skip('#postCreateAccountAuthorization', async () => {
   const res = await CoordinatorAPI.postCreateAccountAuthorization(
     'hez:0xb5270eB4ae11c6fAAff6F5fa0A5202B8d963634C',
     'hez:hg2Ydsb8O66H-steBR3cnHl944ua7E-PkTJ_SbPBBg5r',
