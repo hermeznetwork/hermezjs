@@ -4,16 +4,22 @@ import { extractJSON } from './http.js'
 import { DEFAULT_PAGE_SIZE, BASE_API_URL } from './constants.js'
 import { isHermezEthereumAddress, isHermezBjjAddress } from './addresses.js'
 
+const PaginationOrder = {
+  ASC: 'ASC',
+  DESC: 'DESC'
+}
+
 /**
  * Sets the query parameters related to pagination
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Includes the values `fromItem` and `limit`
  * @private
  */
-function _getPageData (fromItem) {
+function _getPageData (fromItem, order, limit) {
   return {
     ...(fromItem !== undefined ? { fromItem } : {}),
-    limit: DEFAULT_PAGE_SIZE
+    order,
+    limit
   }
 }
 
@@ -44,12 +50,12 @@ function getBaseApiUrl () {
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with filtered token accounts and pagination data
  */
-async function getAccounts (address, tokenIds, fromItem) {
+async function getAccounts (address, tokenIds, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
-    ..._getPageData(fromItem)
+    ..._getPageData(fromItem, order, limit)
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/accounts`, { params }))
@@ -73,14 +79,14 @@ async function getAccount (accountIndex) {
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with filtered transactions and pagination data
  */
-async function getTransactions (address, tokenIds, batchNum, accountIndex, fromItem) {
+async function getTransactions (address, tokenIds, batchNum, accountIndex, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
     ...(tokenIds ? { tokenIds: tokenIds.join(',') } : {}),
     ...(batchNum ? { batchNum } : {}),
     ...(accountIndex ? { accountIndex } : {}),
-    ..._getPageData(fromItem)
+    ..._getPageData(fromItem, order, limit)
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { params }))
@@ -183,11 +189,11 @@ async function getState () {
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with a paginated list of batches
  */
-async function getBatches (forgerAddr, slotNum, fromItem) {
+async function getBatches (forgerAddr, slotNum, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
   const params = {
     ...(forgerAddr ? { forgerAddr } : {}),
     ...(slotNum ? { slotNum } : {}),
-    ..._getPageData(fromItem)
+    ..._getPageData(fromItem, order, limit)
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/batches`, { params }))
@@ -233,11 +239,11 @@ async function getSlot (slotNum) {
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with the list of slots
  */
-async function getBids (slotNum, bidderAddr, fromItem) {
+async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
   const params = {
     ...(slotNum ? { slotNum } : {}),
     ...(bidderAddr ? { bidderAddr } : {}),
-    ..._getPageData(fromItem)
+    ..._getPageData(fromItem, order, limit)
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
@@ -259,6 +265,7 @@ async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signatur
 }
 
 export {
+  PaginationOrder,
   _getPageData,
   setBaseApiUrl,
   getBaseApiUrl,
