@@ -150,9 +150,10 @@ async function getExit (batchNum, accountIndex) {
  * @param {number[]} tokenIds - An array of token IDs
  * @returns {Object} Response data with the list of tokens
  */
-async function getTokens (tokenIds) {
+async function getTokens (tokenIds, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
   const params = {
-    ...(tokenIds ? { ids: tokenIds.join(',') } : {})
+    ...(tokenIds ? { ids: tokenIds.join(',') } : {}),
+    ..._getPageData(fromItem, order, limit)
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/tokens`, { params }))
