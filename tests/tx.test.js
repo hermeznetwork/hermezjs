@@ -17,7 +17,9 @@ describe('Full flow', () => {
     const exitAmount = getTokenAmountBigInt('10', 18)
 
     const account = await createWalletFromEtherAccount('http://localhost:8545', { addressOrIndex: 1 })
+    console.log(account)
     const tokensResponse = await CoordinatorAPI.getTokens()
+    console.log('here')
     const tokens = tokensResponse.tokens
 
     // Deposit. tokens[0] is Eth, tokens[1] is an ERC20
@@ -56,14 +58,14 @@ describe('Full flow', () => {
       account.hermezWallet.publicKeyCompressedHex, exits[0].batchNum, exits[0].merkleProof.siblings)
     expect(instantWithdrawParams).toEqual([tokens[1].id, exitAmount,
       `0x${account.hermezWallet.publicKeyCompressedHex}`, exits[0].batchNum,
-      Tx.filterSiblings(exits[0].merkleProof.siblings, true), accountIndex, true])
+      exits[0].merkleProof.siblings, accountIndex, true])
 
     // WithdrawalDelayer
     const nonInstantWithdrawParams = await Tx.withdraw(exitAmount, hezAccountIndex, tokens[1],
       account.hermezWallet.publicKeyCompressedHex, exits[1].batchNum, exits[1].merkleProof.siblings, false)
     expect(nonInstantWithdrawParams).toEqual([tokens[1].id, exitAmount,
       `0x${account.hermezWallet.publicKeyCompressedHex}`, exits[1].batchNum,
-      Tx.filterSiblings(exits[1].merkleProof.siblings, true), accountIndex, false])
+      exits[1].merkleProof.siblings, accountIndex, false])
 
     await advanceTime()
 

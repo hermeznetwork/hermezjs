@@ -165,7 +165,6 @@ const withdraw = async (
   batchNumber,
   merkleSiblings,
   isInstant = true,
-  filterSibling = true,
   providerUrl,
   signerData,
   gasLimit = GAS_LIMIT,
@@ -183,44 +182,18 @@ const withdraw = async (
     gasLimit,
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
-
-  // TODO https://github.com/hermeznetwork/hermezjs/issues/17
-  const filteredSiblings = filterSiblings(merkleSiblings, filterSibling)
-
   const transactionParameters = [
     token.id,
     amount,
     `0x${babyJubJub}`,
     batchNumber,
-    filteredSiblings,
+    merkleSiblings,
     getAccountIndex(accountIndex),
     isInstant
   ]
 
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
     .then(() => transactionParameters)
-}
-
-/**
- * Removes 0's from Siblings
- * @param {Array} siblings - Array of sibling strings
- * @param {Boolean} enable - Whether siblings should be filtered
- * @returns {Array} Array of filtered sibling strings
- */
-function filterSiblings (siblings, enable) {
-  if (!enable) {
-    return siblings
-  }
-
-  const filteredSiblings = []
-  for (var i = 0; i < siblings.length; i++) {
-    if (siblings[i] !== '0') {
-      filteredSiblings.push(siblings[i])
-    } else {
-      break
-    }
-  }
-  return filteredSiblings
 }
 
 /**
@@ -307,6 +280,5 @@ export {
   withdraw,
   delayedWithdraw,
   sendL2Transaction,
-  generateAndSendL2Tx,
-  filterSiblings
+  generateAndSendL2Tx
 }
