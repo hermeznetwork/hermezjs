@@ -14,7 +14,7 @@ const transferTransaction = {
   toBjj: null,
   amount: '3400000000',
   fee: 25,
-  nonce: 3,
+  nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
   requestToHezEthereumAddress: null,
@@ -26,7 +26,7 @@ const transferTransaction = {
 }
 
 const transferTransactionEncoded = Object.assign({}, transferTransaction, {
-  chainId: 31337,
+  chainId: 1337,
   fromAccountIndex: 4444,
   toAccountIndex: 1234
 })
@@ -35,12 +35,12 @@ const exitTransaction = {
   type: 'Exit',
   tokenId: 0,
   fromAccountIndex: 'hez:DAI:4444',
-  toAccountIndex: null,
+  toAccountIndex: 'hez:DAI:1',
   toHezEthereumAddress: null,
   toBjj: null,
   amount: '3400000000',
   fee: 25,
-  nonce: 3,
+  nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
   requestToHezEthereumAddress: null,
@@ -52,7 +52,7 @@ const exitTransaction = {
 }
 
 const exitTransactionEncoded = Object.assign({}, exitTransaction, {
-  chainId: 31337,
+  chainId: 1337,
   fromAccountIndex: 4444,
   toAccountIndex: 1
 })
@@ -72,7 +72,7 @@ describe('#encodeTransaction', () => {
 
 test('#getTxId', () => {
   const txId = TxUtils.getTxId(transferTransactionEncoded.fromAccountIndex, transferTransactionEncoded.nonce)
-  expect(txId).toBe('0x0200000000115c0000000003')
+  expect(txId).toBe('0x0200000000115c0000000002')
 })
 
 test('#getFee', () => {
@@ -151,8 +151,13 @@ describe('#getNonce', () => {
     TransactionPool.addPoolTransaction(localTx, bjj1)
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
+    // return current nonce since it is still not used
     const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
-    expect(nonce).toBe(4)
+    expect(nonce).toBe(1)
+
+    // return nonce + 1, since nonce 2 is in pending transactions
+    const nonce2 = await TxUtils.getNonce(2, accountIndex1, bjj1, tokenId1)
+    expect(nonce2).toBe(2)
   })
 
   test('ignores transactions for other account indexes', async () => {
@@ -163,11 +168,11 @@ describe('#getNonce', () => {
     TransactionPool.addPoolTransaction(localTx, bjj1)
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
-    const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
-    expect(nonce).toBe(3)
+    const nonce = await TxUtils.getNonce(2, accountIndex1, bjj1, tokenId1)
+    expect(nonce).toBe(2)
   })
 
-  test('returns current nonce plus one if no transactions for account index', async () => {
+  test('returns current nonce if no transactions for account index', async () => {
     axios.get = jest.fn()
       .mockResolvedValue({ data: poolTx3 })
 
@@ -175,7 +180,7 @@ describe('#getNonce', () => {
     TransactionPool.addPoolTransaction(localTx, bjj1)
 
     const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
-    expect(nonce).toBe(2)
+    expect(nonce).toBe(1)
   })
 })
 
@@ -350,7 +355,7 @@ describe('#generateL2Transaction', () => {
 
   const exitTx = {
     from: 'hez:DAI:4444',
-    to: null,
+    to: 'hez:DAI:1',
     toHezEthereumAddress: null,
     toBjj: null,
     amount: Scalar.fromString('3400000000'),
@@ -365,8 +370,8 @@ describe('#generateL2Transaction', () => {
   }
 
   beforeEach(() => {
-    transferTransaction.id = '0x00000000000001e240004700'
-    exitTransaction.id = '0x00000000000001e240004700'
+    transferTransaction.id = '0x0200000000115c0000000002'
+    exitTransaction.id = '0x0200000000115c0000000002'
     TransactionPool.initializeTransactionPool()
   })
 
@@ -378,12 +383,16 @@ describe('#generateL2Transaction', () => {
 
   test('Works for transfers', async () => {
     const { transaction, encodedTransaction } = await TxUtils.generateL2Transaction(transferTx, bjj, token)
+    transaction.type = 'Transfer'
+    encodedTransaction.type = 'Transfer'
     expect(transaction).toEqual(transferTransaction)
     expect(encodedTransaction).toEqual(transferTransactionEncoded)
   })
 
   test('Works for exits', async () => {
     const { transaction, encodedTransaction } = await TxUtils.generateL2Transaction(exitTx, bjj, token)
+    transaction.type = 'Exit'
+    encodedTransaction.type = 'Exit'
     expect(transaction).toEqual(exitTransaction)
     expect(encodedTransaction).toEqual(exitTransactionEncoded)
   })

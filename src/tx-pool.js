@@ -20,10 +20,8 @@ function initializeTransactionPool () {
 
 /**
  * Fetches the transaction details for each transaction in the pool for the specified account index and bjj
- *
  * @param {String} accountIndex - The account index
  * @param {String} bjj - The account's BabyJubJub
- *
  * @returns {Array}
  */
 function getPoolTransactions (accountIndex, bJJ) {
@@ -54,10 +52,8 @@ function getPoolTransactions (accountIndex, bJJ) {
 
 /**
  * Adds a transaction to the transaction pool
- *
- * @param {string} transaction - The transaction to add to the pool
- * @param {string} bJJ - The account with which the transaction was made
- * @returns {void}
+ * @param {String} transaction - The transaction to add to the pool
+ * @param {String} bJJ - The account with which the transaction was made
  */
 function addPoolTransaction (transaction, bJJ) {
   const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
@@ -75,9 +71,8 @@ function addPoolTransaction (transaction, bJJ) {
 
 /**
  * Removes a transaction from the transaction pool
- * @param {string} bJJ - The account with which the transaction was originally made
- * @param {string} transactionId - The transaction identifier to remove from the pool
- * @returns {void}
+ * @param {String} bJJ - The account with which the transaction was originally made
+ * @param {String} transactionId - The transaction identifier to remove from the pool
  */
 function removePoolTransaction (bJJ, transactionId) {
   const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
