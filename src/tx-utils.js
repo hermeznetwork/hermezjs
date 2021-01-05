@@ -15,7 +15,8 @@ export const TxType = {
   CreateAccountDeposit: 'CreateAccountDeposit',
   Transfer: 'Transfer',
   Withdraw: 'Withdrawn',
-  Exit: 'Exit'
+  Exit: 'Exit',
+  ForceExit: 'ForceExit'
 }
 
 export const TxState = {
