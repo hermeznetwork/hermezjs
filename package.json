@@ -30,11 +30,12 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@babel/polyfill": "^7.12.1",
     "@ledgerhq/hw-app-eth": "^5.35.1",
     "@ledgerhq/hw-transport-u2f": "^5.36.0-deprecated",
-    "@babel/polyfill": "^7.12.1",
     "axios": "^0.20.0",
     "babel-eslint": "^10.1.0",
+    "base64url": "^3.0.1",
     "circomlib": "^0.2.4",
     "core-js": "^3.8.1",
     "ethers": "^5.0.17",

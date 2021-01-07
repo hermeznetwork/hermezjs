@@ -33,9 +33,21 @@ function getTokenAmountBigInt (amountString, decimals) {
   return ethers.utils.parseUnits(amountString, decimals)
 }
 
+/**
+ * Pad a string hex number with 0
+ * @param {String} string - String input
+ * @param {Number} length - Length of the resulting string
+ * @returns {String} Resulting string
+ */
+function padZeros (string, length) {
+  if (length > string.length) { string = '0'.repeat(length - string.length) + string }
+  return string
+}
+
 export {
   bufToHex,
   hexToBuffer,
   getTokenAmountString,
-  getTokenAmountBigInt
+  getTokenAmountBigInt,
+  padZeros
 }
