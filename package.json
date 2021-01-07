@@ -1,34 +1,55 @@
 {
   "name": "@hermeznetwork/hermezjs",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.4",
   "description": "Hermez SDK",
-  "main": "src/index.js",
+  "homepage": "https://github.com/hermeznetwork/hermezjs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hermeznetwork/hermezjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hermeznetwork/hermezjs/issues"
+  },
+  "main": "dist/node/index.js",
   "module": "src/index.js",
-  "type": "module",
+  "exports": {
+    "import": "./src/index.js",
+    "require": "./dist/node/index.js"
+  },
   "directories": {
-    "test": "test"
+    "test": "tests"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "build-node": "babel src --out-dir dist/node",
+    "prebuild": "rm -rf dist",
+    "build-publish": "npm run build-node && npm publish",
+    "test": "jest",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@ledgerhq/hw-app-eth": "^5.35.1",
+    "@ledgerhq/hw-transport-u2f": "^5.36.0-deprecated",
+    "@babel/polyfill": "^7.12.1",
     "axios": "^0.20.0",
     "babel-eslint": "^10.1.0",
     "circomlib": "^0.2.4",
+    "core-js": "^3.8.1",
     "ethers": "^5.0.17",
     "ffjavascript": "^0.2.33",
     "js-sha3": "^0.8.0",
-    "node-localstorage": "^2.1.6"
+    "node-localstorage": "^2.1.6",
+    "trezor-connect": "^8.1.19"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.3",
-    "@babel/preset-env": "^7.12.1",
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
     "@hermeznetwork/commonjs": "0.0.2",
     "@openzeppelin/test-helpers": "^0.5.9",
+    "babel-jest": "^26.6.3",
     "babel-loader": "^8.1.0",
     "eslint": "^7.11.0",
     "husky": "^4.3.0",
@@ -44,24 +65,8 @@
       "node"
     ],
     "ignore": [
-      "hermez.js",
-      "hermez-example.mjs",
-      "deploy.js",
-      "buidler.config.js",
-      "/src/abis/",
+      "src/abis",
       "fee-factors.js"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
     ]
   },
   "husky": {
@@ -70,26 +75,6 @@
     }
   },
   "lint-staged": {
-    "*.{js}": "standard --fix",
-    "*.{mjs}": "standard --fix"
-  },
-  "jest": {
-    "testTimeout": 50000,
-    "verbose": true,
-    "moduleFileExtensions": [
-      "mjs",
-      "js",
-      "json",
-      "jsx",
-      "ts",
-      "tsx",
-      "node"
-    ],
-    "testMatch": [
-      "**/__tests__/**/*.[jt]s?(x)",
-      "**/?(*.)+(spec|test).[jt]s?(x)",
-      "**/tests/**/*.mjs",
-      "**/?(*.)(spec|test).mjs"
-    ]
+    "*.{js,cjs}": "standard --fix"
   }
 }

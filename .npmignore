@@ -1,0 +1,10 @@
+.*swp
+.env
+node_modules
+package-lock.json
+auxdata
+contracts
+tests/.testlog
+.vscode
+.testlog
+tests

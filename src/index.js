@@ -8,6 +8,7 @@ import * as Constants from './constants.js'
 import * as Float16 from './float16.js'
 import * as Addresses from './addresses.js'
 import * as Providers from './providers.js'
+import * as Signers from './signers.js'
 
 export {
   HermezWallet,
@@ -19,7 +20,8 @@ export {
   Constants,
   Float16,
   Addresses,
-  Providers
+  Providers,
+  Signers
 }
 
 export default {
@@ -32,5 +34,6 @@ export default {
   Constants,
   Float16,
   Addresses,
-  Providers
+  Providers,
+  Signers
 }

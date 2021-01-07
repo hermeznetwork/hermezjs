@@ -7,6 +7,7 @@ import { bufToHex } from './utils.js'
 import { fix2Float, float2Fix, floorFix2Float } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex } from './addresses.js'
+import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 
 export const TxType = {
@@ -14,7 +15,8 @@ export const TxType = {
   CreateAccountDeposit: 'CreateAccountDeposit',
   Transfer: 'Transfer',
   Withdraw: 'Withdrawn',
-  Exit: 'Exit'
+  Exit: 'Exit',
+  ForceExit: 'ForceExit'
 }
 
 export const TxState = {
@@ -27,9 +29,9 @@ export const TxState = {
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
  * Used, for example, to sign the transaction
- * @param {object} transaction - Transaction object returned by generateL2Transaction
- * @param {string} providerUrl - Network url (i.e, http://localhost:8545). Optional
- * @returns {object} encodedTransaction
+ * @param {Object} transaction - Transaction object returned by generateL2Transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @returns {Object} encodedTransaction
  * @private
  */
 async function encodeTransaction (transaction, providerUrl) {
@@ -54,9 +56,9 @@ async function encodeTransaction (transaction, providerUrl) {
  * bytes:  |  1   |    6    |   5   |
  * values: | type | FromIdx | Nonce |
  * where type for L2Tx is '2'
- * @param {number} fromIdx - The account index that sends the transaction
- * @param {number} nonce - Nonce of the transaction
- * @returns {string} Transaction Id
+ * @param {Number} fromIdx - The account index that sends the transaction
+ * @param {Number} nonce - Nonce of the transaction
+ * @returns {String} Transaction Id
  */
 function getTxId (fromIdx, nonce) {
   const fromIdxBytes = new ArrayBuffer(8)
@@ -74,9 +76,9 @@ function getTxId (fromIdx, nonce) {
 
 /**
  * Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
- * @param {number} fee - The fee in token value
- * @param {string} amount - The amount as a BigInt string
- * @return {number} feeFactor
+ * @param {Number} fee - The fee in token value
+ * @param {String} amount - The amount as a BigInt string
+ * @return {Number} feeFactor
  */
 function getFee (fee, amount, decimals) {
   const amountFloat = Number(amount) / Math.pow(10, decimals)
@@ -101,8 +103,8 @@ function getFee (fee, amount, decimals) {
  * If an account index is used, it will be 'Transfer'
  * If a Hermez address is used, it will be 'TransferToEthAddr'
  * If a BabyJubJub is used, it will be 'TransferToBjj'
- * @param {object} transaction - Transaction object sent to generateL2Transaction
- * @return {string} transactionType
+ * @param {Object} transaction - Transaction object sent to generateL2Transaction
+ * @return {String} transactionType
  */
 function getTransactionType (transaction) {
   if (transaction.to && transaction.to.includes('hez:')) {
@@ -116,21 +118,31 @@ function getTransactionType (transaction) {
  * Calculates the appropriate nonce based on the current token account nonce and existing transactions in the Pool.
  * It needs to find the lowest nonce available as transactions in the pool may fail and the Coordinator only forges
  * transactions in the order set by nonces.
- * @param {number} currentNonce - The current token account nonce returned by the Coordinator
- * @param {string} bjj - The account's BabyJubJub
- * @param {number} tokenId - The token id of the token in the transaction
- * @return {number} nonce
+ * @param {Number} currentNonce - The current token account nonce returned by the Coordinator (optional)
+ * @param {String} accountIndex - The account index
+ * @param {Number} tokenId - The token id of the token in the transaction
+ * @return {Number} nonce
  */
 async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
   const poolTxs = await getPoolTransactions(accountIndex, bjj)
+
   const poolTxsNonces = poolTxs
     .filter(tx => tx.token.id === tokenId)
     .map(tx => tx.nonce)
     .sort()
 
-  let nonce = currentNonce + 1
-  while (poolTxsNonces.indexOf(nonce) !== -1) {
-    nonce++
+  let nonce = currentNonce
+
+  if (typeof nonce === 'undefined') {
+    const accountData = await getAccount(accountIndex)
+    nonce = accountData.nonce
+
+    // return current nonce if no transactions are pending
+    if (poolTxsNonces.length) {
+      while (poolTxsNonces.indexOf(nonce) !== -1) {
+        nonce++
+      }
+    }
   }
 
   return nonce
@@ -138,7 +150,7 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
 
 /**
  * Encode tx compressed data
- * @param {object} tx - Transaction object returned by `encodeTransaction`
+ * @param {Object} tx - Transaction object returned by `encodeTransaction`
  * @returns {Scalar} Encoded tx compressed data
  * @private
  */
@@ -161,7 +173,7 @@ function buildTxCompressedData (tx) {
 
 /**
  * Build element_1 for L2HashSignature
- * @param {object} tx - Transaction object returned by `encodeTransaction`
+ * @param {Object} tx - Transaction object returned by `encodeTransaction`
  * @returns {Scalar} element_1 L2 signature
  */
 function buildElement1 (tx) {
@@ -175,7 +187,7 @@ function buildElement1 (tx) {
 
 /**
  * Builds the message to hash. Used when signing transactions
- * @param {object} encodedTransaction - Transaction object return from `encodeTransaction`
+ * @param {Object} encodedTransaction - Transaction object return from `encodeTransaction`
  * @returns {Scalar} Message to sign
  */
 function buildTransactionHashMessage (encodedTransaction) {
@@ -196,22 +208,22 @@ function buildTransactionHashMessage (encodedTransaction) {
 
 /**
  * Prepares a transaction to be ready to be sent to a Coordinator.
- * @param {object} transaction - ethAddress and babyPubKey together
- * @param {string} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
- * @param {string} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {bigint} transaction.amount - The amount being sent as a BigInt
- * @param {number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
- * @param {number} transaction.nonce - The current nonce of the sender's token account
- * @param {string} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender
- * @param {object} token - The token information object as returned from the Coordinator.
- * @return {object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
+ * @param {Object} transaction - ethAddress and babyPubKey together
+ * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+ * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {BigInt} transaction.amount - The amount being sent as a BigInt
+ * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+ * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
+ * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
+ * @param {Object} token - The token information object as returned from the Coordinator.
+ * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateL2Transaction (tx, bjj, token) {
   const transaction = {
     type: getTransactionType(tx),
     tokenId: token.id,
     fromAccountIndex: tx.from,
-    toAccountIndex: tx.to || null,
+    toAccountIndex: tx.type === 'Exit' ? `hez:${token.symbol}:1` : tx.to,
     toHezEthereumAddress: null,
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
@@ -236,8 +248,8 @@ async function generateL2Transaction (tx, bjj, token) {
 
 /**
  * Gets the beautified name of a transaction state
- * @param {string} transactionState - The original transaction state from the API
- * @return {string} - The beautified transaction state
+ * @param {String} transactionState - The original transaction state from the API
+ * @return {String} - The beautified transaction state
 */
 function beautifyTransactionState (transactionState) {
   return Object.keys(TxState).find(key => TxState[key] === transactionState)
@@ -247,8 +259,8 @@ export {
   encodeTransaction as _encodeTransaction,
   getTxId,
   getFee,
-  getNonce,
   getTransactionType,
+  getNonce,
   buildTxCompressedData as _buildTxCompressedData,
   buildTransactionHashMessage,
   generateL2Transaction,
