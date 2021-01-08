@@ -31,8 +31,6 @@ let baseApiUrl = BASE_API_URL
  */
 function setBaseApiUrl (url) {
   baseApiUrl = url
-  // TODO: Remove once this is fixed https://github.com/hermeznetwork/integration-testing/issues/34
-  baseApiUrl = BASE_API_URL
 }
 
 /**
