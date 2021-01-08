@@ -16,6 +16,7 @@ function setProvider (url) {
 
 /**
  * Retrieve provider
+ * @param {String} url - Network url (i.e, http://localhost:8545)
  * @returns {Object} provider
  */
 function getProvider (url) {

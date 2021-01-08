@@ -6,7 +6,7 @@ import { ethers } from 'ethers'
 import { buildTransactionHashMessage } from './tx-utils.js'
 import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
-import { getEthereumAddress, getHermezAddress, isHermezEthereumAddress } from './addresses.js'
+import { getEthereumAddress, getHermezAddress, isHermezEthereumAddress, hexToBase64BJJ } from './addresses.js'
 import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE } from './constants.js'
 import { getSigner } from './signers.js'
 
@@ -38,6 +38,7 @@ class HermezWallet {
     const compressedPublicKey = utils.leBuff2int(circomlib.babyJub.packPoint(publicKey))
     this.publicKeyCompressed = compressedPublicKey.toString()
     this.publicKeyCompressedHex = ethers.utils.hexZeroPad(`0x${compressedPublicKey.toString(16)}`, 32).slice(2)
+    this.publicKeyBase64 = hexToBase64BJJ(this.publicKeyCompressedHex)
 
     this.hermezEthereumAddress = hermezEthereumAddress
   }
