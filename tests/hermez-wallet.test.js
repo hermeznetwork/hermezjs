@@ -93,7 +93,7 @@ describe('HermezWallet', () => {
 
   test('#signCreateAccountAuthorization', async () => {
     const signature = await wallet.signCreateAccountAuthorization('http://localhost:8545')
-    expect(signature).toBe('0xc7468eb11be30ed426e9b2b10fd91cfabf3ef29c2002b4c5bc87af29363ff3330x310631e989efd86463052d636bb3e80e4b5cafdb9f2b987ec23238491ef9d72a27')
+    expect(signature).toBe('0xc7468eb11be30ed426e9b2b10fd91cfabf3ef29c2002b4c5bc87af29363ff333310631e989efd86463052d636bb3e80e4b5cafdb9f2b987ec23238491ef9d72a1b')
   })
 })
 

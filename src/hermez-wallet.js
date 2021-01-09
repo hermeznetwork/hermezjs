@@ -37,7 +37,7 @@ class HermezWallet {
 
     const compressedPublicKey = utils.leBuff2int(circomlib.babyJub.packPoint(publicKey))
     this.publicKeyCompressed = compressedPublicKey.toString()
-    this.publicKeyCompressedHex = ethers.utils.hexZeroPad(`0x${compressedPublicKey.toString(16)}`, 32).slice(2)
+    this.publicKeyCompressedHex = ethers.utils.hexZeroPad(`0x${compressedPublicKey.toString(16)}`, 32)
     this.publicKeyBase64 = hexToBase64BJJ(this.publicKeyCompressedHex)
 
     this.hermezEthereumAddress = hermezEthereumAddress
@@ -72,16 +72,16 @@ class HermezWallet {
     const chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`
     const messageHex =
       ethers.utils.hexlify(accountCreationAuthMsgArray) +
-      this.publicKeyCompressedHex +
+      ethers.utils.hexZeroPad(this.publicKeyCompressedHex, 32).slice(2) +
       ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
-      getEthereumAddress(this.hermezEthereumAddress).slice(2)
+      ethers.utils.hexZeroPad(getEthereumAddress(this.hermezEthereumAddress), 20).slice(2)
 
     const messageArray = ethers.utils.arrayify(messageHex)
     const signature = await signer.signMessage(messageArray)
     // Generate the signature from params as there's a bug in ethers
     // that generates the base signature wrong
     const signatureParams = ethers.utils.splitSignature(signature)
-    return signatureParams.r + signatureParams.s + signatureParams.v
+    return signature.slice(0, -2) + signatureParams.v.toString(16)
   }
 }
 
