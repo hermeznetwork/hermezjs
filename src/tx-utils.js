@@ -219,17 +219,19 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateL2Transaction (tx, bjj, token) {
+  const nonce = await getNonce(tx.nonce, tx.from, bjj, token.id)
+  const type = getTransactionType(tx)
   const transaction = {
-    type: getTransactionType(tx),
+    type,
     tokenId: token.id,
     fromAccountIndex: tx.from,
-    toAccountIndex: tx.type === 'Exit' ? `hez:${token.symbol}:1` : tx.to,
+    toAccountIndex: type === TxType.Exit ? `hez:${token.symbol}:1` : tx.to,
     toHezEthereumAddress: null,
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
     amount: float2Fix(floorFix2Float(tx.amount)).toString(),
     fee: getFee(tx.fee, tx.amount, token.decimals),
-    nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
+    nonce,
     requestFromAccountIndex: null,
     requestToAccountIndex: null,
     requestToHezEthereumAddress: null,

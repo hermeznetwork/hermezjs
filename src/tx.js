@@ -69,7 +69,7 @@ const deposit = async (
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
   const transactionParameters = [
-    account ? 0 : `0x${babyJubJub}`,
+    account ? 0 : babyJubJub,
     account ? getAccountIndex(account.accountIndex) : 0,
     fix2Float(amount),
     0,
@@ -185,7 +185,7 @@ const withdraw = async (
   const transactionParameters = [
     token.id,
     amount,
-    `0x${babyJubJub}`,
+    babyJubJub,
     batchNumber,
     merkleSiblings,
     getAccountIndex(accountIndex),
@@ -237,7 +237,7 @@ const delayedWithdraw = async (
  * Sends a L2 transaction to the Coordinator
  * @param {Object} transaction - Transaction object prepared by TxUtils.generateL2Transaction
  * @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
- * @return {Object} - Object with the response status, transaction id and the transaction nonce
+ * @return {Object} Object with the response status, transaction id and the transaction nonce
 */
 async function sendL2Transaction (transaction, bJJ) {
   const result = await postPoolTransaction(transaction)
