@@ -15,6 +15,15 @@ const contractAddresses = {
   WithdrawalDelayer: '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
 }
 
+/**
+ * Tells hermezjs to use alternative contract addresses
+ * Useful for testing with non-standardised addresses
+ * @private
+ */
+function setContractAddress (name, address) {
+  contractAddresses[name] = address
+}
+
 const DEFAULT_PAGE_SIZE = 20
 
 const BASE_API_URL = 'http://localhost:8086'
@@ -28,5 +37,6 @@ export {
   GAS_MULTIPLIER,
   DEFAULT_PAGE_SIZE,
   contractAddresses,
-  BASE_API_URL
+  BASE_API_URL,
+  setContractAddress as _setContractAddress
 }
