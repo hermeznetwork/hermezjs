@@ -10,9 +10,23 @@ const GAS_LIMIT = 5000000
 
 const GAS_MULTIPLIER = 1
 
+const ContractNames = {
+  Hermez: 'Hermez',
+  WithdrawalDelayer: 'WithdrawalDelayer'
+}
+
 const contractAddresses = {
   Hermez: '0x10465b16615ae36F350268eb951d7B0187141D3B',
   WithdrawalDelayer: '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
+}
+
+/**
+ * Tells hermezjs to use alternative contract addresses
+ * Useful for testing with non-standardised addresses
+ * @private
+ */
+function setContractAddress (name, address) {
+  contractAddresses[ContractNames[name]] = address
 }
 
 const DEFAULT_PAGE_SIZE = 20
@@ -27,6 +41,8 @@ export {
   GAS_LIMIT,
   GAS_MULTIPLIER,
   DEFAULT_PAGE_SIZE,
+  ContractNames,
   contractAddresses,
-  BASE_API_URL
+  BASE_API_URL,
+  setContractAddress as _setContractAddress
 }
