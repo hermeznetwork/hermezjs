@@ -5,10 +5,13 @@ const yargs = require('yargs').usage('')
 // local arguments
 const argv = yargs.argv
 const ethNodeURL = argv.url === undefined ? 'http://localhost:8545' : argv.url
+const hermezApiURL = argv.api === undefined ? 'localhost:8086' : argv.api
 
 async function main () {
   // load ethereum network provider
   hermez.Providers.setProvider(ethNodeURL)
+  // set API URL
+  hermez.CoordinatorAPI.setBaseApiUrl(hermezApiURL)
 
   // initialize transaction pool
   hermez.TxPool.initializeTransactionPool()

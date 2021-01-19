@@ -4,9 +4,10 @@ Examples contains a set of examples to help `hermezjs` user get started with mos
 
 To use the examples:
 ```
-node <transaction-script> --url <ethNodeUrl>
+node <transaction-script> --url <ethNodeUrl> --api <hermezAPI>
 ```
-If no `--url` parameters is provided, default url `http://localhost:8545` is used.
+If no `--url` parameter is provided, default url `http://localhost:8545` is used.
+If no `--api` parameter is provided, default api `localhost:8086` is used.
 First transaction should be `create-accounts-and-deposit`
 
 ## Trannsactions
