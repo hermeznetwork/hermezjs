@@ -1,4 +1,4 @@
-const hermez = require('../../dist/node/index.js')
+const hermez = require('../dist/node/index.js')
 
 const yargs = require('yargs').usage('')
 
