@@ -1,4 +1,4 @@
-const hermez = require('@hermeznetwork/hermezjs')
+const hermez = require('../../dist/node/index.js')
 
 const yargs = require('yargs').usage('')
 
@@ -18,33 +18,17 @@ async function main () {
   // load first account
   const mnemonicIndex1 = 1
   const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(ethNodeURL, { type: 'JSON-RPC', addressOrIndex: mnemonicIndex1 })
-  const hermezWallet = wallet.hermezWallet
   const hermezEthereumAddress = wallet.hermezEthereumAddress
 
   // get account information
   const infoAccount = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
     .accounts[0]
 
-  // get exit information
-  const exitInfoN = (await hermez.CoordinatorAPI.getExits(infoAccount.hezEthereumAddress, true)).exits
-  console.log('L', exitInfoN.length, exitInfoN)
-  if (exitInfoN.length) {
-    const exitInfo = exitInfoN[exitInfoN.length - 1]
-    // set to perform instant withdraw
-    const isInstant = true
+  // set amount to force-exit
+  const amountExit = hermez.Utils.getTokenAmountBigInt('8', 18)
 
-    console.log('ExitInfo', JSON.stringify(exitInfo, null, 4))
-    // perform withdraw
-    await hermez.Tx.withdraw(
-      exitInfo.balance,
-      exitInfo.accountIndex,
-      exitInfo.token,
-      hermezWallet.publicKeyCompressedHex,
-      exitInfo.batchNum,
-      exitInfo.merkleProof.siblings,
-      isInstant
-    )
-  }
+  // perform force-exit
+  await hermez.Tx.forceExit(amountExit, infoAccount.accountIndex, tokenERC20)
 }
 
 main()

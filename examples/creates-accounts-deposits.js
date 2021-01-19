@@ -1,4 +1,5 @@
-const hermez = require('@hermeznetwork/hermezjs')
+const hermez = require('../../dist/node/index.js')
+
 const yargs = require('yargs').usage('')
 
 // local arguments

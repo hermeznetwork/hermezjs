@@ -1,8 +1,9 @@
-const hermez = require('@hermeznetwork/hermezjs')
-var yargs = require('yargs').usage('')
+const hermez = require('../../dist/node/index.js')
+
+const yargs = require('yargs').usage('')
 
 // local arguments
-var argv = yargs.argv
+const argv = yargs.argv
 const ethNodeURL = argv.url === undefined ? 'http://localhost:8545' : argv.url
 
 async function main () {
