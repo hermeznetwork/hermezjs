@@ -26,7 +26,7 @@ async function main () {
 
   // load second account
   const mnemonicIndex2 = 2
-  const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount('http://localhost:8545', { type: 'JSON-RPC', addressOrIndex: mnemonicIndex2 })
+  const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(ethNodeURL, { type: 'JSON-RPC', addressOrIndex: mnemonicIndex2 })
   const hermezWallet2 = wallet2.hermezWallet
   const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
 
