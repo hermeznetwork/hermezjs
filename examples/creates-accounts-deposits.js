@@ -1,17 +1,14 @@
 const hermez = require('../dist/node/index.js')
-
-const yargs = require('yargs').usage('')
-
-// local arguments
-const argv = yargs.argv
-const ethNodeURL = argv.url === undefined ? 'http://localhost:8545' : argv.url
-const hermezApiURL = argv.api === undefined ? 'localhost:8086' : argv.api
+const {
+  EXAMPLES_WEB3_URL,
+  EXAMPLES_HERMEZ_API_URL
+} = require('./constants.js')
 
 async function main () {
   // load ethereum network provider
-  hermez.Providers.setProvider(ethNodeURL)
+  hermez.Providers.setProvider(EXAMPLES_WEB3_URL)
   // set API URL
-  hermez.CoordinatorAPI.setBaseApiUrl(hermezApiURL)
+  hermez.CoordinatorAPI.setBaseApiUrl(EXAMPLES_HERMEZ_API_URL)
 
   // initialize transaction pool
   hermez.TxPool.initializeTransactionPool()
@@ -23,13 +20,13 @@ async function main () {
 
   // load first account
   const mnemonicIndex1 = 1
-  const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(ethNodeURL, { type: 'JSON-RPC', addressOrIndex: mnemonicIndex1 })
+  const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'JSON-RPC', addressOrIndex: mnemonicIndex1 })
   const hermezWallet = wallet.hermezWallet
   const hermezEthereumAddress = wallet.hermezEthereumAddress
 
   // load second account
   const mnemonicIndex2 = 2
-  const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(ethNodeURL, { type: 'JSON-RPC', addressOrIndex: mnemonicIndex2 })
+  const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'JSON-RPC', addressOrIndex: mnemonicIndex2 })
   const hermezWallet2 = wallet2.hermezWallet
   const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
 
