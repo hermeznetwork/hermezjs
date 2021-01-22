@@ -1,3 +1,5 @@
+import { ethers } from 'ethers'
+
 import { LedgerSigner } from './signers/ledger-signer.js'
 import { TrezorSigner } from './signers/trezor-signer.js'
 
@@ -7,7 +9,8 @@ import { TrezorSigner } from './signers/trezor-signer.js'
 const SignerType = {
   JSON_RPC: 'JSON-RPC',
   LEDGER: 'LEDGER',
-  TREZOR: 'TREZOR'
+  TREZOR: 'TREZOR',
+  WALLET: 'WALLET'
 }
 
 /**
@@ -29,6 +32,9 @@ const getSigner = (provider, signerData) => {
     }
     case SignerType.JSON_RPC: {
       return provider.getSigner(signerData.addressOrIndex)
+    }
+    case SignerType.WALLET: {
+      return new ethers.Wallet(signerData.privateKey, provider)
     }
     default: {
       return provider.getSigner()
