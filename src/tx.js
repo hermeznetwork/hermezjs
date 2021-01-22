@@ -58,7 +58,7 @@ const deposit = async (
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
@@ -86,7 +86,7 @@ const deposit = async (
       })
   }
 
-  await approve(amount, ethereumAddress, token.ethereumAddress, providerUrl, signerData)
+  await approve(amount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => transactionParameters)
@@ -119,7 +119,7 @@ const forceExit = async (
     })
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
@@ -176,7 +176,7 @@ const withdraw = async (
     })
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
@@ -217,7 +217,7 @@ const delayedWithdraw = async (
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, providerUrl, txSignerData)
+  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
