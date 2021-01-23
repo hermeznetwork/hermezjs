@@ -13,9 +13,8 @@ export class TrezorSigner extends ethers.Signer {
   constructor (provider, options) {
     super()
     this.provider = provider
-    this.path = (options && options.path)
-      ? options.path
-      : ethers.utils.defaultPath
+    this.path = (options && options.path) ? options.path : ethers.utils.defaultPath
+    TrezorConnect.manifest(options && options.manifest)
   }
 
   /**
@@ -24,7 +23,13 @@ export class TrezorSigner extends ethers.Signer {
    */
   getAddress () {
     return TrezorConnect.ethereumGetAddress({ path: this.path })
-      .then(({ address }) => ethers.utils.getAddress(address))
+      .then((result) => {
+        if (!result.success) {
+          console.error(result.payload.error)
+        } else {
+          return result.payload.address
+        }
+      })
   }
 
   /**
@@ -42,7 +47,13 @@ export class TrezorSigner extends ethers.Signer {
       path: this.path,
       message: messageHex,
       hex: true
-    }).then(({ result }) => result.payload.signature)
+    }).then((result) => {
+      if (!result.success) {
+        console.error(result.payload.error)
+      } else {
+        return result.payload.signature
+      }
+    })
   }
 
   /**
@@ -57,13 +68,17 @@ export class TrezorSigner extends ethers.Signer {
           path: this.path,
           transaction: tx
         }).then((result) => {
-          const signature = {
-            r: result.payload.r,
-            s: result.payload.s,
-            v: result.payload.v
-          }
+          if (!result.success) {
+            console.error(result.payload.error)
+          } else {
+            const signature = {
+              r: result.payload.r,
+              s: result.payload.s,
+              v: result.payload.v
+            }
 
-          return ethers.utils.serializeTransaction(tx, signature)
+            return ethers.utils.serializeTransaction(tx, signature)
+          }
         })
       })
   }
