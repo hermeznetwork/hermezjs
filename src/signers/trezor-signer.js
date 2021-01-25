@@ -14,6 +14,7 @@ export class TrezorSigner extends ethers.Signer {
     super()
     this.provider = provider
     this.path = (options && options.path) ? options.path : ethers.utils.defaultPath
+    this.address = options && options.address
     TrezorConnect.manifest(options && options.manifest)
   }
 
@@ -22,6 +23,10 @@ export class TrezorSigner extends ethers.Signer {
    * @returns {Promise} - Promise of the checksum address
    */
   getAddress () {
+    if (this.address) {
+      return this.address
+    }
+
     return TrezorConnect.ethereumGetAddress({ path: this.path })
       .then((result) => {
         if (!result.success) {
@@ -61,25 +66,30 @@ export class TrezorSigner extends ethers.Signer {
    * @param {Object} transaction - Transaction to be signed
    * @returns {Promise} - Promise of the transaction signature
    */
-  signTransaction (transaction) {
-    return ethers.utils.resolveProperties(transaction)
-      .then((tx) => {
-        return TrezorConnect.ethereumSignTransaction({
-          path: this.path,
-          transaction: tx
-        }).then((result) => {
-          if (!result.success) {
-            console.error(result.payload.error)
-          } else {
-            const signature = {
-              r: result.payload.r,
-              s: result.payload.s,
-              v: result.payload.v
-            }
+  signTransaction (transactionData) {
+    const transaction = {
+      to: transactionData.to,
+      value: transactionData.value.toHexString(),
+      gasPrice: transactionData.gasPrice.toHexString(),
+      gasLimit: transactionData.value.toHexString(),
+      nonce: ethers.utils.hexlify(transactionData.nonce),
+      data: transactionData.data,
+      chainId: transactionData.chainId
+    }
 
-            return ethers.utils.serializeTransaction(tx, signature)
+    return TrezorConnect.ethereumSignTransaction({ path: this.path, transaction })
+      .then((result) => {
+        if (!result.success) {
+          console.error(result.payload.error)
+        } else {
+          const signature = {
+            r: result.payload.r,
+            s: result.payload.s,
+            v: result.payload.v
           }
-        })
+
+          return ethers.utils.serializeTransaction(transaction, signature)
+        }
       })
   }
 
