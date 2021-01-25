@@ -27,6 +27,3 @@ Transactions folder contains a set of routines that allow to send single transfe
 - `force-exitB.js` performs a `force exit` transaction from account 1
 - `withdrawalA.js` performs a `withdrawal` transaction from account 0 
 - `withdrawalB.js` performs a `withdrawal` transaction from account 1 
-
-
-
