@@ -28,7 +28,14 @@ const getSigner = (provider, signerData) => {
       return LedgerSigner.connect(provider, { path: signerData.path })
     }
     case SignerType.TREZOR: {
-      return TrezorSigner.connect(provider, { path: signerData.path })
+      return TrezorSigner.connect(
+        provider,
+        {
+          manifest: signerData.manifest,
+          path: signerData.path,
+          address: signerData.address
+        }
+      )
     }
     case SignerType.JSON_RPC: {
       return provider.getSigner(signerData.addressOrIndex)

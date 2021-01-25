@@ -1,4 +1,4 @@
-import TransportU2F from '@ledgerhq/hw-transport-u2f'
+import TransportWebUSB from '@ledgerhq/hw-transport-webusb'
 import Eth from '@ledgerhq/hw-app-eth'
 import { ethers } from 'ethers'
 
@@ -27,7 +27,7 @@ export class LedgerSigner extends ethers.Signer {
    */
   getAddress () {
     return this.eth.getAddress(this.path)
-      .then(ethers.utils.getAddress)
+      .then(({ address }) => address)
   }
 
   /**
@@ -41,7 +41,7 @@ export class LedgerSigner extends ethers.Signer {
       : message
     const messageHex = ethers.utils.hexlify(messageBytes)
 
-    return this.eth.signPersonalMessage(this.path, messageHex)
+    return this.eth.signPersonalMessage(this.path, messageHex.slice(2))
       .then((result) => {
         const hexV = (result.v - 27).toString(16)
         const fixedHexV = hexV.length < 2 ? `0${hexV}` : hexV
@@ -77,7 +77,7 @@ export class LedgerSigner extends ethers.Signer {
    * @returns {Promise} - Promise of a new LedgerSigner instance
    */
   static connect (provider, options) {
-    return TransportU2F.create()
+    return TransportWebUSB.create()
       .then((transport) => new LedgerSigner(transport, provider, options))
   }
 }
