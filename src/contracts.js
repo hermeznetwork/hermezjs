@@ -16,9 +16,9 @@ const contractsCache = new Map()
  */
 function getContract (contractAddress, abi, providerUrl, signerData = {}) {
   const signerId = signerData.addressOrIndex || signerData.path
-  if (contractsCache.has(contractAddress + signerId)) {
+  /* if (contractsCache.has(contractAddress + signerId)) {
     return contractsCache.get(contractAddress + signerId)
-  }
+  } */
 
   const provider = getProvider(providerUrl)
   const signer = getSigner(provider, signerData)
