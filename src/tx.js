@@ -40,8 +40,8 @@ async function getGasPrice (multiplier, providerUrl) {
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
- * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
@@ -51,14 +51,14 @@ const deposit = async (
   hezEthereumAddress,
   token,
   babyJubJub,
-  providerUrl,
   signerData,
+  providerUrl,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
@@ -86,7 +86,7 @@ const deposit = async (
       })
   }
 
-  await approve(amount, ethereumAddress, token.ethereumAddress, providerUrl, signerData)
+  await approve(amount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => transactionParameters)
@@ -97,8 +97,8 @@ const deposit = async (
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
- * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
@@ -108,8 +108,8 @@ const forceExit = async (
   amount,
   accountIndex,
   token,
-  providerUrl,
   signerData,
+  providerUrl,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
@@ -119,7 +119,7 @@ const forceExit = async (
     })
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
@@ -148,9 +148,9 @@ const forceExit = async (
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
  * @param {BigInt} batchNumber - The batch number where the exit being withdrawn was forged
  * @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
- * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
- * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Boolean} filterSiblings - Whether siblings should be filtered
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
@@ -165,8 +165,8 @@ const withdraw = async (
   batchNumber,
   merkleSiblings,
   isInstant = true,
-  providerUrl,
   signerData,
+  providerUrl,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
@@ -176,7 +176,7 @@ const withdraw = async (
     })
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, providerUrl, txSignerData)
+  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
@@ -201,8 +201,8 @@ const withdraw = async (
  *
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
- * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
@@ -210,14 +210,14 @@ const withdraw = async (
 const delayedWithdraw = async (
   hezEthereumAddress,
   token,
-  providerUrl,
   signerData,
+  providerUrl,
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, providerUrl, txSignerData)
+  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
