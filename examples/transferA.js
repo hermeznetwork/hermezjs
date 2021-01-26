@@ -13,9 +13,6 @@ async function main () {
   // Configure Environment (SC address, WEB3 providers,...)
   configureEnvironment()
 
-  // initialize transaction pool
-  hermez.TxPool.initializeTransactionPool()
-
   // load token to deposit information
   const tokenToDeposit = 0
   const token = await hermez.CoordinatorAPI.getTokens()
@@ -28,29 +25,32 @@ async function main () {
 
   // load second account
   const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: privKey2 })
-  const hermezWallet2 = wallet2.hermezWallet
   const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
 
-  // set amount to deposit
-  const amountDeposit = hermez.Utils.getTokenAmountBigInt('0.1', 18)
+  // get sender account information
+  const infoAccountSender = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+    .accounts[0]
 
-  // perform deposit account 1
-  await hermez.Tx.deposit(
-    amountDeposit,
-    hermezEthereumAddress,
-    tokenERC20,
-    hermezWallet.publicKeyCompressedHex,
-    { type: 'WALLET', privateKey: privKey1 }
-  )
+  // get receiver account information
+  const infoAccountReceiver = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id]))
+    .accounts[0]
 
-  // perform deposit account 2
-  await hermez.Tx.deposit(
-    amountDeposit,
-    hermezEthereumAddress2,
-    tokenERC20,
-    hermezWallet2.publicKeyCompressedHex,
-    { type: 'WALLET', privateKey: privKey2 }
-  )
+  // set amount to transfer
+  const amountTransfer = hermez.Utils.getTokenAmountBigInt('0.0001', 18)
+  // set fee in transaction
+  const userFee = 0
+
+  // generate L2 transaction
+  const l2TxTransfer = {
+    type: 'Transfer',
+    from: infoAccountSender.accountIndex,
+    to: infoAccountReceiver.accountIndex,
+    amount: amountTransfer,
+    userFee
+  }
+
+  const transferResponse = await hermez.Tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token)
+  console.log('transferResponse: ', transferResponse)
 }
 
 main()

@@ -1,14 +1,15 @@
 const hermez = require('../dist/node/index.js')
 const {
   EXAMPLES_WEB3_URL,
-  EXAMPLES_HERMEZ_API_URL
+  EXAMPLES_PRIVATE_KEY1,
+  configureEnvironment
 } = require('./constants.js')
 
 async function main () {
-  // load ethereum network provider
-  hermez.Providers.setProvider(EXAMPLES_WEB3_URL)
-  // set API URL
-  hermez.CoordinatorAPI.setBaseApiUrl(EXAMPLES_HERMEZ_API_URL)
+  const privKey1 = EXAMPLES_PRIVATE_KEY1
+
+  // Configure Environment (SC address, WEB3 providers,...)
+  configureEnvironment()
 
   // load token to deposit information
   const tokenToDeposit = 0
@@ -16,8 +17,7 @@ async function main () {
   const tokenERC20 = token.tokens[tokenToDeposit]
 
   // load first account
-  const mnemonicIndex1 = 1
-  const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'JSON-RPC', addressOrIndex: mnemonicIndex1 })
+  const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: privKey1 })
   const hermezEthereumAddress = wallet.hermezEthereumAddress
 
   // get account information
@@ -25,10 +25,15 @@ async function main () {
     .accounts[0]
 
   // set amount to force-exit
-  const amountExit = hermez.Utils.getTokenAmountBigInt('8', 18)
+  const amountExit = hermez.Utils.getTokenAmountBigInt('0.0001', 18)
 
   // perform force-exit
-  await hermez.Tx.forceExit(amountExit, infoAccount.accountIndex, tokenERC20)
+  await hermez.Tx.forceExit(
+    amountExit,
+    infoAccount.accountIndex,
+    tokenERC20,
+    { type: 'WALLET', privateKey: privKey1 }
+  )
 }
 
 main()
