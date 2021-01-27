@@ -6,8 +6,8 @@ import { ethers } from 'ethers'
 import { buildTransactionHashMessage } from './tx-utils.js'
 import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
-import { getEthereumAddress, getHermezAddress, isHermezEthereumAddress, hexToBase64BJJ } from './addresses.js'
-import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE } from './constants.js'
+import { getHermezAddress, isHermezEthereumAddress, hexToBase64BJJ } from './addresses.js'
+import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, contractAddresses } from './constants.js'
 import { getSigner } from './signers.js'
 
 /**
@@ -74,14 +74,14 @@ class HermezWallet {
       ethers.utils.hexlify(accountCreationAuthMsgArray) +
       this.publicKeyCompressedHex +
       ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
-      getEthereumAddress(this.hermezEthereumAddress).slice(2)
+      contractAddresses.Hermez.slice(2)
 
     const messageArray = ethers.utils.arrayify(messageHex)
     const signature = await signer.signMessage(messageArray)
     // Generate the signature from params as there's a bug in ethers
     // that generates the base signature wrong
     const signatureParams = ethers.utils.splitSignature(signature)
-    return signatureParams.r + signatureParams.s + signatureParams.v
+    return signature.slice(0, -2) + signatureParams.v.toString(16)
   }
 }
 

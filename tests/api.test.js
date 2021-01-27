@@ -1,14 +1,15 @@
 import * as CoordinatorAPI from '../src/api'
+import { createWalletFromEtherAccount } from '../src/hermez-wallet'
 
 // All API tests are skipped until we transition to testnet
 // They can be activated to test with Swagger endpoints
 
-test.skip('#_getPageData', () => {
-  const pageData = CoordinatorAPI._getPageData(32)
-  expect(pageData).toEqual({ fromItem: 32, limit: 20 })
+test('#_getPageData', () => {
+  const pageData = CoordinatorAPI._getPageData(32, CoordinatorAPI.PaginationOrder.ASC, 20)
+  expect(pageData).toEqual({ fromItem: 32, order: CoordinatorAPI.PaginationOrder.ASC, limit: 20 })
 })
 
-test.skip('#getBaseApiUrl & #setBaseApiUrl', () => {
+test('#getBaseApiUrl & #setBaseApiUrl', () => {
   const url = 'http://localhost:8086'
   expect(CoordinatorAPI.getBaseApiUrl()).toBe(url)
   CoordinatorAPI.setBaseApiUrl(url)
@@ -240,11 +241,13 @@ describe.skip('#getBids', () => {
   })
 })
 
-test.skip('#postCreateAccountAuthorization', async () => {
+test('#postCreateAccountAuthorization', async () => {
+  const { hermezWallet } = await createWalletFromEtherAccount('http://localhost:8545')
+  const signature = await hermezWallet.signCreateAccountAuthorization('http://localhost:8545')
   const res = await CoordinatorAPI.postCreateAccountAuthorization(
-    'hez:0xb5270eB4ae11c6fAAff6F5fa0A5202B8d963634C',
-    'hez:hg2Ydsb8O66H-steBR3cnHl944ua7E-PkTJ_SbPBBg5r',
-    '0xf9161cd688394772d93aa3e7b3f8f9553ca4f94f65b7cece93ed4a239d5c0b4677dca6d1d459e3a5c271a34de735d4664a43e5a8960a9a6e027d12c562dd448e1c'
+    hermezWallet.hermezEthereumAddress,
+    hermezWallet.publicKeyBase64,
+    signature
   )
   expect(res.status).toBe(200)
 })
