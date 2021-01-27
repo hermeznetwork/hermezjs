@@ -9,6 +9,7 @@ import * as Float16 from './float16.js'
 import * as Addresses from './addresses.js'
 import * as Providers from './providers.js'
 import * as Signers from './signers.js'
+import * as Environment from './environment.js'
 
 export {
   HermezWallet,
@@ -21,7 +22,8 @@ export {
   Float16,
   Addresses,
   Providers,
-  Signers
+  Signers,
+  Environment
 }
 
 export default {
@@ -35,5 +37,6 @@ export default {
   Float16,
   Addresses,
   Providers,
-  Signers
+  Signers,
+  Environment
 }

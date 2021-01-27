@@ -3,7 +3,7 @@ import { ethers } from 'ethers'
 import * as tokens from '../src/tokens.js'
 import * as utils from '../src/utils.js'
 import * as providers from '../src/providers.js'
-import { contractAddresses } from '../src/constants.js'
+import { CONTRACT_ADDRESSES } from '../src/constants.js'
 import ERC20ABI from '../src/abis/ERC20ABI.js'
 
 // Ignoring due to a race condition with tx.test.mjs
@@ -30,7 +30,7 @@ test('Check Allowance', async () => {
     const amountStr = Math.floor(Math.random() * 10000).toString()
     const amount = utils.getTokenAmountBigInt(amountStr, 2)
     await tokens.approve(amount, txAddress, ERC20Address, 'http://localhost:8545')
-    const allowance = await erc20Contract.allowance(txAddress, contractAddresses.Hermez)
+    const allowance = await erc20Contract.allowance(txAddress, CONTRACT_ADDRESSES.Hermez)
 
     expect(allowance.toString()).toBe(amount.toString())
   }

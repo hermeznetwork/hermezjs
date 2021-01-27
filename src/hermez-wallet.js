@@ -7,7 +7,7 @@ import { buildTransactionHashMessage } from './tx-utils.js'
 import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
 import { getHermezAddress, isHermezEthereumAddress, hexToBase64BJJ } from './addresses.js'
-import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, contractAddresses } from './constants.js'
+import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, CONTRACT_ADDRESSES } from './constants.js'
 import { getSigner } from './signers.js'
 
 /**
@@ -74,7 +74,7 @@ class HermezWallet {
       ethers.utils.hexlify(accountCreationAuthMsgArray) +
       this.publicKeyCompressedHex +
       ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
-      contractAddresses.Hermez.slice(2)
+      CONTRACT_ADDRESSES.Hermez.slice(2)
 
     const messageArray = ethers.utils.arrayify(messageHex)
     const signature = await signer.signMessage(messageArray)
