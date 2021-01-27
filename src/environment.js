@@ -53,11 +53,11 @@ function setEnvironment (env) {
     throw new Error('A environment is required')
   }
 
-  if (!isEnvironmentSupported(env)) {
-    throw new Error('Environment not supported')
-  }
-
   if (typeof env === 'number') {
+    if (!isEnvironmentSupported(env)) {
+      throw new Error('Environment not supported')
+    }
+
     setContractAddress(ContractNames.Hermez, PUBLIC_CONTRACT_ADDRESSES[env][ContractNames.Hermez])
     setContractAddress(ContractNames.WithdrawalDelayer, PUBLIC_CONTRACT_ADDRESSES[env][ContractNames.WithdrawalDelayer])
     setBaseApiUrl(PUBLIC_BASE_API_URLS[env])
