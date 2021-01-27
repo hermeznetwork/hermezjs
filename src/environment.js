@@ -2,6 +2,8 @@ import * as constants from './constants'
 import * as coordinatorApi from './api'
 import { ContractNames } from './constants'
 
+let batchExplorerUrl = constants.BATCH_EXPLORER_URL
+
 const SUPPORTED_ENVIRONMENTS = {
   Rinkeby: {
     name: 'Rinkeby',
@@ -11,6 +13,11 @@ const SUPPORTED_ENVIRONMENTS = {
     name: 'Localhost',
     chainId: 1337
   }
+}
+
+const BATCH_EXPLORER_URLS = {
+  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://hermez-public-998653595.eu-west-1.elb.amazonaws.com:8080',
+  [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8080'
 }
 
 const PUBLIC_BASE_API_URLS = {
@@ -37,34 +44,46 @@ function setBaseApiUrl (baseApiUrl) {
   coordinatorApi.setBaseApiUrl(baseApiUrl)
 }
 
+function setBatchExplorerUrl (url) {
+  batchExplorerUrl = url
+}
+
 function setEnvironment (env) {
   if (!env) {
     throw new Error('A environment is required')
   }
 
+  if (!isEnvironmentSupported(env)) {
+    throw new Error('Environment not supported')
+  }
+
   if (typeof env === 'number') {
-    setContractAddress(ContractNames.Hermez, PUBLIC_CONTRACT_ADDRESSES[env])
-    setContractAddress(ContractNames.WithdrawalDelayer, PUBLIC_CONTRACT_ADDRESSES[env])
+    setContractAddress(ContractNames.Hermez, PUBLIC_CONTRACT_ADDRESSES[env][ContractNames.Hermez])
+    setContractAddress(ContractNames.WithdrawalDelayer, PUBLIC_CONTRACT_ADDRESSES[env][ContractNames.WithdrawalDelayer])
     setBaseApiUrl(PUBLIC_BASE_API_URLS[env])
+    setBatchExplorerUrl(BATCH_EXPLORER_URLS[env])
   }
 
   if (typeof env === 'object') {
     if (
       env.contractAddresses &&
-      ContractNames.Hermez in env.contractAddresses &&
+      env.contractAddresses.Hermez &&
       typeof env.contractAddresses[ContractNames.Hermez] === 'string'
     ) {
       setContractAddress(ContractNames.Hermez, env.contractAddresses[ContractNames.Hermez])
     }
     if (
       env.contractAddresses &&
-      ContractNames.Hermez in env.contractAddresses &&
+      env.contractAddresses.WithdrawalDelayer &&
       typeof env.contractAddresses[ContractNames.WithdrawalDelayer] === 'string'
     ) {
       setContractAddress(ContractNames.WithdrawalDelayer, env.contractAddresses[ContractNames.WithdrawalDelayer])
     }
     if (env.baseApiUrl && typeof env.baseApiUrl === 'string') {
       setBaseApiUrl(env.baseApiUrl)
+    }
+    if (env.batchExplorerUrl && typeof env.batchExplorerUrl === 'string') {
+      setBatchExplorerUrl(env.batchExplorerUrl)
     }
   }
 }
@@ -81,8 +100,13 @@ function isEnvironmentSupported (env) {
   }
 }
 
+function getBatchExplorerUrl () {
+  return batchExplorerUrl
+}
+
 export {
   setEnvironment,
   getSupportedEnvironments,
-  isEnvironmentSupported
+  isEnvironmentSupported,
+  getBatchExplorerUrl
 }

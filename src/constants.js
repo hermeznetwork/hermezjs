@@ -14,6 +14,8 @@ const DEFAULT_PAGE_SIZE = 20
 
 const BASE_API_URL = 'http://localhost:8086'
 
+const BATCH_EXPLORER_URL = 'http://localhost:8080'
+
 const ContractNames = {
   Hermez: 'Hermez',
   WithdrawalDelayer: 'WithdrawalDelayer'
@@ -33,6 +35,7 @@ export {
   GAS_MULTIPLIER,
   DEFAULT_PAGE_SIZE,
   BASE_API_URL,
+  BATCH_EXPLORER_URL,
   ContractNames,
   CONTRACT_ADDRESSES
 }

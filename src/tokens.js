@@ -1,5 +1,5 @@
 import ERC20ABI from './abis/ERC20ABI.js'
-import { CONTRACT_ADDRESSES } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES } from './constants.js'
 import { getContract } from './contracts.js'
 import { SignerType } from './signers.js'
 
@@ -15,18 +15,18 @@ import { SignerType } from './signers.js'
 async function approve (amount, accountAddress, contractAddress, signerData, providerUrl) {
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: accountAddress }
   const erc20Contract = getContract(contractAddress, ERC20ABI, txSignerData, providerUrl)
-  const allowance = await erc20Contract.allowance(accountAddress, CONTRACT_ADDRESSES.Hermez)
+  const allowance = await erc20Contract.allowance(accountAddress, CONTRACT_ADDRESSES[ContractNames.Hermez])
 
   if (allowance.lt(amount)) {
-    return erc20Contract.approve(CONTRACT_ADDRESSES.Hermez, amount)
+    return erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], amount)
   }
 
   if (!allowance.isZero()) {
-    const tx = await erc20Contract.approve(CONTRACT_ADDRESSES.Hermez, '0')
+    const tx = await erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], '0')
     await tx.wait(1)
   }
 
-  return erc20Contract.approve(CONTRACT_ADDRESSES.Hermez, amount)
+  return erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], amount)
 }
 
 export {
