@@ -6,6 +6,7 @@ import { padZeros } from './utils.js'
 const hermezPrefix = 'hez:'
 const hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}$')
 const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
+const accountIndexPattern = new RegExp('^hez:[a-zA-Z0-9]{2,6}:[0-9]{0,9}$')
 
 /**
  * Get the hermez address representation of an ethereum address
@@ -64,6 +65,18 @@ function getAccountIndex (hezAccountIndex) {
 }
 
 /**
+ * Checks if given string matches regex of a Hermez account index
+ * @param {String} test
+ * @returns {Boolean}
+ */
+function isHermezAccountIndex (test) {
+  if (accountIndexPattern.test(test)) {
+    return true
+  }
+  return false
+}
+
+/**
  * Get API Bjj compressed data format
  * @param {String} bjjCompressedHex Bjj compressed address encoded as hex string
  * @returns {String} API adapted bjj compressed address
@@ -96,6 +109,7 @@ export {
   getEthereumAddress,
   isHermezEthereumAddress,
   isHermezBjjAddress,
+  isHermezAccountIndex,
   getAccountIndex,
   hexToBase64BJJ
 }

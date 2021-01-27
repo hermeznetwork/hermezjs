@@ -29,6 +29,11 @@ test('#getAccountIndex', () => {
   expect(addresses.getAccountIndex(hermezAccountIndex)).toBe(accountIndex)
 })
 
+test('#isHermezAccountIndex', () => {
+  expect(addresses.isHermezAccountIndex(hermezAccountIndex)).toBe(true)
+  expect(addresses.isHermezAccountIndex(hermezEthereumAddress)).toBe(false)
+})
+
 test('#hexToBase64BJJ', () => {
   expect(addresses.hexToBase64BJJ(hermezHexBjjAddress)).toBe(hermezBjjAddress)
 })
