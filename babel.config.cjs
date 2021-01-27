@@ -17,8 +17,7 @@ module.exports = (api) => {
         'maintained node versions'
       ],
       useBuiltIns: 'usage',
-      corejs: '3.8.1',
-      shippedProposals: true
+      corejs: '3.8.1'
     }])
   }
 
