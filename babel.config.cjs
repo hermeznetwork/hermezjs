@@ -17,11 +17,13 @@ module.exports = (api) => {
         'maintained node versions'
       ],
       useBuiltIns: 'usage',
-      corejs: '3.8.1'
+      corejs: '3.8.1',
+      shippedProposals: true
     }])
   }
 
   return {
-    presets
+    presets,
+    ignore: [/\/core-js/]
   }
 }
