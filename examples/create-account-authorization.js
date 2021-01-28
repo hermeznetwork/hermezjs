@@ -7,8 +7,8 @@ const {
 } = require('./constants.js')
 
 async function main () {
-  const privKey1 = EXAMPLES_PRIVATE_KEY2
-  const privKey2 = EXAMPLES_PRIVATE_KEY1
+  const privKey1 = EXAMPLES_PRIVATE_KEY1
+  const privKey2 = EXAMPLES_PRIVATE_KEY2
 
   // Configure Environment (SC address, WEB3 providers,...)
   configureEnvironment()
@@ -25,28 +25,47 @@ async function main () {
 
   // load second account
   const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: privKey2 })
+  const hermezWallet2 = wallet.hermezWallet
   const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
+
+  // set amount to deposit
+  const amountDeposit = hermez.Utils.getTokenAmountBigInt('0.1', 18)
+
+  // perform deposit account 1
+  await hermez.Tx.deposit(
+    amountDeposit,
+    hermezEthereumAddress,
+    tokenERC20,
+    hermezWallet.publicKeyCompressedHex,
+    { type: 'WALLET', privateKey: privKey1 }
+  )
+
+  // performs create account authorization account 2
+  const signature = await hermezWallet2.signCreateAccountAuthorization(EXAMPLES_WEB3_URL)
+  const res = await hermez.CoordinatorAPI.postCreateAccountAuthorization(
+    hermezWallet2.hermezEthereumAddress,
+    hermezWallet2.publicKeyBase64,
+    signature
+  )
+  console.log('create account authorization response:', res)
 
   // get sender account information
   const infoAccountSender = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
     .accounts[0]
 
-  // get receiver account information
-  const infoAccountReceiver = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id]))
-    .accounts[0]
-
   // set amount to transfer
   const amountTransfer = hermez.Utils.getTokenAmountBigInt('0.0001', 18)
   // set fee in transaction
-  const userFee = 0
+  const state = await hermez.CoordinatorAPI.getState()
+  const recommendedFees = state.recommendedFees
+  console.log(recommendedFees)
 
   // generate L2 transaction
   const l2TxTransfer = {
-    type: 'Transfer',
     from: infoAccountSender.accountIndex,
-    to: infoAccountReceiver.accountIndex,
+    to: hermezEthereumAddress2,
     amount: amountTransfer,
-    userFee
+    fee: recommendedFees.CreateAccount
   }
 
   const transferResponse = await hermez.Tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token)
