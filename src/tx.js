@@ -241,7 +241,6 @@ const delayedWithdraw = async (
 */
 async function sendL2Transaction (transaction, bJJ) {
   const result = await postPoolTransaction(transaction)
-
   if (result.status === 200) {
     addPoolTransaction(transaction, bJJ)
   }

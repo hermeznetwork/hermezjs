@@ -251,3 +251,9 @@ test('#postCreateAccountAuthorization', async () => {
   )
   expect(res.status).toBe(200)
 })
+
+test.skip('#getCreateAccountAuthorization', async () => {
+  const hermezEthereumAddress = 'hez:0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf'
+  const res = await CoordinatorAPI.getCreateAccountAuthorization(hermezEthereumAddress)
+  expect(res.status).toBe(200)
+})

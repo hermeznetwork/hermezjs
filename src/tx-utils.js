@@ -6,7 +6,7 @@ import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
 import { fix2Float, float2Fix, floorFix2Float } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
-import { getAccountIndex } from './addresses.js'
+import { getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex } from './addresses.js'
 import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 
@@ -14,6 +14,7 @@ export const TxType = {
   Deposit: 'Deposit',
   CreateAccountDeposit: 'CreateAccountDeposit',
   Transfer: 'Transfer',
+  TransferToEthAddr: 'TransferToEthAddr',
   Withdraw: 'Withdrawn',
   Exit: 'Exit',
   ForceExit: 'ForceExit'
@@ -45,6 +46,10 @@ async function encodeTransaction (transaction, providerUrl) {
     encodedTransaction.toAccountIndex = getAccountIndex(transaction.toAccountIndex)
   } else if (transaction.type === 'Exit') {
     encodedTransaction.toAccountIndex = 1
+  }
+
+  if (transaction.toHezEthereumAddress) {
+    encodedTransaction.toEthereumAddress = getEthereumAddress(transaction.toHezEthereumAddress)
   }
 
   return encodedTransaction
@@ -107,10 +112,14 @@ function getFee (fee, amount, decimals) {
  * @return {String} transactionType
  */
 function getTransactionType (transaction) {
-  if (transaction.to && transaction.to.includes('hez:')) {
-    return 'Transfer'
+  if (transaction.to) {
+    if (isHermezAccountIndex(transaction.to)) {
+      return TxType.Transfer
+    } else if (isHermezEthereumAddress(transaction.to)) {
+      return TxType.TransferToEthAddr
+    }
   } else {
-    return 'Exit'
+    return TxType.Exit
   }
 }
 
@@ -179,7 +188,7 @@ function buildTxCompressedData (tx) {
 function buildElement1 (tx) {
   let res = Scalar.e(0)
 
-  res = Scalar.add(res, Scalar.fromString(tx.toEthAddr || '0', 16)) // ethAddr --> 160 bits
+  res = Scalar.add(res, Scalar.fromString(tx.toEthereumAddress || '0', 16)) // ethAddr --> 160 bits
   res = Scalar.add(res, Scalar.shl(tx.maxNumBatch || 0, 160)) // maxNumBatch --> 32 bits
 
   return res
@@ -210,7 +219,7 @@ function buildTransactionHashMessage (encodedTransaction) {
  * Prepares a transaction to be ready to be sent to a Coordinator.
  * @param {Object} transaction - ethAddress and babyPubKey together
  * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
- * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {String} transaction.to - The account index or Hermez address of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
  * @param {BigInt} transaction.amount - The amount being sent as a BigInt
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
@@ -219,12 +228,13 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateL2Transaction (tx, bjj, token) {
+  const toAccountIndex = isHermezAccountIndex(tx.to) ? tx.to : null
   const transaction = {
     type: getTransactionType(tx),
     tokenId: token.id,
     fromAccountIndex: tx.from,
-    toAccountIndex: tx.type === 'Exit' ? `hez:${token.symbol}:1` : tx.to,
-    toHezEthereumAddress: null,
+    toAccountIndex: tx.type === 'Exit' ? `hez:${token.symbol}:1` : toAccountIndex,
+    toHezEthereumAddress: isHermezEthereumAddress(tx.to) ? tx.to : null,
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
     amount: float2Fix(floorFix2Float(tx.amount)).toString(),
