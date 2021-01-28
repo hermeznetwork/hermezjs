@@ -22,6 +22,7 @@ module.exports = (api) => {
   }
 
   return {
-    presets
+    presets,
+    ignore: [/\/core-js/]
   }
 }

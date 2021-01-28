@@ -10,12 +10,15 @@ const EXAMPLES_PRIVATE_KEY2 = ''
 function configureEnvironment () {
   // load ethereum network provider
   hermez.Providers.setProvider(EXAMPLES_WEB3_URL)
-  // set API URL
-  hermez.CoordinatorAPI.setBaseApiUrl(EXAMPLES_HERMEZ_API_URL)
 
-  // set Contract Addresses
-  hermez.Constants._setContractAddress(hermez.Constants.ContractNames.Hermez, EXAMPLES_HERMEZ_ROLLUP_ADDRESS)
-  hermez.Constants._setContractAddress(hermez.Constants.ContractNames.WithdrawalDelayer, EXAMPLES_HERMEZ_WDELAYER_ADDRESS)
+  // set environment
+  hermez.Environment.setEnvironment({
+    baseApiUrl: EXAMPLES_HERMEZ_API_URL,
+    contractAddresses: {
+      [hermez.Constants.ContractNames.Hermez]: EXAMPLES_HERMEZ_ROLLUP_ADDRESS,
+      [hermez.Constants.ContractNames.WithdrawalDelayer]: EXAMPLES_HERMEZ_WDELAYER_ADDRESS
+    }
+  })
 }
 
 module.exports = {

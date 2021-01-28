@@ -3,13 +3,14 @@ import { ethers } from 'ethers'
 import * as tokens from '../src/tokens.js'
 import * as utils from '../src/utils.js'
 import * as providers from '../src/providers.js'
-import { contractAddresses } from '../src/constants.js'
+import { ContractNames, CONTRACT_ADDRESSES } from '../src/constants.js'
 import ERC20ABI from '../src/abis/ERC20ABI.js'
+import { SignerType } from '../src/signers.js'
 
 // Ignoring due to a race condition with tx.test.mjs
 // This sets a small allowance while deposit needs a higher one,
 // but both tests are ran in parallel and clash
-test('Check Allowance', async () => {
+test.skip('Check Allowance', async () => {
   /*
    * 1 - Deploy contracts
    * 2 - Approve Hermez contract amount1 of ERC tokens
@@ -29,8 +30,10 @@ test('Check Allowance', async () => {
   for (var i = 0; i < 10; i++) {
     const amountStr = Math.floor(Math.random() * 10000).toString()
     const amount = utils.getTokenAmountBigInt(amountStr, 2)
-    await tokens.approve(amount, txAddress, ERC20Address, 'http://localhost:8545')
-    const allowance = await erc20Contract.allowance(txAddress, contractAddresses.Hermez)
+
+    await tokens.approve(amount, txAddress, ERC20Address, { type: SignerType.JSON_RPC }, 'http://localhost:8545')
+
+    const allowance = await erc20Contract.allowance(txAddress, CONTRACT_ADDRESSES[ContractNames.Hermez])
 
     expect(allowance.toString()).toBe(amount.toString())
   }

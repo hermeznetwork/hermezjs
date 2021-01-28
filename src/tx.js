@@ -7,7 +7,7 @@ import {
 } from './api.js'
 import { fix2Float } from './float16.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { contractAddresses, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
 import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
@@ -58,7 +58,7 @@ const deposit = async (
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
+  const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
@@ -119,7 +119,7 @@ const forceExit = async (
     })
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
+  const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
@@ -176,7 +176,7 @@ const withdraw = async (
     })
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const hermezContract = getContract(contractAddresses.Hermez, HermezABI, txSignerData, providerUrl)
+  const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,
@@ -217,7 +217,7 @@ const delayedWithdraw = async (
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
-  const delayedWithdrawalContract = getContract(contractAddresses.WithdrawalDelayer, WithdrawalDelayerABI, txSignerData, providerUrl)
+  const delayedWithdrawalContract = getContract(CONTRACT_ADDRESSES[ContractNames.WithdrawalDelayer], WithdrawalDelayerABI, txSignerData, providerUrl)
 
   const overrides = {
     gasLimit,

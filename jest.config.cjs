@@ -7,6 +7,7 @@ module.exports = {
     '^.+\\.js?$': 'babel-jest'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@ledgerhq))/'
+    'node_modules/(?!(@ledgerhq))/',
+    'core-js'
   ]
 }
