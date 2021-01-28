@@ -1,6 +1,5 @@
 import * as constants from './constants'
 import * as coordinatorApi from './api'
-import { ContractNames } from './constants'
 
 let batchExplorerUrl = constants.BATCH_EXPLORER_URL
 
@@ -27,12 +26,12 @@ const PUBLIC_BASE_API_URLS = {
 
 const PUBLIC_CONTRACT_ADDRESSES = {
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: {
-    [ContractNames.Hermez]: '0x98d51Ce36C2769176f443D1b967d42A7Bea5BCf9',
-    [ContractNames.WithdrawalDelayer]: '0x429C6837a135229C2c221810ACdF3B074971030A'
+    [constants.ContractNames.Hermez]: '0x98d51Ce36C2769176f443D1b967d42A7Bea5BCf9',
+    [constants.ContractNames.WithdrawalDelayer]: '0x429C6837a135229C2c221810ACdF3B074971030A'
   },
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: {
-    [ContractNames.Hermez]: '0x10465b16615ae36F350268eb951d7B0187141D3B',
-    [ContractNames.WithdrawalDelayer]: '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
+    [constants.ContractNames.Hermez]: '0x10465b16615ae36F350268eb951d7B0187141D3B',
+    [constants.ContractNames.WithdrawalDelayer]: '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
   }
 }
 
@@ -58,8 +57,8 @@ function setEnvironment (env) {
       throw new Error('Environment not supported')
     }
 
-    setContractAddress(ContractNames.Hermez, PUBLIC_CONTRACT_ADDRESSES[env][ContractNames.Hermez])
-    setContractAddress(ContractNames.WithdrawalDelayer, PUBLIC_CONTRACT_ADDRESSES[env][ContractNames.WithdrawalDelayer])
+    setContractAddress(constants.ContractNames.Hermez, PUBLIC_CONTRACT_ADDRESSES[env][constants.ContractNames.Hermez])
+    setContractAddress(constants.ContractNames.WithdrawalDelayer, PUBLIC_CONTRACT_ADDRESSES[env][constants.ContractNames.WithdrawalDelayer])
     setBaseApiUrl(PUBLIC_BASE_API_URLS[env])
     setBatchExplorerUrl(BATCH_EXPLORER_URLS[env])
   }
@@ -68,16 +67,16 @@ function setEnvironment (env) {
     if (
       env.contractAddresses &&
       env.contractAddresses.Hermez &&
-      typeof env.contractAddresses[ContractNames.Hermez] === 'string'
+      typeof env.contractAddresses[constants.ContractNames.Hermez] === 'string'
     ) {
-      setContractAddress(ContractNames.Hermez, env.contractAddresses[ContractNames.Hermez])
+      setContractAddress(constants.ContractNames.Hermez, env.contractAddresses[constants.ContractNames.Hermez])
     }
     if (
       env.contractAddresses &&
       env.contractAddresses.WithdrawalDelayer &&
-      typeof env.contractAddresses[ContractNames.WithdrawalDelayer] === 'string'
+      typeof env.contractAddresses[constants.ContractNames.WithdrawalDelayer] === 'string'
     ) {
-      setContractAddress(ContractNames.WithdrawalDelayer, env.contractAddresses[ContractNames.WithdrawalDelayer])
+      setContractAddress(constants.ContractNames.WithdrawalDelayer, env.contractAddresses[constants.ContractNames.WithdrawalDelayer])
     }
     if (env.baseApiUrl && typeof env.baseApiUrl === 'string') {
       setBaseApiUrl(env.baseApiUrl)
