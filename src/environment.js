@@ -64,19 +64,13 @@ function setEnvironment (env) {
   }
 
   if (typeof env === 'object') {
-    if (
-      env.contractAddresses &&
-      env.contractAddresses.Hermez &&
-      typeof env.contractAddresses[constants.ContractNames.Hermez] === 'string'
-    ) {
-      setContractAddress(constants.ContractNames.Hermez, env.contractAddresses[constants.ContractNames.Hermez])
-    }
-    if (
-      env.contractAddresses &&
-      env.contractAddresses.WithdrawalDelayer &&
-      typeof env.contractAddresses[constants.ContractNames.WithdrawalDelayer] === 'string'
-    ) {
-      setContractAddress(constants.ContractNames.WithdrawalDelayer, env.contractAddresses[constants.ContractNames.WithdrawalDelayer])
+    if (env.contractAddresses) {
+      if (env.contractAddresses.Hermez && typeof env.contractAddresses[constants.ContractNames.Hermez] === 'string') {
+        setContractAddress(constants.ContractNames.Hermez, env.contractAddresses[constants.ContractNames.Hermez])
+      }
+      if (env.contractAddresses.WithdrawalDelayer && typeof env.contractAddresses[constants.ContractNames.WithdrawalDelayer] === 'string') {
+        setContractAddress(constants.ContractNames.WithdrawalDelayer, env.contractAddresses[constants.ContractNames.WithdrawalDelayer])
+      }
     }
     if (env.baseApiUrl && typeof env.baseApiUrl === 'string') {
       setBaseApiUrl(env.baseApiUrl)
