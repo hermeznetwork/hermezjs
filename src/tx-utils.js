@@ -14,7 +14,7 @@ export const TxType = {
   Deposit: 'Deposit',
   CreateAccountDeposit: 'CreateAccountDeposit',
   Transfer: 'Transfer',
-  TransferEthAddr: 'TransferToEthAddr',
+  TransferToEthAddr: 'TransferToEthAddr',
   Withdraw: 'Withdrawn',
   Exit: 'Exit',
   ForceExit: 'ForceExit'
@@ -116,7 +116,7 @@ function getTransactionType (transaction) {
     if (isHermezAccountIndex(transaction.to)) {
       return TxType.Transfer
     } else if (isHermezEthereumAddress(transaction.to)) {
-      return TxType.TransferEthAddr
+      return TxType.TransferToEthAddr
     }
   } else {
     return TxType.Exit

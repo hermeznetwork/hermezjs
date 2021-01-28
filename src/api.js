@@ -263,6 +263,15 @@ async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signatur
   })
 }
 
+/** Get request to the /account-creation-authorization endpoint
+ * Returns whethere the Hermez account has previously send a valid authorization
+ * @param {String} hezEthereumAddress - A Hermez Ethereum Address
+ * @returns {Object} Response data
+ */
+async function getCreateAccountAuthorization (hezEthereumAddress) {
+  return extractJSON(axios.get(`${baseApiUrl}/account-creation-authorization/${hezEthereumAddress}`))
+}
+
 export {
   PaginationOrder,
   _getPageData,
@@ -284,5 +293,6 @@ export {
   getCoordinators,
   getSlot,
   getBids,
-  postCreateAccountAuthorization
+  postCreateAccountAuthorization,
+  getCreateAccountAuthorization
 }

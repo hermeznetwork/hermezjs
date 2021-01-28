@@ -8,6 +8,8 @@ const EXAMPLES_PRIVATE_KEY1 = ''
 const EXAMPLES_PRIVATE_KEY2 = ''
 
 function configureEnvironment () {
+  // Initializes Tx Pool
+  hermez.TxPool.initializeTransactionPool()
   // load ethereum network provider
   hermez.Providers.setProvider(EXAMPLES_WEB3_URL)
   // set API URL
