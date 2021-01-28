@@ -121,13 +121,15 @@ async function postPoolTransaction (transaction) {
  * GET request to the /exits endpoint. Returns a list of exits based on certain filters
  * @param {String} address - Filter by the address associated to the exits. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
  * @param {Boolean} onlyPendingWithdraws - Filter by exits that still haven't been withdrawn
+ * @param {Number} tokenId - Filter by token id
  * @returns {Object} Response data with the list of exits
  */
-async function getExits (address, onlyPendingWithdraws) {
+async function getExits (address, onlyPendingWithdraws, tokenId) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
-    ...(onlyPendingWithdraws ? { onlyPendingWithdraws } : {})
+    ...(onlyPendingWithdraws ? { onlyPendingWithdraws } : {}),
+    ...(tokenId ? { tokenId } : {})
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/exits`, { params }))
@@ -264,7 +266,7 @@ async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signatur
 }
 
 /** Get request to the /account-creation-authorization endpoint
- * Returns whethere the Hermez account has previously send a valid authorization
+ * Returns whether the Hermez account has previously sent a valid authorization
  * @param {String} hezEthereumAddress - A Hermez Ethereum Address
  * @returns {Object} Response data
  */
