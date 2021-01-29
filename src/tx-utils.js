@@ -1,6 +1,7 @@
 import BigInt from 'big-integer'
 import { Scalar } from 'ffjavascript'
 import circomlib from 'circomlib'
+import { keccak256 } from '@ethersproject/keccak256'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
@@ -56,27 +57,49 @@ async function encodeTransaction (transaction, providerUrl) {
 }
 
 /**
- * Generates the correct Transaction Id based on the spec
- * TxID (12 bytes) for L2Tx is:
- * bytes:  |  1   |    6    |   5   |
- * values: | type | FromIdx | Nonce |
+ * Generates the Transaction Id based on the spec
+ * TxID (33 bytes) for L2Tx is:
+ * bytes:   | 1 byte |                    32 bytes                           |
+ *                     SHA256( 6 bytes | 4 bytes | 2 bytes| 5 bytes | 1 byte )
+ * content: |  type  | SHA256([FromIdx | TokenID | Amount |  Nonce  | Fee    ])
  * where type for L2Tx is '2'
  * @param {Number} fromIdx - The account index that sends the transaction
+ * @param {Number} tokenId - The tokenId being transacted
+ * @param {Number} amount - The amount being transacted
  * @param {Number} nonce - Nonce of the transaction
+ * @param {Number} fee - The fee of the transaction
  * @returns {String} Transaction Id
  */
-function getTxId (fromIdx, nonce) {
+function getTxId (fromIdx, tokenId, amount, nonce, fee) {
   const fromIdxBytes = new ArrayBuffer(8)
   const fromIdxView = new DataView(fromIdxBytes)
   fromIdxView.setBigUint64(0, BigInt(fromIdx).value, false)
+
+  const tokenIdBytes = new ArrayBuffer(8)
+  const tokenIdView = new DataView(tokenIdBytes)
+  tokenIdView.setBigUint64(0, BigInt(tokenId).value, false)
+
+  const amountF16 = fix2Float(amount)
+  const amountBytes = new ArrayBuffer(8)
+  const amountView = new DataView(amountBytes)
+  amountView.setBigUint64(0, BigInt(amountF16).value, false)
 
   const nonceBytes = new ArrayBuffer(8)
   const nonceView = new DataView(nonceBytes)
   nonceView.setBigUint64(0, BigInt(nonce).value, false)
 
   const fromIdxHex = bufToHex(fromIdxView.buffer.slice(2, 8))
+  const tokenIdHex = bufToHex(tokenIdView.buffer.slice(4, 8))
+  const amountHex = bufToHex(amountView.buffer.slice(6, 8))
   const nonceHex = bufToHex(nonceView.buffer.slice(3, 8))
-  return '0x02' + fromIdxHex + nonceHex
+
+  let feeHex = fee.toString(16)
+  if (feeHex.length === 1) {
+    feeHex = '0' + feeHex
+  }
+  const v = fromIdxHex + tokenIdHex + amountHex + nonceHex + feeHex
+  const h = keccak256('0x' + v).slice(2)
+  return '0x02' + h
 }
 
 /**
