@@ -3,6 +3,7 @@ import nodeLocalstorage from 'node-localstorage'
 import { TRANSACTION_POOL_KEY } from './constants.js'
 import { getPoolTransaction } from './api.js'
 import { HttpStatusCode } from './http.js'
+import { TxState } from './tx-utils.js'
 
 const LocalStorage = nodeLocalstorage.LocalStorage
 const storage = (typeof localStorage === 'undefined' || localStorage === null) ? new LocalStorage('./auxdata') : localStorage
@@ -36,6 +37,14 @@ function getPoolTransactions (accountIndex, bJJ) {
     .filter(transaction => transaction.fromAccountIndex === accountIndex)
     .map(({ id: transactionId }) => {
       return getPoolTransaction(transactionId)
+        .then((transaction) => {
+          if (transaction.state === TxState.Forged) {
+            removePoolTransaction(bJJ, transactionId)
+            return undefined
+          } else {
+            return transaction
+          }
+        })
         .catch(err => {
           if (err.response.status === HttpStatusCode.NOT_FOUND) {
             removePoolTransaction(bJJ, transactionId)
