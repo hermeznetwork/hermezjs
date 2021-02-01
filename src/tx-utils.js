@@ -27,6 +27,11 @@ export const TxState = {
   Invalid: 'invl'
 }
 
+export const TxLevel = {
+  L1: 'L1',
+  L2: 'L2'
+}
+
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
  * Used, for example, to sign the transaction
