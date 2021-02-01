@@ -172,7 +172,7 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
 
   if (typeof nonce === 'undefined') {
     const accountData = await getAccount(accountIndex)
-    nonce = accountData.nonce
+    nonce = accountData.nonce + 1
 
     // return current nonce if no transactions are pending
     if (poolTxsNonces.length) {
