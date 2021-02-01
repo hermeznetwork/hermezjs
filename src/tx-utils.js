@@ -279,7 +279,13 @@ async function generateL2Transaction (tx, bjj, token) {
   }
 
   const encodedTransaction = await encodeTransaction(transaction)
-  transaction.id = getTxId(encodedTransaction.fromAccountIndex, encodedTransaction.nonce)
+  transaction.id = getTxId(
+    encodedTransaction.fromAccountIndex,
+    encodedTransaction.tokenId,
+    encodedTransaction.amount,
+    encodedTransaction.nonce,
+    encodedTransaction.fee
+  )
 
   return { transaction, encodedTransaction }
 }
