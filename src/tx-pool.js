@@ -34,7 +34,7 @@ function getPoolTransactions (accountIndex, bJJ) {
   }
 
   const accountTransactionsPromises = accountTransactionPool
-    .filter(transaction => transaction.fromAccountIndex === accountIndex)
+    .filter(transaction => transaction.fromAccountIndex === accountIndex || !accountIndex)
     .map(({ id: transactionId }) => {
       return getPoolTransaction(transactionId)
         .then((transaction) => {
