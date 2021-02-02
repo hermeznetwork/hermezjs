@@ -4,6 +4,7 @@ import { Scalar } from 'ffjavascript'
 
 import * as TransactionPool from '../src/tx-pool.js'
 import * as TxUtils from '../src/tx-utils.js'
+import { fix2Float } from '../src/float16.js'
 
 const transferTransaction = {
   type: 'Transfer',
@@ -13,7 +14,7 @@ const transferTransaction = {
   toHezEthereumAddress: null,
   toBjj: null,
   amount: '3400000000',
-  fee: 25,
+  fee: 147,
   nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
@@ -39,7 +40,7 @@ const exitTransaction = {
   toHezEthereumAddress: null,
   toBjj: null,
   amount: '3400000000',
-  fee: 25,
+  fee: 147,
   nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
@@ -91,7 +92,7 @@ test('#getTxId', () => {
   expect(txId).toBe('0x02f036223e79fac776de107f50822552cc964ee9fc4caa304613285f6976bcc940')
 
   txId = TxUtils.getTxId(transferTransactionEncoded.fromAccountIndex, transferTransactionEncoded.tokenId, transferTransactionEncoded.amount, transferTransactionEncoded.nonce, transferTransactionEncoded.fee)
-  expect(txId).toBe('0x029c8aef9ef24531e4cf84e78cbab1018ba1626a5a10afb6b7c356be1b5c28e92c')
+  expect(txId).toBe('0x02e93cb7de4a67c690f022e863238283ede833c1824e50b62e8f7be6988ecd5758')
 })
 
 test('#getFee', () => {
@@ -102,9 +103,16 @@ test('#getFee', () => {
 describe('#getTransactionType', () => {
   test('Returns Transfer', () => {
     const transferTx = {
-      to: 'hez:dfasdfasdfasdffasfdf'
+      to: 'hez:DAI:4444'
     }
     expect(TxUtils.getTransactionType(transferTx)).toBe('Transfer')
+  })
+
+  test('Returns TransferToEthAddr', () => {
+    const transferTx = {
+      to: 'hez:0x380ed8Bd696c78395Fb1961BDa42739D2f5242a1'
+    }
+    expect(TxUtils.getTransactionType(transferTx)).toBe('TransferToEthAddr')
   })
 
   test('Returns Exit', () => {
@@ -292,7 +300,7 @@ test('#buildTransactionHashMessage', () => {
         nonce: 6,
         toEthAddr: '0xc58d29fA6e86E4FAe04DDcEd660d45BCf3Cb2370'
       },
-      hashSignature: '33fef2d9564a48eec52054844c3c9bbdd942caaa397a3b918ef47b6695d276b'
+      hashSignature: '15e95fbf3ebf4f7f25717bb8d349742c1c8157ef6787e00b4174ef262af31c0e'
     },
     {
       tx: {
@@ -311,7 +319,7 @@ test('#buildTransactionHashMessage', () => {
         rqToEthAddr: '0x90ad476d5877c05262a74485393df18869965405',
         rqToBjjAy: '2d80c8e0a35c065ba5f8ec53d59282ca7664231704866d3875c338055b05dc39'
       },
-      hashSignature: '2514614737cfa57237e75b89453ea1a560d2486a72382eeab019d41402426376'
+      hashSignature: '24811b2482fbbac92f61118fbd8946c9bca6a97d037d0250d22ccc453d76864c'
     },
     {
       tx: {
@@ -330,7 +338,7 @@ test('#buildTransactionHashMessage', () => {
         rqToEthAddr: '0xe7c6d376022ab8d70727f06276a4fead435a0a4d',
         rqToBjjAy: '2d4a25612fb2fd322ff0483627eb04cc6e81dde3d9c8cb654f9d16d5a347de64'
       },
-      hashSignature: '1e309632428a50370a148e59f3b9395732b54047100a8a06b6d459c2132357a2'
+      hashSignature: '30200ee98e5fb087d411bd2475700e20619f3ef6a2289acb22a8d251eac96556'
     },
     {
       tx: {
@@ -349,7 +357,7 @@ test('#buildTransactionHashMessage', () => {
         rqToEthAddr: '0x4a4547136a017c665fcedcdddca9dfd6d7dbc77f',
         rqToBjjAy: 'bc9e50b1e61510b2ad6f9c0784f4c028cde7f3581d2b9c8c365b90c96cb3426'
       },
-      hashSignature: '250a25f7cb3851db842c9f84a247cd543243621ee9ec11d00da5abd9f2b3dec9'
+      hashSignature: '2d594d31c173fc31217ee72d0e781c8c049c32fa073492d61de25b0d6d4bbb53'
     }
   ]
 
@@ -367,7 +375,7 @@ describe('#generateL2Transaction', () => {
     to: 'hez:DAI:1234',
     toHezEthereumAddress: null,
     toBjj: null,
-    amount: Scalar.fromString('3400000000'),
+    amount: fix2Float(Scalar.fromString('3400000000')),
     fee: 0.000003,
     nonce: 2
   }
@@ -377,7 +385,7 @@ describe('#generateL2Transaction', () => {
     to: 'hez:DAI:1',
     toHezEthereumAddress: null,
     toBjj: null,
-    amount: Scalar.fromString('3400000000'),
+    amount: fix2Float(Scalar.fromString('3400000000')),
     fee: 0.000003,
     nonce: 2
   }
@@ -389,8 +397,8 @@ describe('#generateL2Transaction', () => {
   }
 
   beforeEach(() => {
-    transferTransaction.id = '0x0200000000115c0000000002'
-    exitTransaction.id = '0x0200000000115c0000000002'
+    transferTransaction.id = '0x02e93cb7de4a67c690f022e863238283ede833c1824e50b62e8f7be6988ecd5758'
+    exitTransaction.id = '0x02e93cb7de4a67c690f022e863238283ede833c1824e50b62e8f7be6988ecd5758'
     TransactionPool.initializeTransactionPool()
   })
 
