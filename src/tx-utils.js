@@ -5,7 +5,7 @@ import { keccak256 } from '@ethersproject/keccak256'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
-import { fix2Float, float2Fix, floorFix2Float } from './float16.js'
+import { compressAmount, decompressAmount, floorCompressAmount } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex } from './addresses.js'
 import { getAccount } from './api.js'
@@ -84,7 +84,7 @@ function getTxId (fromIdx, tokenId, amount, nonce, fee) {
   const tokenIdView = new DataView(tokenIdBytes)
   tokenIdView.setBigUint64(0, BigInt(tokenId).value, false)
 
-  const amountF16 = fix2Float(amount)
+  const amountF16 = compressAmount(amount)
   const amountBytes = new ArrayBuffer(8)
   const amountView = new DataView(amountBytes)
   amountView.setBigUint64(0, BigInt(amountF16).value, false)
@@ -199,7 +199,7 @@ function buildTxCompressedData (tx) {
   res = Scalar.add(res, Scalar.shl(tx.chainId || 0, 32)) // chainId --> 16 bits
   res = Scalar.add(res, Scalar.shl(tx.fromAccountIndex || 0, 48)) // fromIdx --> 48 bits
   res = Scalar.add(res, Scalar.shl(tx.toAccountIndex || 0, 96)) // toIdx --> 48 bits
-  res = Scalar.add(res, Scalar.shl(fix2Float(tx.amount || 0), 144)) // amounf16 --> 16 bits
+  res = Scalar.add(res, Scalar.shl(compressAmount(tx.amount || 0), 144)) // amounf16 --> 16 bits
   res = Scalar.add(res, Scalar.shl(tx.tokenId || 0, 160)) // tokenID --> 32 bits
   res = Scalar.add(res, Scalar.shl(tx.nonce || 0, 192)) // nonce --> 40 bits
   res = Scalar.add(res, Scalar.shl(tx.fee || 0, 232)) // userFee --> 8 bits
@@ -265,7 +265,7 @@ async function generateL2Transaction (tx, bjj, token) {
     toHezEthereumAddress: isHermezEthereumAddress(tx.to) ? tx.to : null,
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
-    amount: float2Fix(floorFix2Float(tx.amount)).toString(),
+    amount: decompressAmount(floorCompressAmount(tx.amount)).toString(),
     fee: getFee(tx.fee, tx.amount, token.decimals),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,

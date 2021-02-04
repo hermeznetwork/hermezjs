@@ -5,7 +5,7 @@ import {
   getAccounts,
   getAccount
 } from './api.js'
-import { fix2Float } from './float16.js'
+import { compressAmount } from './float16.js'
 import { addPoolTransaction } from './tx-pool.js'
 import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
 import { approve } from './tokens.js'
@@ -71,7 +71,7 @@ const deposit = async (
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
     account ? getAccountIndex(account.accountIndex) : 0,
-    fix2Float(amount),
+    compressAmount(amount),
     0,
     token.id,
     0,
@@ -130,7 +130,7 @@ const forceExit = async (
     0,
     getAccountIndex(accountIndex),
     0,
-    fix2Float(amount),
+    compressAmount(amount),
     token.id,
     1,
     '0x'

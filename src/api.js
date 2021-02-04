@@ -274,6 +274,14 @@ async function getCreateAccountAuthorization (hezEthereumAddress) {
   return extractJSON(axios.get(`${baseApiUrl}/account-creation-authorization/${hezEthereumAddress}`))
 }
 
+/**
+ * GET request to the /config endpoint
+ * @returns {Object} Response data
+ */
+async function getConfig () {
+  return extractJSON(axios.get(`${baseApiUrl}/config`))
+}
+
 export {
   PaginationOrder,
   _getPageData,
@@ -296,5 +304,6 @@ export {
   getSlot,
   getBids,
   postCreateAccountAuthorization,
-  getCreateAccountAuthorization
+  getCreateAccountAuthorization,
+  getConfig
 }
