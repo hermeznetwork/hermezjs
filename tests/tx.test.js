@@ -9,12 +9,13 @@ import { TRANSACTION_POOL_KEY } from '../src/constants.js'
 import { getTokenAmountBigInt } from '../src/utils.js'
 import { getAccountIndex, getEthereumAddress } from '../src/addresses.js'
 import { createWalletFromEtherAccount } from '../src/hermez-wallet.js'
+import { floorFix2Float, float2Fix } from '../src/float16.js'
 
 describe('Full flow', () => {
   test('Works with ERC20 tokens', async () => {
-    const depositAmount = getTokenAmountBigInt('1000', 18)
-    const depositEthAmount = getTokenAmountBigInt('10', 18)
-    const exitAmount = getTokenAmountBigInt('10', 18)
+    const depositAmount = floorFix2Float(getTokenAmountBigInt('1000', 18))
+    const depositEthAmount = floorFix2Float(getTokenAmountBigInt('10', 18))
+    const exitAmount = floorFix2Float(getTokenAmountBigInt('10', 18))
 
     const account = await createWalletFromEtherAccount('http://localhost:8545', { addressOrIndex: 1 })
     const tokensResponse = await CoordinatorAPI.getTokens()
@@ -51,17 +52,18 @@ describe('Full flow', () => {
     // Withdraw
     const exitsResponse = await CoordinatorAPI.getExits(account.hermezEthereumAddress, true).catch(() => { throw new Error('Exit 1 not found') })
     const exits = exitsResponse.exits
+    const withdrawAmount = float2Fix(exitAmount)
 
-    const instantWithdrawParams = await Tx.withdraw(exitAmount, hezAccountIndex, tokens[1],
+    const instantWithdrawParams = await Tx.withdraw(withdrawAmount, hezAccountIndex, tokens[1],
       account.hermezWallet.publicKeyCompressedHex, exits[0].batchNum, exits[0].merkleProof.siblings)
-    expect(instantWithdrawParams).toEqual([tokens[1].id, exitAmount,
+    expect(instantWithdrawParams).toEqual([tokens[1].id, withdrawAmount,
       `0x${account.hermezWallet.publicKeyCompressedHex}`, exits[0].batchNum,
       exits[0].merkleProof.siblings, accountIndex, true])
 
     // WithdrawalDelayer
-    const nonInstantWithdrawParams = await Tx.withdraw(exitAmount, hezAccountIndex, tokens[1],
+    const nonInstantWithdrawParams = await Tx.withdraw(withdrawAmount, hezAccountIndex, tokens[1],
       account.hermezWallet.publicKeyCompressedHex, exits[1].batchNum, exits[1].merkleProof.siblings, false)
-    expect(nonInstantWithdrawParams).toEqual([tokens[1].id, exitAmount,
+    expect(nonInstantWithdrawParams).toEqual([tokens[1].id, withdrawAmount,
       `0x${account.hermezWallet.publicKeyCompressedHex}`, exits[1].batchNum,
       exits[1].merkleProof.siblings, accountIndex, false])
 
