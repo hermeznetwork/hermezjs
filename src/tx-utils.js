@@ -70,7 +70,7 @@ async function encodeTransaction (transaction, providerUrl) {
  * where type for L2Tx is '2'
  * @param {Number} fromIdx - The account index that sends the transaction
  * @param {Number} tokenId - The tokenId being transacted
- * @param {Number} amount - The amount being transacted in the compressed format
+ * @param {BigInt} amount - The amount being transacted
  * @param {Number} nonce - Nonce of the transaction
  * @param {Number} fee - The fee of the transaction
  * @returns {String} Transaction Id

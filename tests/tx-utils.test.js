@@ -14,7 +14,7 @@ const transferTransaction = {
   toHezEthereumAddress: null,
   toBjj: null,
   amount: '3400000000',
-  fee: 147,
+  fee: 25,
   nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
@@ -40,7 +40,7 @@ const exitTransaction = {
   toHezEthereumAddress: null,
   toBjj: null,
   amount: '3400000000',
-  fee: 147,
+  fee: 25,
   nonce: 2,
   requestFromAccountIndex: null,
   requestToAccountIndex: null,
@@ -92,7 +92,7 @@ test('#getTxId', () => {
   expect(txId).toBe('0x02f036223e79fac776de107f50822552cc964ee9fc4caa304613285f6976bcc940')
 
   txId = TxUtils.getTxId(transferTransactionEncoded.fromAccountIndex, transferTransactionEncoded.tokenId, transferTransactionEncoded.amount, transferTransactionEncoded.nonce, transferTransactionEncoded.fee)
-  expect(txId).toBe('0x02e93cb7de4a67c690f022e863238283ede833c1824e50b62e8f7be6988ecd5758')
+  expect(txId).toBe('0x029c8aef9ef24531e4cf84e78cbab1018ba1626a5a10afb6b7c356be1b5c28e92c')
 })
 
 test('#getFee', () => {
@@ -397,8 +397,8 @@ describe('#generateL2Transaction', () => {
   }
 
   beforeEach(() => {
-    transferTransaction.id = '0x02e93cb7de4a67c690f022e863238283ede833c1824e50b62e8f7be6988ecd5758'
-    exitTransaction.id = '0x02e93cb7de4a67c690f022e863238283ede833c1824e50b62e8f7be6988ecd5758'
+    transferTransaction.id = '0x029c8aef9ef24531e4cf84e78cbab1018ba1626a5a10afb6b7c356be1b5c28e92c'
+    exitTransaction.id = '0x029c8aef9ef24531e4cf84e78cbab1018ba1626a5a10afb6b7c356be1b5c28e92c'
     TransactionPool.initializeTransactionPool()
   })
 
