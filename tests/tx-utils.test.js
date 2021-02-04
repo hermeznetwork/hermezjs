@@ -4,7 +4,7 @@ import { Scalar } from 'ffjavascript'
 
 import * as TransactionPool from '../src/tx-pool.js'
 import * as TxUtils from '../src/tx-utils.js'
-import { fix2Float } from '../src/float16.js'
+import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
 
 const transferTransaction = {
   type: 'Transfer',
@@ -375,7 +375,7 @@ describe('#generateL2Transaction', () => {
     to: 'hez:DAI:1234',
     toHezEthereumAddress: null,
     toBjj: null,
-    amount: fix2Float(Scalar.fromString('3400000000')),
+    amount: HermezCompressedAmount.compressAmount('3400000000'),
     fee: 0.000003,
     nonce: 2
   }
@@ -385,7 +385,7 @@ describe('#generateL2Transaction', () => {
     to: 'hez:DAI:1',
     toHezEthereumAddress: null,
     toBjj: null,
-    amount: fix2Float(Scalar.fromString('3400000000')),
+    amount: HermezCompressedAmount.compressAmount('3400000000'),
     fee: 0.000003,
     nonce: 2
   }

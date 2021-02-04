@@ -16,7 +16,7 @@ test('#vectors floating point number', () => {
     [0x0c01, '15']
   ]
   for (let i = 0; i < testVector.length; i++) {
-    const fx = HermezCompressedAmount.decompressAmount(testVector[i][0])
+    const fx = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(testVector[i][0]))
     expect(fx.toString()).toBe(testVector[i][1])
 
     const fl = HermezCompressedAmount.compressAmount(Scalar.e(testVector[i][1]))
@@ -34,8 +34,8 @@ test('#Floor compressAmount', () => {
   ]
 
   for (let i = 0; i < testVector.length; i++) {
-    const testFloat = HermezCompressedAmount.floorcompressAmount(testVector[i][1])
-    expect(testFloat).toBe(testVector[i][0])
+    const testFloat = HermezCompressedAmount.floorCompressAmount(testVector[i][1])
+    expect(testFloat.value).toBe(testVector[i][0])
   }
 })
 

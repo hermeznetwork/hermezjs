@@ -9,13 +9,13 @@ import { TRANSACTION_POOL_KEY } from '../src/constants.js'
 import { getTokenAmountBigInt } from '../src/utils.js'
 import { getAccountIndex, getEthereumAddress } from '../src/addresses.js'
 import { createWalletFromEtherAccount } from '../src/hermez-wallet.js'
-import { floorFix2Float, float2Fix } from '../src/float16.js'
+import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
 
 describe('Full flow', () => {
   test('Works with ERC20 tokens', async () => {
-    const depositAmount = floorFix2Float(getTokenAmountBigInt('1000', 18))
-    const depositEthAmount = floorFix2Float(getTokenAmountBigInt('10', 18))
-    const exitAmount = floorFix2Float(getTokenAmountBigInt('10', 18))
+    const depositAmount = HermezCompressedAmount.floorCompressAmount(getTokenAmountBigInt('1000', 18))
+    const depositEthAmount = HermezCompressedAmount.floorCompressAmount(getTokenAmountBigInt('10', 18))
+    const exitAmount = HermezCompressedAmount.floorCompressAmount(getTokenAmountBigInt('10', 18))
 
     const account = await createWalletFromEtherAccount('http://localhost:8545', { addressOrIndex: 1 })
     const tokensResponse = await CoordinatorAPI.getTokens()
@@ -52,7 +52,7 @@ describe('Full flow', () => {
     // Withdraw
     const exitsResponse = await CoordinatorAPI.getExits(account.hermezEthereumAddress, true).catch(() => { throw new Error('Exit 1 not found') })
     const exits = exitsResponse.exits
-    const withdrawAmount = float2Fix(exitAmount)
+    const withdrawAmount = HermezCompressedAmount.decompressAmount(exitAmount)
 
     const instantWithdrawParams = await Tx.withdraw(withdrawAmount, hezAccountIndex, tokens[1],
       account.hermezWallet.publicKeyCompressedHex, exits[0].batchNum, exits[0].merkleProof.siblings)

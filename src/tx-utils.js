@@ -5,7 +5,7 @@ import { keccak256 } from '@ethersproject/keccak256'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
-import { compressAmount, decompressAmount } from './float16.js'
+import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex } from './addresses.js'
 import { getAccount } from './api.js'
@@ -84,7 +84,7 @@ function getTxId (fromIdx, tokenId, amount, nonce, fee) {
   const tokenIdView = new DataView(tokenIdBytes)
   tokenIdView.setBigUint64(0, BigInt(tokenId).value, false)
 
-  const amountF16 = compressAmount(amount)
+  const amountF16 = HermezCompressedAmount.compressAmount(amount).value
   const amountBytes = new ArrayBuffer(8)
   const amountView = new DataView(amountBytes)
   amountView.setBigUint64(0, BigInt(amountF16).value, false)
@@ -199,7 +199,7 @@ function buildTxCompressedData (tx) {
   res = Scalar.add(res, Scalar.shl(tx.chainId || 0, 32)) // chainId --> 16 bits
   res = Scalar.add(res, Scalar.shl(tx.fromAccountIndex || 0, 48)) // fromIdx --> 48 bits
   res = Scalar.add(res, Scalar.shl(tx.toAccountIndex || 0, 96)) // toIdx --> 48 bits
-  res = Scalar.add(res, Scalar.shl(compressAmount(tx.amount || 0), 144)) // amounf16 --> 16 bits
+  res = Scalar.add(res, Scalar.shl(HermezCompressedAmount.compressAmount(tx.amount || 0).value, 144)) // amounf16 --> 16 bits
   res = Scalar.add(res, Scalar.shl(tx.tokenId || 0, 160)) // tokenID --> 32 bits
   res = Scalar.add(res, Scalar.shl(tx.nonce || 0, 192)) // nonce --> 40 bits
   res = Scalar.add(res, Scalar.shl(tx.fee || 0, 232)) // userFee --> 8 bits
@@ -248,7 +248,7 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @param {Object} transaction - ethAddress and babyPubKey together
  * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
  * @param {String} transaction.to - The account index or Hermez address of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {BigInt} transaction.amount - The amount being sent as a BigInt
+ * @param {HermezCompressedAmount} transaction.amount - The amount being sent as a HermezCompressedAmount
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
  * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
@@ -257,6 +257,7 @@ function buildTransactionHashMessage (encodedTransaction) {
 */
 async function generateL2Transaction (tx, bjj, token) {
   const toAccountIndex = isHermezAccountIndex(tx.to) ? tx.to : null
+  const decompressedAmount = HermezCompressedAmount.decompressAmount(tx.amount)
   const transaction = {
     type: getTransactionType(tx),
     tokenId: token.id,
@@ -265,8 +266,8 @@ async function generateL2Transaction (tx, bjj, token) {
     toHezEthereumAddress: isHermezEthereumAddress(tx.to) ? tx.to : null,
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
-    amount: decompressAmount(tx.amount).toString(),
-    fee: getFee(tx.fee, tx.amount, token.decimals),
+    amount: decompressedAmount.toString(),
+    fee: getFee(tx.fee, decompressedAmount, token.decimals),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,
     requestToAccountIndex: null,

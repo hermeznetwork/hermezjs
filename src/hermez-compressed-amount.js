@@ -1,12 +1,38 @@
 import { Scalar } from 'ffjavascript'
 
+const HERMEZ_COMPRESSES_AMOUNT_TYPE = 'HermezCompressedAmount'
+
+/** Class representing valid amounts in the Hermez network */
 class HermezCompressedAmount {
   /**
-   * Convert a float to a fix
-   * @param {Scalar} fl - Scalar encoded in float
+   * Builds an instance of HermezCompressedAmount, a wrapper
+   * for compressed BigInts in 40 bits used within the Hermez network
+   * @param {Number} value - Compressed representation of a BigInt in a 40bit Number
+   */
+  constructor (value) {
+    this.type = HERMEZ_COMPRESSES_AMOUNT_TYPE
+    this.value = value
+  }
+
+  /**
+   *
+   * @param {HermezCompressedAmount} instance
+   */
+  static isHermezCompressedAmount (instance) {
+    return instance.type === HERMEZ_COMPRESSES_AMOUNT_TYPE &&
+      instance instanceof HermezCompressedAmount
+  }
+
+  /**
+   * Convert a HermezCompressedAmount to a fix
+   * @param {Scalar} fl - HermezCompressedAmount representation of the amount
    * @returns {Scalar} Scalar encoded in fix
    */
-  static decompressAmount (fl) {
+  static decompressAmount (hermezCompressedAmount) {
+    if (!HermezCompressedAmount.isHermezCompressedAmount(hermezCompressedAmount)) {
+      throw new Error('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
+    }
+    const fl = hermezCompressedAmount.value
     const m = (fl & 0x3FF)
     const e = (fl >> 11)
     const e5 = (fl >> 10) & 1
@@ -48,7 +74,7 @@ class HermezCompressedAmount {
   /**
    * Convert a fix to a float
    * @param {String} _f - Scalar encoded in fix
-   * @returns {Scalar} Scalar encoded in float
+   * @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
   */
   static compressAmount (_f) {
     const f = Scalar.e(_f)
@@ -60,9 +86,9 @@ class HermezCompressedAmount {
     }
 
     const fl1 = HermezCompressedAmount._floorCompressAmount(f)
-    const fi1 = HermezCompressedAmount.decompressAmount(fl1)
+    const fi1 = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(fl1))
     const fl2 = fl1 | 0x400
-    const fi2 = HermezCompressedAmount.decompressAmount(fl2)
+    const fi2 = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(fl2))
 
     let m3 = (fl1 & 0x3FF) + 1
     let e3 = (fl1 >> 11)
@@ -71,7 +97,7 @@ class HermezCompressedAmount {
       e3++
     }
     const fl3 = m3 + (e3 << 11)
-    const fi3 = HermezCompressedAmount.decompressAmount(fl3)
+    const fi3 = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(fl3))
 
     let res = fl1
     let d = dist(fi1, f)
@@ -87,25 +113,25 @@ class HermezCompressedAmount {
       res = fl3
     }
 
-    return res
+    return new HermezCompressedAmount(res)
   }
 
   /**
    * Convert a float to a fix, always rounding down
-   * @param {Scalar} fl - Scalar encoded in float
-   * @returns {Scalar} Scalar encoded in fix
+   * @param {Scalar} fl - Scalar encoded in fix
+   * @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
   */
   static floorCompressAmount (_f) {
     const f = Scalar.e(_f)
 
     const fl1 = HermezCompressedAmount._floorCompressAmount(f)
     const fl2 = fl1 | 0x400
-    const fi2 = HermezCompressedAmount.decompressAmount(fl2)
+    const fi2 = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(fl2))
 
     if (Scalar.leq(fi2, f)) {
-      return fl2
+      return new HermezCompressedAmount(fl2)
     } else {
-      return fl1
+      return new HermezCompressedAmount(fl1)
     }
   }
 }
