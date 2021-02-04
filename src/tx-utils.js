@@ -5,7 +5,7 @@ import { keccak256 } from '@ethersproject/keccak256'
 
 import { feeFactors } from './fee-factors.js'
 import { bufToHex } from './utils.js'
-import { fix2Float, float2Fix, floorFix2Float } from './float16.js'
+import { fix2Float, float2Fix } from './float16.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex } from './addresses.js'
 import { getAccount } from './api.js'
@@ -70,7 +70,7 @@ async function encodeTransaction (transaction, providerUrl) {
  * where type for L2Tx is '2'
  * @param {Number} fromIdx - The account index that sends the transaction
  * @param {Number} tokenId - The tokenId being transacted
- * @param {Number} amount - The amount being transacted
+ * @param {Number} amount - The amount being transacted in the compressed format
  * @param {Number} nonce - Nonce of the transaction
  * @param {Number} fee - The fee of the transaction
  * @returns {String} Transaction Id
@@ -161,6 +161,13 @@ function getTransactionType (transaction) {
  * @return {Number} nonce
  */
 async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
+  if (typeof currentNonce !== 'undefined') {
+    return currentNonce
+  }
+
+  const accountData = await getAccount(accountIndex)
+  let nonce = accountData.nonce
+
   const poolTxs = await getPoolTransactions(accountIndex, bjj)
 
   const poolTxsNonces = poolTxs
@@ -168,17 +175,10 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
     .map(tx => tx.nonce)
     .sort()
 
-  let nonce = currentNonce
-
-  if (typeof nonce === 'undefined') {
-    const accountData = await getAccount(accountIndex)
-    nonce = accountData.nonce
-
-    // return current nonce if no transactions are pending
-    if (poolTxsNonces.length) {
-      while (poolTxsNonces.indexOf(nonce) !== -1) {
-        nonce++
-      }
+  // return current nonce if no transactions are pending
+  if (poolTxsNonces.length) {
+    while (poolTxsNonces.indexOf(nonce) !== -1) {
+      nonce++
     }
   }
 
@@ -265,7 +265,7 @@ async function generateL2Transaction (tx, bjj, token) {
     toHezEthereumAddress: isHermezEthereumAddress(tx.to) ? tx.to : null,
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
-    amount: float2Fix(floorFix2Float(tx.amount)).toString(),
+    amount: float2Fix(tx.amount).toString(),
     fee: getFee(tx.fee, tx.amount, token.decimals),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,

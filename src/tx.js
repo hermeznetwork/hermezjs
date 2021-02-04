@@ -5,7 +5,7 @@ import {
   getAccounts,
   getAccount
 } from './api.js'
-import { fix2Float } from './float16.js'
+import { float2Fix } from './float16.js'
 import { addPoolTransaction } from './tx-pool.js'
 import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
 import { approve } from './tokens.js'
@@ -36,7 +36,7 @@ async function getGasPrice (multiplier, providerUrl) {
  * Makes a deposit.
  * It detects if it's a 'createAccountDeposit' or a 'deposit' and prepares the parameters accodingly.
  * Detects if it's an Ether, ERC 20 or ERC 777 token and sends the transaction accordingly.
- * @param {BigInt} amount - The amount to be deposited
+ * @param {Number} amount - The amount to be deposited in the compressed format
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
@@ -71,22 +71,24 @@ const deposit = async (
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
     account ? getAccountIndex(account.accountIndex) : 0,
-    fix2Float(amount),
+    amount,
     0,
     token.id,
     0,
     '0x'
   ]
 
+  const decompressedAmount = float2Fix(amount)
+
   if (token.id === 0) {
-    overrides.value = amount
+    overrides.value = decompressedAmount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
       .then(() => {
         return transactionParameters
       })
   }
 
-  await approve(amount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
+  await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
     .then(() => transactionParameters)
@@ -94,7 +96,7 @@ const deposit = async (
 
 /**
  * Makes a force Exit. This is the L1 transaction equivalent of Exit.
- * @param {BigInt} amount - The amount to be withdrawn
+ * @param {Number} amount - The amount to be withdrawn in the compressed format
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
@@ -130,7 +132,7 @@ const forceExit = async (
     0,
     getAccountIndex(accountIndex),
     0,
-    fix2Float(amount),
+    amount,
     token.id,
     1,
     '0x'
