@@ -36,7 +36,7 @@ async function main () {
     .accounts[0]
 
   // set amount to transfer
-  const amountTransfer = hermez.Utils.getTokenAmountBigInt('0.0001', 18)
+  const amountTransfer = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.0001', 18))
   // set fee in transaction
   const userFee = 0
 
