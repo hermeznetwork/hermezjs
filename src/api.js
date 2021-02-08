@@ -184,6 +184,14 @@ async function getState () {
 }
 
 /**
+ * GET request to the /config endpoint.
+ * @returns {Object} Response data with the current hermez configuration
+ */
+async function getConfig () {
+  return extractJSON(axios.get(`${baseApiUrl}/config`))
+}
+
+/**
  * GET request to the /batches endpoint. Returns a filtered list of batches
  * @param {String} forgerAddr - Filter by forger address
  * @param {Number} slotNum - A specific slot number
@@ -290,6 +298,7 @@ export {
   getTokens,
   getToken,
   getState,
+  getConfig,
   getBatches,
   getBatch,
   getCoordinators,
