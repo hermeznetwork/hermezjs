@@ -21,14 +21,14 @@ describe('Full flow', () => {
     const tokens = tokensResponse.tokens
 
     // Deposit. tokens[0] is Eth, tokens[1] is an ERC20
-    const depositTokenTxId = await Tx.deposit(depositAmount, account.hermezEthereumAddress,
+    const depositTokenTxData = await Tx.deposit(depositAmount, account.hermezEthereumAddress,
       tokens[1], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
-    expect(depositTokenTxId).toBeTruthy()
-    expect(depositTokenTxId.slice(0, 2)).toBe('0x')
-    const depositEthTxId = await Tx.deposit(depositEthAmount, account.hermezEthereumAddress,
+    expect(depositTokenTxData).toBeTruthy()
+    expect(depositTokenTxData.hash.slice(0, 2)).toBe('0x')
+    const depositEthTxData = await Tx.deposit(depositEthAmount, account.hermezEthereumAddress,
       tokens[0], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
-    expect(depositEthTxId).toBeTruthy()
-    expect(depositEthTxId.slice(0, 2)).toBe('0x')
+    expect(depositEthTxData).toBeTruthy()
+    expect(depositEthTxData.slice(0, 2)).toBe('0x')
 
     await waitNBatches(3)
 
