@@ -2,6 +2,7 @@ import * as constants from './constants'
 import * as coordinatorApi from './api'
 
 let batchExplorerUrl = constants.BATCH_EXPLORER_URL
+let etherscanUrl = constants.ETHERSCAN_URL
 
 const SUPPORTED_ENVIRONMENTS = {
   Rinkeby: {
@@ -17,6 +18,11 @@ const SUPPORTED_ENVIRONMENTS = {
 const BATCH_EXPLORER_URLS = {
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://hermez-public-998653595.eu-west-1.elb.amazonaws.com:8080',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8080'
+}
+
+const ETHERSCAN_URLS = {
+  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'https://rinkeby.etherscan.io',
+  [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'https://etherscan.io'
 }
 
 const PUBLIC_BASE_API_URLS = {
@@ -47,6 +53,10 @@ function setBatchExplorerUrl (url) {
   batchExplorerUrl = url
 }
 
+function setEtherscanUrl (url) {
+  etherscanUrl = url
+}
+
 function setEnvironment (env) {
   if (!env) {
     throw new Error('A environment is required')
@@ -61,6 +71,7 @@ function setEnvironment (env) {
     setContractAddress(constants.ContractNames.WithdrawalDelayer, PUBLIC_CONTRACT_ADDRESSES[env][constants.ContractNames.WithdrawalDelayer])
     setBaseApiUrl(PUBLIC_BASE_API_URLS[env])
     setBatchExplorerUrl(BATCH_EXPLORER_URLS[env])
+    setEtherscanUrl(ETHERSCAN_URLS[env])
   }
 
   if (typeof env === 'object') {
@@ -77,6 +88,9 @@ function setEnvironment (env) {
     }
     if (env.batchExplorerUrl && typeof env.batchExplorerUrl === 'string') {
       setBatchExplorerUrl(env.batchExplorerUrl)
+    }
+    if (env.etherscanUrl && typeof env.etherscanUrl === 'string') {
+      setEtherscanUrl(env.etherscanUrl)
     }
   }
 }
@@ -97,9 +111,14 @@ function getBatchExplorerUrl () {
   return batchExplorerUrl
 }
 
+function getEtherscanUrl () {
+  return etherscanUrl
+}
+
 export {
   setEnvironment,
   getSupportedEnvironments,
   isEnvironmentSupported,
-  getBatchExplorerUrl
+  getBatchExplorerUrl,
+  getEtherscanUrl
 }

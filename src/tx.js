@@ -81,15 +81,13 @@ const deposit = async (
   if (token.id === 0) {
     overrides.value = amount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
-      .then(() => {
-        return transactionParameters
-      })
+      .then((data) => data)
   }
 
   await approve(amount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
-    .then(() => transactionParameters)
+    .then((data) => data)
 }
 
 /**
