@@ -9,12 +9,17 @@ import * as CoordinatorAPI from '../src/api.js'
 import { TRANSACTION_POOL_KEY, CONTRACT_ADDRESSES, ContractNames } from '../src/constants.js'
 import { getEthereumAddress } from '../src/addresses.js'
 import { createWalletFromEtherAccount } from '../src/hermez-wallet.js'
+import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
 
 describe('Full flow', () => {
   test('Works with ERC20 tokens', async () => {
     const depositAmount = BigNumber.from(1000)
     const depositEthAmount = BigNumber.from(10)
     const exitAmount = BigNumber.from(10)
+    const compressedDepositAmount = HermezCompressedAmount.floorCompressAmount(depositAmount)
+    const compressedDepositEthAmount = HermezCompressedAmount.floorCompressAmount(depositEthAmount)
+    const compressedExitAmount = HermezCompressedAmount.floorCompressAmount(exitAmount)
+
     const account = await createWalletFromEtherAccount('http://localhost:8545', { addressOrIndex: 1 })
     const accountEthereumAddress = getEthereumAddress(account.hermezEthereumAddress)
 
@@ -22,7 +27,7 @@ describe('Full flow', () => {
     const tokens = tokensResponse.tokens
 
     // Deposit. tokens[0] is Eth, tokens[1] is an ERC20
-    const depositTokenTxData = await Tx.deposit(depositAmount, account.hermezEthereumAddress,
+    const depositTokenTxData = await Tx.deposit(compressedDepositAmount, account.hermezEthereumAddress,
       tokens[1], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
 
     expect(depositTokenTxData).toMatchObject({
@@ -31,7 +36,7 @@ describe('Full flow', () => {
       value: BigNumber.from(0)
     })
 
-    const depositEthTxData = await Tx.deposit(depositEthAmount, account.hermezEthereumAddress,
+    const depositEthTxData = await Tx.deposit(compressedDepositEthAmount, account.hermezEthereumAddress,
       tokens[0], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
 
     expect(depositEthTxData).toMatchObject({
@@ -47,7 +52,7 @@ describe('Full flow', () => {
     const hezAccountIndex = tokenAccount.accountIndex
 
     // Force Exit
-    const forceExitTxData = await Tx.forceExit(exitAmount, hezAccountIndex, tokens[1])
+    const forceExitTxData = await Tx.forceExit(compressedExitAmount, hezAccountIndex, tokens[1])
 
     expect(forceExitTxData).toMatchObject({
       from: accountEthereumAddress,
@@ -57,7 +62,7 @@ describe('Full flow', () => {
 
     await waitNBatches(2)
 
-    const forceExitTxData2 = await Tx.forceExit(exitAmount, hezAccountIndex, tokens[1])
+    const forceExitTxData2 = await Tx.forceExit(compressedExitAmount, hezAccountIndex, tokens[1])
 
     expect(forceExitTxData2).toMatchObject({
       from: accountEthereumAddress,
@@ -70,8 +75,9 @@ describe('Full flow', () => {
     // Withdraw
     const exitsResponse = await CoordinatorAPI.getExits(account.hermezEthereumAddress, true).catch(() => { throw new Error('Exit 1 not found') })
     const exits = exitsResponse.exits
+    const withdrawAmount = HermezCompressedAmount.decompressAmount(compressedExitAmount)
 
-    const instantWithdrawTxData = await Tx.withdraw(exitAmount, hezAccountIndex, tokens[1],
+    const instantWithdrawTxData = await Tx.withdraw(withdrawAmount, hezAccountIndex, tokens[1],
       account.hermezWallet.publicKeyCompressedHex, exits[0].batchNum, exits[0].merkleProof.siblings)
 
     expect(instantWithdrawTxData).toMatchObject({
@@ -81,7 +87,7 @@ describe('Full flow', () => {
     })
 
     // WithdrawalDelayer
-    const nonInstantWithdrawTxData = await Tx.withdraw(exitAmount, hezAccountIndex, tokens[1],
+    const nonInstantWithdrawTxData = await Tx.withdraw(withdrawAmount, hezAccountIndex, tokens[1],
       account.hermezWallet.publicKeyCompressedHex, exits[1].batchNum, exits[1].merkleProof.siblings, false)
 
     expect(nonInstantWithdrawTxData).toMatchObject({

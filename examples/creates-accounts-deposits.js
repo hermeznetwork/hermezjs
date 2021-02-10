@@ -32,7 +32,7 @@ async function main () {
   const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
 
   // set amount to deposit
-  const amountDeposit = hermez.Utils.getTokenAmountBigInt('0.1', 18)
+  const amountDeposit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.1', 18))
 
   // perform deposit account 1
   await hermez.Tx.deposit(

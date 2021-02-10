@@ -25,7 +25,7 @@ async function main () {
     .accounts[0]
 
   // set amount to force-exit
-  const amountExit = hermez.Utils.getTokenAmountBigInt('0.0001', 18)
+  const amountExit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.0001', 18))
 
   // perform force-exit
   await hermez.Tx.forceExit(
