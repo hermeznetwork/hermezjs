@@ -3,7 +3,7 @@ import nodeLocalstorage from 'node-localstorage'
 import { TRANSACTION_POOL_KEY } from './constants.js'
 import { getPoolTransaction } from './api.js'
 import { HttpStatusCode } from './http.js'
-import { TxState } from './tx-utils.js'
+import { TxState } from './enums.js'
 
 const LocalStorage = nodeLocalstorage.LocalStorage
 const storage = (typeof localStorage === 'undefined' || localStorage === null) ? new LocalStorage('./auxdata') : localStorage

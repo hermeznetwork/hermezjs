@@ -10,28 +10,7 @@ import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex } from './addresses.js'
 import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
-
-export const TxType = {
-  Deposit: 'Deposit',
-  CreateAccountDeposit: 'CreateAccountDeposit',
-  Transfer: 'Transfer',
-  TransferToEthAddr: 'TransferToEthAddr',
-  Withdraw: 'Withdrawn',
-  Exit: 'Exit',
-  ForceExit: 'ForceExit'
-}
-
-export const TxState = {
-  Forged: 'fged',
-  Forging: 'fing',
-  Pending: 'pend',
-  Invalid: 'invl'
-}
-
-export const TxLevel = {
-  L1: 'L1',
-  L2: 'L2'
-}
+import { TxType, TxState } from './enums.js'
 
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
