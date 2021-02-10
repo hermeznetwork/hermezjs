@@ -16,6 +16,8 @@ const BASE_API_URL = 'http://localhost:8086'
 
 const BATCH_EXPLORER_URL = 'http://localhost:8080'
 
+const ETHERSCAN_URL = 'https://etherscan.io'
+
 const ContractNames = {
   Hermez: 'Hermez',
   WithdrawalDelayer: 'WithdrawalDelayer'
@@ -36,6 +38,7 @@ export {
   DEFAULT_PAGE_SIZE,
   BASE_API_URL,
   BATCH_EXPLORER_URL,
+  ETHERSCAN_URL,
   ContractNames,
   CONTRACT_ADDRESSES
 }
