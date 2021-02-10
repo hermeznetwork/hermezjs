@@ -147,12 +147,14 @@ async function getExit (batchNum, accountIndex) {
 
 /**
  * GET request to the /tokens endpoint. Returns a list of token data
- * @param {number[]} tokenIds - An array of token IDs
+ * @param {Number[]} tokenIds - An array of token IDs
+ * @param {String[]} tokenSymbols - An array of token symbols
  * @returns {Object} Response data with the list of tokens
  */
-async function getTokens (tokenIds, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
+async function getTokens (tokenIds, tokenSymbols, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
   const params = {
     ...(tokenIds ? { ids: tokenIds.join(',') } : {}),
+    ...(tokenSymbols ? { symbols: tokenSymbols.join(',') } : {}),
     ..._getPageData(fromItem, order, limit)
   }
 
