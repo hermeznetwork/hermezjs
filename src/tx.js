@@ -81,13 +81,10 @@ const deposit = async (
   if (token.id === 0) {
     overrides.value = amount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
-      .then((data) => data)
   }
-
   await approve(amount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
-    .then((data) => data)
 }
 
 /**
@@ -135,7 +132,6 @@ const forceExit = async (
   ]
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
-    .then(() => transactionParameters)
 }
 
 /**
@@ -191,7 +187,6 @@ const withdraw = async (
   ]
 
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
-    .then(() => transactionParameters)
 }
 
 /**
@@ -228,7 +223,6 @@ const delayedWithdraw = async (
   ]
 
   return delayedWithdrawalContract.withdrawal(...transactionParameters, overrides)
-    .then(() => transactionParameters)
 }
 
 /**
@@ -266,9 +260,7 @@ async function generateAndSendL2Tx (tx, wallet, token) {
 
   wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
 
-  const l2TxResult = await sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
-
-  return l2TxResult
+  return sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
 }
 
 export {
