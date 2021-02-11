@@ -267,7 +267,8 @@ async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signatur
   })
 }
 
-/** Get request to the /account-creation-authorization endpoint
+/**
+ * Get request to the /account-creation-authorization endpoint
  * Returns whether the Hermez account has previously sent a valid authorization
  * @param {String} hezEthereumAddress - A Hermez Ethereum Address
  * @returns {Object} Response data
