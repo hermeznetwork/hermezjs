@@ -41,10 +41,10 @@
     "core-js": "^3.8.1",
     "ethers": "^5.0.17",
     "ffjavascript": "^0.2.33",
+    "graceful-fs": "4.2.4",
     "js-sha3": "^0.8.0",
     "node-localstorage": "^2.1.6",
-    "trezor-connect": "^8.1.19",
-    "graceful-fs": "4.2.4"
+    "trezor-connect": "^8.1.19"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",
@@ -59,6 +59,9 @@
     "jest": "^26.6.3",
     "lint-staged": "^10.4.2",
     "standard": "^15.0.0"
+  },
+  "engines": {
+    "node": ">=14"
   },
   "standard": {
     "parser": "babel-eslint",
