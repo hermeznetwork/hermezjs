@@ -105,7 +105,7 @@ function getL1UserTxId (nextL1FillingQueue, currentPosition) {
  * @param {Number} fee - The fee of the transaction
  * @returns {String} Transaction Id
  */
-function getTxId (fromIdx, tokenId, amount, nonce, fee) {
+function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
   const fromIdxBytes = new ArrayBuffer(8)
   const fromIdxView = new DataView(fromIdxBytes)
   fromIdxView.setBigUint64(0, BigInt(fromIdx).value, false)
@@ -310,7 +310,7 @@ async function generateL2Transaction (tx, bjj, token) {
   }
 
   const encodedTransaction = await encodeTransaction(transaction)
-  transaction.id = getTxId(
+  transaction.id = getL2TxId(
     encodedTransaction.fromAccountIndex,
     encodedTransaction.tokenId,
     encodedTransaction.amount,
@@ -333,7 +333,7 @@ function beautifyTransactionState (transactionState) {
 export {
   encodeTransaction as _encodeTransaction,
   getL1UserTxId,
-  getTxId,
+  getL2TxId,
   getFee,
   getTransactionType,
   getNonce,
