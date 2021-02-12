@@ -62,6 +62,36 @@ async function encodeTransaction (transaction, providerUrl) {
 }
 
 /**
+ * Generates the L1 Transaction Id based on the spec
+ * TxID (32 bytes) for L1Tx is the Keccak256 (ethereum) hash of:
+ * bytes:   | 1 byte |             32 bytes                |
+ *                     SHA256(    8 bytes      |  2 bytes )
+ * content: |  type  | SHA256([ToForgeL1TxsNum | Position ])
+ * where type for L1UserTx is 0
+ * @param {Number} nextL1FillingQueue
+ * @param {Number} currentPosition
+ */
+function getL1UserTxId (nextL1FillingQueue, currentPosition) {
+  const toForgeL1TxsNum = nextL1FillingQueue - 1
+
+  const toForgeL1TxsNumBytes = new ArrayBuffer(8)
+  const toForgeL1TxsNumView = new DataView(toForgeL1TxsNumBytes)
+  toForgeL1TxsNumView.setBigUint64(0, BigInt(toForgeL1TxsNum).value, false)
+
+  const positionBytes = new ArrayBuffer(8)
+  const positionView = new DataView(positionBytes)
+  positionView.setBigUint64(0, BigInt(currentPosition).value, false)
+
+  const toForgeL1TxsNumHex = bufToHex(toForgeL1TxsNumView.buffer)
+  const positionHex = bufToHex(positionView.buffer.slice(6, 8))
+
+  const v = toForgeL1TxsNumHex + positionHex
+  const h = keccak256('0x' + v).slice(2)
+
+  return '0x00' + h
+}
+
+/**
  * Generates the Transaction Id based on the spec
  * TxID (33 bytes) for L2Tx is:
  * bytes:   | 1 byte |                    32 bytes                           |
@@ -302,6 +332,7 @@ function beautifyTransactionState (transactionState) {
 
 export {
   encodeTransaction as _encodeTransaction,
+  getL1UserTxId,
   getTxId,
   getFee,
   getTransactionType,

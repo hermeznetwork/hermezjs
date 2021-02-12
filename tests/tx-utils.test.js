@@ -71,6 +71,12 @@ describe('#encodeTransaction', () => {
   })
 })
 
+test('#getL1TxId', () => {
+  const txId = TxUtils.getL1UserTxId(123457, 71)
+
+  expect(txId).toBe('0x00a6cbae3b8661fb75b0919ca6605a02cfb04d9c6dd16870fa0fcdf01befa32768')
+})
+
 test('#getTxId', () => {
   // test vectors checked with hermez-node Go implementation
   let txId = TxUtils.getTxId(87654, 5, 4, 144, 0)
