@@ -218,20 +218,18 @@ test('#_buildTxCompressedData', () => {
         chainId: Scalar.sub(Scalar.shl(1, 16), 1),
         fromAccountIndex: Scalar.sub(Scalar.shl(1, 48), 1),
         toAccountIndex: Scalar.sub(Scalar.shl(1, 48), 1),
-        amount: Scalar.fromString('10235000000000000000000000000000000'), // 0xFFFF in float16
         tokenId: Scalar.sub(Scalar.shl(1, 32), 1),
         nonce: Scalar.sub(Scalar.shl(1, 40), 1),
         fee: Scalar.sub(Scalar.shl(1, 3), 1),
         toBjjSign: true
       },
-      txCompressedData: '107ffffffffffffffffffffffffffffffffffffffffffffffffffc60be60f'
+      txCompressedData: '107ffffffffffffffffffffffffffffffffffffffffffffffc60be60f'
     },
     {
       tx: {
         chainId: 0,
         fromAccountIndex: 0,
         toAccountIndex: 0,
-        amount: 0,
         tokenId: 0,
         nonce: 0,
         fee: 0,
@@ -244,40 +242,37 @@ test('#_buildTxCompressedData', () => {
         chainId: 1,
         fromAccountIndex: 324,
         toAccountIndex: 256,
-        amount: Scalar.fromString('39000000000000000000'),
         tokenId: 1,
         nonce: 76,
         fee: 214,
         toBjjSign: false
       },
-      txCompressedData: 'd6000000004c0000000189860000000001000000000001440001c60be60f'
+      txCompressedData: 'd6000000004c000000010000000001000000000001440001c60be60f'
     },
     {
       tx: {
         chainId: 0,
-        fromAccountIndex: 2,
-        toAccountIndex: 3,
-        amount: 4,
-        tokenId: 5,
-        nonce: 0,
-        fee: 0,
+        fromAccountIndex: 1,
+        toAccountIndex: 2,
+        tokenId: 3,
+        nonce: 4,
+        fee: 5,
         toBjjSign: false
       },
-      txCompressedData: '500040000000000030000000000020000c60be60f'
+      txCompressedData: '50000000004000000030000000000020000000000010000c60be60f'
     },
     {
       tx: {
         chainId: 0,
         fromAccountIndex: 2,
         toAccountIndex: 3,
-        amount: 4,
-        tokenId: 5,
-        nonce: 6,
-        fee: 0,
+        tokenId: 4,
+        nonce: 5,
+        fee: 6,
         toBjjAy: 'c433f7a696b7aa3a5224efb3993baf0ccd9e92eecee0c29a3f6c8208a9e81d1e',
         toBjjSign: true
       },
-      txCompressedData: '10000000000060000000500040000000000030000000000020000c60be60f'
+      txCompressedData: '1060000000005000000040000000000030000000000020000c60be60f'
     }
   ]
 
@@ -298,28 +293,28 @@ test('#buildTransactionHashMessage', () => {
         amount: 4,
         tokenId: 5,
         nonce: 6,
-        toEthAddr: '0xc58d29fA6e86E4FAe04DDcEd660d45BCf3Cb2370'
+        toEthereumAddress: '0xc58d29fA6e86E4FAe04DDcEd660d45BCf3Cb2370'
       },
-      hashSignature: '15e95fbf3ebf4f7f25717bb8d349742c1c8157ef6787e00b4174ef262af31c0e'
+      hashSignature: '2d49ce1d4136e06f64e3eb1f79a346e6ee3e93ceeac909a57806a8d87005c263'
     },
     {
       tx: {
         chainId: Scalar.sub(Scalar.shl(1, 16), 1),
         fromAccountIndex: Scalar.sub(Scalar.shl(1, 48), 1),
         toAccountIndex: Scalar.sub(Scalar.shl(1, 48), 1),
-        amount: Scalar.fromString('10235000000000000000000000000000000'), // 0xFFFF in float16
+        amount: Scalar.fromString('343597383670000000000000000000000000000000'), // 0xFFFFFFFFFF in float40
         tokenId: Scalar.sub(Scalar.shl(1, 32), 1),
         nonce: Scalar.sub(Scalar.shl(1, 40), 1),
         fee: Scalar.sub(Scalar.shl(1, 3), 1),
         maxNumBatch: Scalar.sub(Scalar.shl(1, 32), 1),
         toBjjSign: true,
-        toEthAddr: '0x925a82559d756f06930e7686eda18f0928d06633',
+        toEthereumAddress: '0x925a82559d756f06930e7686eda18f0928d06633',
         toBjjAy: 'ee073100c0b25c40524317bd011ce832b10633810a7c3cd3c9f59aaa02e9b9d',
         rqTxCompressedDataV2: Scalar.sub(Scalar.shl(1, 193), 1),
         rqToEthAddr: '0x90ad476d5877c05262a74485393df18869965405',
         rqToBjjAy: '2d80c8e0a35c065ba5f8ec53d59282ca7664231704866d3875c338055b05dc39'
       },
-      hashSignature: '24811b2482fbbac92f61118fbd8946c9bca6a97d037d0250d22ccc453d76864c'
+      hashSignature: '14d2991a0e4826edc31639877f4b2bc2ab4926a27c457f85a77964755e787a3e'
     },
     {
       tx: {
@@ -332,13 +327,13 @@ test('#buildTransactionHashMessage', () => {
         fee: 0,
         maxNumBatch: 0,
         toBjjSign: false,
-        toEthAddr: '0x56136932bebca80ff636da32b6f3531dc95c78f4',
+        toEthereumAddress: '0x56136932bebca80ff636da32b6f3531dc95c78f4',
         toBjjAy: '1e957ec86f3fd2fdc0779701059b43651bee5795599700fb80cdf2fd6be5b695',
         rqTxCompressedDataV2: 0,
         rqToEthAddr: '0xe7c6d376022ab8d70727f06276a4fead435a0a4d',
         rqToBjjAy: '2d4a25612fb2fd322ff0483627eb04cc6e81dde3d9c8cb654f9d16d5a347de64'
       },
-      hashSignature: '30200ee98e5fb087d411bd2475700e20619f3ef6a2289acb22a8d251eac96556'
+      hashSignature: '1e309632428a50370a148e59f3b9395732b54047100a8a06b6d459c2132357a2'
     },
     {
       tx: {
@@ -351,13 +346,13 @@ test('#buildTransactionHashMessage', () => {
         fee: 226,
         maxNumBatch: 16385,
         toBjjSign: false,
-        toEthAddr: '0xf4e2b0fcbd0dc4b326d8a52b718a7bb43bdbd072',
+        toEthereumAddress: '0xf4e2b0fcbd0dc4b326d8a52b718a7bb43bdbd072',
         toBjjAy: '1f510abec21e82db99da4fb99ffee33e6de708df9fab9acb1f859267ba76ebc6',
         rqTxCompressedDataV2: Scalar.fromString('98743293726037486'),
         rqToEthAddr: '0x4a4547136a017c665fcedcdddca9dfd6d7dbc77f',
         rqToBjjAy: 'bc9e50b1e61510b2ad6f9c0784f4c028cde7f3581d2b9c8c365b90c96cb3426'
       },
-      hashSignature: '2d594d31c173fc31217ee72d0e781c8c049c32fa073492d61de25b0d6d4bbb53'
+      hashSignature: '5f353b964b53850c90aa7ae6b9ad112553b7c1091b6de26e89db0a125b264d0'
     }
   ]
 
