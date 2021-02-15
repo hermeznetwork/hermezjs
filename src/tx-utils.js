@@ -63,10 +63,10 @@ function getTxId (fromIdx, tokenId, amount, nonce, fee) {
   const tokenIdView = new DataView(tokenIdBytes)
   tokenIdView.setBigUint64(0, BigInt(tokenId).value, false)
 
-  const amountF16 = HermezCompressedAmount.compressAmount(amount).value
+  const amountF40 = HermezCompressedAmount.compressAmount(amount).value
   const amountBytes = new ArrayBuffer(8)
   const amountView = new DataView(amountBytes)
-  amountView.setBigUint64(0, BigInt(amountF16).value, false)
+  amountView.setBigUint64(0, BigInt(amountF40).value, false)
 
   const nonceBytes = new ArrayBuffer(8)
   const nonceView = new DataView(nonceBytes)
@@ -74,7 +74,7 @@ function getTxId (fromIdx, tokenId, amount, nonce, fee) {
 
   const fromIdxHex = bufToHex(fromIdxView.buffer.slice(2, 8))
   const tokenIdHex = bufToHex(tokenIdView.buffer.slice(4, 8))
-  const amountHex = bufToHex(amountView.buffer.slice(6, 8))
+  const amountHex = bufToHex(amountView.buffer.slice(3, 8)) // float40: 5 bytes
   const nonceHex = bufToHex(nonceView.buffer.slice(3, 8))
 
   let feeHex = fee.toString(16)

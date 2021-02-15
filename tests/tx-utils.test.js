@@ -74,25 +74,25 @@ describe('#encodeTransaction', () => {
 test('#getTxId', () => {
   // test vectors checked with hermez-node Go implementation
   let txId = TxUtils.getTxId(87654, 5, 4, 144, 0)
-  expect(txId).toBe('0x02fb52b5d0b9ef2626c11701bb751b2720c76d59946b9a48146ac153bb6e63bf6a')
+  expect(txId).toBe('0x022669acda59b827d20ef5354a3eebd1dffb3972b0a6bf89d18bfd2efa0ab9f41e')
 
   txId = TxUtils.getTxId(87654, 5, 4, 1, 0)
-  expect(txId).toBe('0x0276114a8f666fa1ff7dbf34b4a9da577808dc501e3b2760d01fe3ef5473f5737f')
+  expect(txId).toBe('0x029e7499a830f8f5eb17c07da48cf91415710f1bcbe0169d363ff91e81faf92fc2')
 
   txId = TxUtils.getTxId(87654, 5, 4, 3, 126)
-  expect(txId).toBe('0x025afb63126d3067f61f633d13e5a51da0551af3a4567a9af2db5321ed04214ff4')
+  expect(txId).toBe('0x0255c70ed20e1b8935232e1b9c5884dbcc88a6e1a3454d24f2d77252eb2bb0b64e')
 
   txId = TxUtils.getTxId(87654, 5, 4, 1003, 144)
-  expect(txId).toBe('0x02cf390157041c3b1b59f0aaed4da464f0d0d48f1d026e46fd89c7fe1e5aed7fcf')
+  expect(txId).toBe('0x0206b372f967061d1148bbcff679de38120e075141a80a07326d0f514c2efc6ca9')
 
   txId = TxUtils.getTxId(1, 1, 1, 1, 1)
-  expect(txId).toBe('0x020ec18eaae67fcd545998841a9c4be09ee3083e12db6ae5e5213a2ecaaa52d5cf')
+  expect(txId).toBe('0x0236f7ea5bccf78ba60baf56c058d235a844f9b09259fd0efa4f5f72a7d4a26618')
 
   txId = TxUtils.getTxId(999, 999, 999, 999, 255)
-  expect(txId).toBe('0x02f036223e79fac776de107f50822552cc964ee9fc4caa304613285f6976bcc940')
+  expect(txId).toBe('0x02ac122f5b709ce190129fecbbe35bfd30c70e6433dbd85a8eb743d110906a1dc1')
 
   txId = TxUtils.getTxId(transferTransactionEncoded.fromAccountIndex, transferTransactionEncoded.tokenId, transferTransactionEncoded.amount, transferTransactionEncoded.nonce, transferTransactionEncoded.fee)
-  expect(txId).toBe('0x029c8aef9ef24531e4cf84e78cbab1018ba1626a5a10afb6b7c356be1b5c28e92c')
+  expect(txId).toBe('0x02c674951a81881b7bc50db3b9e5efd97ac88550c7426ac548720e5057cfba515a')
 })
 
 test('#getFee', () => {
