@@ -16,7 +16,7 @@ const SUPPORTED_ENVIRONMENTS = {
 }
 
 const BATCH_EXPLORER_URLS = {
-  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://hermez-public-998653595.eu-west-1.elb.amazonaws.com:8080',
+  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://explorer.testnet.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8080'
 }
 
@@ -26,14 +26,14 @@ const ETHERSCAN_URLS = {
 }
 
 const PUBLIC_BASE_API_URLS = {
-  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://hermez-public-998653595.eu-west-1.elb.amazonaws.com',
+  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://api.testnet.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8086'
 }
 
 const PUBLIC_CONTRACT_ADDRESSES = {
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: {
-    [constants.ContractNames.Hermez]: '0x98d51Ce36C2769176f443D1b967d42A7Bea5BCf9',
-    [constants.ContractNames.WithdrawalDelayer]: '0x429C6837a135229C2c221810ACdF3B074971030A'
+    [constants.ContractNames.Hermez]: '0x5e61B3d99cAa3a5892781F53996d2128B40a3fAD',
+    [constants.ContractNames.WithdrawalDelayer]: '0x44D3CBFBeca39F08623Cc6e8574c91c621599548'
   },
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: {
     [constants.ContractNames.Hermez]: '0x10465b16615ae36F350268eb951d7B0187141D3B',
