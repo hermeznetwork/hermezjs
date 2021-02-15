@@ -10,23 +10,26 @@ import { TRANSACTION_POOL_KEY, CONTRACT_ADDRESSES, ContractNames } from '../src/
 import { getEthereumAddress } from '../src/addresses.js'
 import { createWalletFromEtherAccount } from '../src/hermez-wallet.js'
 import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
+import { getTokenAmountBigInt } from '../src/utils.js'
 
 describe('Full flow', () => {
   test('Works with ERC20 tokens', async () => {
-    const depositAmount = BigNumber.from(1000)
-    const depositEthAmount = BigNumber.from(10)
-    const exitAmount = BigNumber.from(10)
-    const compressedDepositAmount = HermezCompressedAmount.floorCompressAmount(depositAmount)
-    const compressedDepositEthAmount = HermezCompressedAmount.floorCompressAmount(depositEthAmount)
-    const compressedExitAmount = HermezCompressedAmount.floorCompressAmount(exitAmount)
-
     const account = await createWalletFromEtherAccount('http://localhost:8545', { addressOrIndex: 1 })
     const accountEthereumAddress = getEthereumAddress(account.hermezEthereumAddress)
 
     const tokensResponse = await CoordinatorAPI.getTokens()
     const tokens = tokensResponse.tokens
 
+    const depositAmount = getTokenAmountBigInt('0.000001', tokens[1].decimals)
+    const depositEthAmount = getTokenAmountBigInt('0.1', tokens[0].decimals)
+    const exitAmount = getTokenAmountBigInt('0.0000001', tokens[1].decimals)
+    const compressedDepositAmount = HermezCompressedAmount.compressAmount(depositAmount)
+    const compressedDepositEthAmount = HermezCompressedAmount.compressAmount(depositEthAmount)
+    const compressedExitAmount = HermezCompressedAmount.compressAmount(exitAmount)
+
     // Deposit. tokens[0] is Eth, tokens[1] is an ERC20
+    const depositEthTxData = await Tx.deposit(compressedDepositEthAmount, account.hermezEthereumAddress,
+      tokens[0], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
     const depositTokenTxData = await Tx.deposit(compressedDepositAmount, account.hermezEthereumAddress,
       tokens[1], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
 
@@ -35,9 +38,6 @@ describe('Full flow', () => {
       to: CONTRACT_ADDRESSES[ContractNames.Hermez],
       value: BigNumber.from(0)
     })
-
-    const depositEthTxData = await Tx.deposit(compressedDepositEthAmount, account.hermezEthereumAddress,
-      tokens[0], account.hermezWallet.publicKeyCompressedHex, 'http://localhost:8545')
 
     expect(depositEthTxData).toMatchObject({
       from: accountEthereumAddress,
