@@ -13,7 +13,6 @@ test('#vectors floating point number', () => {
     [0xFFFFFFFFFF, '343597383670000000000000000000000000000000']
   ]
   for (let i = 0; i < testVector.length; i++) {
-    console.log(testVector[i][0])
     const fx = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(testVector[i][0]))
     expect(fx.toString()).toBe(testVector[i][1])
 
@@ -23,13 +22,7 @@ test('#vectors floating point number', () => {
   }
 })
 
-test('#compressAmount', () => {
-  const testFloat = HermezCompressedAmount.compressAmount('1000000000000000000')
-  console.log(testFloat)
-  expect(testFloat.value).toBe(1)
-})
-
-test.skip('#floorCompressAmount', () => {
+test('#floorCompressAmount', () => {
   const testVector = [
     [30 * 0x800000000 + 9922334455, '9922334455000000000000000000000000000001'],
     [30 * 0x800000000 + 9922334454, '9922334454999999999999999999999999999999']
@@ -41,7 +34,7 @@ test.skip('#floorCompressAmount', () => {
   }
 })
 
-test.skip('exceptions', async () => {
+test('exceptions', async () => {
   expect(() => {
     HermezCompressedAmount.compressAmount('992233445500000000000000000000000000000000')
   }).toThrowError('number too big')
