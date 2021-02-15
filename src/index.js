@@ -11,7 +11,6 @@ import * as Providers from './providers.js'
 import * as Signers from './signers.js'
 import * as Environment from './environment.js'
 import * as Enums from './enums.js'
-import * as ABIS from './abis.js'
 
 export {
   HermezWallet,
@@ -26,8 +25,7 @@ export {
   Providers,
   Signers,
   Environment,
-  Enums,
-  ABIS
+  Enums
 }
 
 export default {
@@ -43,6 +41,5 @@ export default {
   Providers,
   Signers,
   Environment,
-  Enums,
-  ABIS
+  Enums
 }
