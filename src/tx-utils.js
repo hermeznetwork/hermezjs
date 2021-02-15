@@ -47,12 +47,10 @@ async function encodeTransaction (transaction, providerUrl) {
  *                     SHA256(    8 bytes      |  2 bytes )
  * content: |  type  | SHA256([ToForgeL1TxsNum | Position ])
  * where type for L1UserTx is 0
- * @param {Number} nextL1FillingQueue
+ * @param {Number} toForgeL1TxsNum
  * @param {Number} currentPosition
  */
-function getL1UserTxId (nextL1FillingQueue, currentPosition) {
-  const toForgeL1TxsNum = nextL1FillingQueue - 1
-
+function getL1UserTxId (toForgeL1TxsNum, currentPosition) {
   const toForgeL1TxsNumBytes = new ArrayBuffer(8)
   const toForgeL1TxsNumView = new DataView(toForgeL1TxsNumBytes)
   toForgeL1TxsNumView.setBigUint64(0, BigInt(toForgeL1TxsNum).value, false)
