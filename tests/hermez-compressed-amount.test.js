@@ -1,4 +1,3 @@
-import { Scalar } from 'ffjavascript'
 import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
 
 test('#vectors floating point number', () => {
@@ -17,7 +16,7 @@ test('#vectors floating point number', () => {
     const fx = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(testVector[i][0]))
     expect(fx.toString()).toBe(testVector[i][1])
 
-    const fl = HermezCompressedAmount.compressAmount(Scalar.e(testVector[i][1]))
+    const fl = HermezCompressedAmount.compressAmount(testVector[i][1])
     const fx2 = HermezCompressedAmount.decompressAmount(fl)
     expect(fx2.toString()).toBe(testVector[i][1])
   }
