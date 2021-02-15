@@ -176,11 +176,6 @@ async function getToken (tokenId) {
  */
 async function getState () {
   const state = await extractJSON(axios.get(`${baseApiUrl}/state`))
-  state.network.nextForgers = [{
-    coordinator: {
-      URL: 'http://localhost:8086'
-    }
-  }]
 
   return state
 }
