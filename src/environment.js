@@ -41,10 +41,18 @@ const PUBLIC_CONTRACT_ADDRESSES = {
   }
 }
 
+/**
+ * Gets the current supported environments
+ * @returns {Object[]} Supported environments
+ */
 function getSupportedEnvironments () {
   return Object.values(SUPPORTED_ENVIRONMENTS)
 }
 
+/**
+ * Checks if a chain id has a supported environment
+ * @param {Number} env Chain id
+ */
 function isEnvironmentSupported (env) {
   if (Object.values(SUPPORTED_ENVIRONMENTS).find((supportedEnv) => supportedEnv.chainId === env) !== undefined) {
     return true
@@ -77,6 +85,10 @@ function getEtherscanUrl () {
   return etherscanUrl
 }
 
+/**
+ * Sets an environment from a chain id or from a custom environment object
+ * @param {Object|Number} env - Chain id or a custom environment object
+ */
 function setEnvironment (env) {
   if (!env) {
     throw new Error('A environment is required')
@@ -115,6 +127,11 @@ function setEnvironment (env) {
   }
 }
 
+/**
+ * Returns the current environment
+ * @returns {Object} Contains contract addresses, Hermez API and Batch Explorer urls
+ * and the Etherscan URL por the provider
+ */
 function getCurrentEnvironment () {
   return {
     contracts: constants.CONTRACT_ADDRESSES,
