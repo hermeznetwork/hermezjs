@@ -91,10 +91,10 @@ function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
   const tokenIdView = new DataView(tokenIdBytes)
   tokenIdView.setBigUint64(0, BigInt(tokenId).value, false)
 
-  const amountF16 = HermezCompressedAmount.compressAmount(amount).value
+  const amountF40 = HermezCompressedAmount.compressAmount(amount).value
   const amountBytes = new ArrayBuffer(8)
   const amountView = new DataView(amountBytes)
-  amountView.setBigUint64(0, BigInt(amountF16).value, false)
+  amountView.setBigUint64(0, BigInt(amountF40).value, false)
 
   const nonceBytes = new ArrayBuffer(8)
   const nonceView = new DataView(nonceBytes)
@@ -102,7 +102,7 @@ function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
 
   const fromIdxHex = bufToHex(fromIdxView.buffer.slice(2, 8))
   const tokenIdHex = bufToHex(tokenIdView.buffer.slice(4, 8))
-  const amountHex = bufToHex(amountView.buffer.slice(6, 8))
+  const amountHex = bufToHex(amountView.buffer.slice(3, 8)) // float40: 5 bytes
   const nonceHex = bufToHex(nonceView.buffer.slice(3, 8))
 
   let feeHex = fee.toString(16)
@@ -206,11 +206,10 @@ function buildTxCompressedData (tx) {
   res = Scalar.add(res, Scalar.shl(tx.chainId || 0, 32)) // chainId --> 16 bits
   res = Scalar.add(res, Scalar.shl(tx.fromAccountIndex || 0, 48)) // fromIdx --> 48 bits
   res = Scalar.add(res, Scalar.shl(tx.toAccountIndex || 0, 96)) // toIdx --> 48 bits
-  res = Scalar.add(res, Scalar.shl(HermezCompressedAmount.compressAmount(tx.amount || 0).value, 144)) // amounf16 --> 16 bits
-  res = Scalar.add(res, Scalar.shl(tx.tokenId || 0, 160)) // tokenID --> 32 bits
-  res = Scalar.add(res, Scalar.shl(tx.nonce || 0, 192)) // nonce --> 40 bits
-  res = Scalar.add(res, Scalar.shl(tx.fee || 0, 232)) // userFee --> 8 bits
-  res = Scalar.add(res, Scalar.shl(tx.toBjjSign ? 1 : 0, 240)) // toBjjSign --> 1 bit
+  res = Scalar.add(res, Scalar.shl(tx.tokenId || 0, 144)) // tokenID --> 32 bits
+  res = Scalar.add(res, Scalar.shl(tx.nonce || 0, 176)) // nonce --> 40 bits
+  res = Scalar.add(res, Scalar.shl(tx.fee || 0, 216)) // userFee --> 8 bits
+  res = Scalar.add(res, Scalar.shl(tx.toBjjSign ? 1 : 0, 224)) // toBjjSign --> 1 bit
 
   return res
 }
@@ -224,7 +223,8 @@ function buildElement1 (tx) {
   let res = Scalar.e(0)
 
   res = Scalar.add(res, Scalar.fromString(tx.toEthereumAddress || '0', 16)) // ethAddr --> 160 bits
-  res = Scalar.add(res, Scalar.shl(tx.maxNumBatch || 0, 160)) // maxNumBatch --> 32 bits
+  res = Scalar.add(res, Scalar.shl(HermezCompressedAmount.compressAmount(tx.amount || 0).value, 160)) // amountF --> 40 bits
+  res = Scalar.add(res, Scalar.shl(tx.maxNumBatch || 0, 200)) // maxNumBatch --> 32 bits
 
   return res
 }
