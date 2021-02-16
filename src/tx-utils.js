@@ -41,6 +41,34 @@ async function encodeTransaction (transaction, providerUrl) {
 }
 
 /**
+ * Generates the L1 Transaction Id based on the spec
+ * TxID (32 bytes) for L1Tx is the Keccak256 (ethereum) hash of:
+ * bytes:   | 1 byte |             32 bytes                |
+ *                     SHA256(    8 bytes      |  2 bytes )
+ * content: |  type  | SHA256([ToForgeL1TxsNum | Position ])
+ * where type for L1UserTx is 0
+ * @param {Number} toForgeL1TxsNum
+ * @param {Number} currentPosition
+ */
+function getL1UserTxId (toForgeL1TxsNum, currentPosition) {
+  const toForgeL1TxsNumBytes = new ArrayBuffer(8)
+  const toForgeL1TxsNumView = new DataView(toForgeL1TxsNumBytes)
+  toForgeL1TxsNumView.setBigUint64(0, BigInt(toForgeL1TxsNum).value, false)
+
+  const positionBytes = new ArrayBuffer(8)
+  const positionView = new DataView(positionBytes)
+  positionView.setBigUint64(0, BigInt(currentPosition).value, false)
+
+  const toForgeL1TxsNumHex = bufToHex(toForgeL1TxsNumView.buffer)
+  const positionHex = bufToHex(positionView.buffer.slice(6, 8))
+
+  const v = toForgeL1TxsNumHex + positionHex
+  const h = keccak256('0x' + v).slice(2)
+
+  return '0x00' + h
+}
+
+/**
  * Generates the Transaction Id based on the spec
  * TxID (33 bytes) for L2Tx is:
  * bytes:   | 1 byte |                    32 bytes                           |
@@ -54,7 +82,7 @@ async function encodeTransaction (transaction, providerUrl) {
  * @param {Number} fee - The fee of the transaction
  * @returns {String} Transaction Id
  */
-function getTxId (fromIdx, tokenId, amount, nonce, fee) {
+function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
   const fromIdxBytes = new ArrayBuffer(8)
   const fromIdxView = new DataView(fromIdxBytes)
   fromIdxView.setBigUint64(0, BigInt(fromIdx).value, false)
@@ -259,7 +287,7 @@ async function generateL2Transaction (tx, bjj, token) {
   }
 
   const encodedTransaction = await encodeTransaction(transaction)
-  transaction.id = getTxId(
+  transaction.id = getL2TxId(
     encodedTransaction.fromAccountIndex,
     encodedTransaction.tokenId,
     encodedTransaction.amount,
@@ -281,7 +309,8 @@ function beautifyTransactionState (transactionState) {
 
 export {
   encodeTransaction as _encodeTransaction,
-  getTxId,
+  getL1UserTxId,
+  getL2TxId,
   getFee,
   getTransactionType,
   getNonce,
