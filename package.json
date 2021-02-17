@@ -51,7 +51,7 @@
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@hermeznetwork/commonjs": "0.0.2",
-    "@openzeppelin/test-helpers": "^0.5.9",
+    "@openzeppelin/test-helpers": "^0.5.10",
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.1.0",
     "eslint": "^7.11.0",
