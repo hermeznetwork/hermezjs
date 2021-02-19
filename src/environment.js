@@ -16,7 +16,7 @@ const SUPPORTED_ENVIRONMENTS = {
 }
 
 const BATCH_EXPLORER_URLS = {
-  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://explorer.testnet.hermez.io',
+  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'https://explorer.testnet.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8080'
 }
 
@@ -26,7 +26,7 @@ const ETHERSCAN_URLS = {
 }
 
 const PUBLIC_BASE_API_URLS = {
-  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'http://api.testnet.hermez.io',
+  [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'https://api.testnet.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8086'
 }
 
