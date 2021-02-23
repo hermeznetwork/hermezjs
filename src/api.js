@@ -130,7 +130,7 @@ async function getExits (address, onlyPendingWithdraws, tokenId, axiosConfig = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
     ...(onlyPendingWithdraws ? { onlyPendingWithdraws } : {}),
-    ...(tokenId ? { tokenId } : {})
+    ...(tokenId !== undefined && tokenId !== null ? { tokenId } : {})
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/exits`, { ...axiosConfig, params }))
