@@ -7,7 +7,7 @@ import { buildTransactionHashMessage } from './tx-utils.js'
 import { hexToBuffer } from './utils.js'
 import { getProvider } from './providers.js'
 import { getHermezAddress, isHermezEthereumAddress, hexToBase64BJJ } from './addresses.js'
-import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, CONTRACT_ADDRESSES, ContractNames } from './constants.js'
+import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, EIP_712_VERSION, EIP_712_PROVIDER, CONTRACT_ADDRESSES, ContractNames } from './constants.js'
 import { getSigner } from './signers.js'
 
 /**
@@ -66,22 +66,29 @@ class HermezWallet {
   async signCreateAccountAuthorization (providerUrl, signerData) {
     const provider = getProvider(providerUrl)
     const signer = getSigner(provider, signerData)
+    const chainId = (await provider.getNetwork()).chainId
+    const bJJ = this.publicKeyCompressedHex.startsWith('0x') ? this.publicKeyCompressedHex : `0x${this.publicKeyCompressedHex}`
 
-    const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE)
-    const chainId = (await provider.getNetwork()).chainId.toString(16)
-    const chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`
-    const messageHex =
-      ethers.utils.hexlify(accountCreationAuthMsgArray) +
-      this.publicKeyCompressedHex +
-      ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
-      CONTRACT_ADDRESSES[ContractNames.Hermez].slice(2)
+    const domain = {
+      name: EIP_712_PROVIDER,
+      version: EIP_712_VERSION,
+      chainId,
+      verifyingContract: CONTRACT_ADDRESSES[ContractNames.Hermez]
+    }
+    const types = {
+      Authorise: [
+        { name: 'Provider', type: 'string' },
+        { name: 'Authorisation', type: 'string' },
+        { name: 'BJJKey', type: 'bytes32' }
+      ]
+    }
+    const value = {
+      Provider: EIP_712_PROVIDER,
+      Authorisation: CREATE_ACCOUNT_AUTH_MESSAGE,
+      BJJKey: bJJ
+    }
 
-    const messageArray = ethers.utils.arrayify(messageHex)
-    const signature = await signer.signMessage(messageArray)
-    // Generate the signature from params as there's a bug in ethers
-    // that generates the base signature wrong
-    const signatureParams = ethers.utils.splitSignature(signature)
-    return signature.slice(0, -2) + signatureParams.v.toString(16)
+    return signer._signTypedData(domain, types, value)
   }
 }
 

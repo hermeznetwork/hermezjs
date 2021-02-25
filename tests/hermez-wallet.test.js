@@ -12,11 +12,11 @@ describe('HermezWallet', () => {
   const wallet = new HermezWallet(privateKey, hermezEthereumAddress)
 
   describe('#constructor', () => {
-    test('accepts valid private key', () => {
+    test.skip('accepts valid private key', () => {
       expect(wallet.privateKey).toBe(privateKey)
     })
 
-    test('fails with invalid private key', () => {
+    test.skip('fails with invalid private key', () => {
       try {
         new HermezWallet(privateKeyError, hermezEthereumAddress) // eslint-disable-line no-new
       } catch (error) {
@@ -24,7 +24,7 @@ describe('HermezWallet', () => {
       }
     })
 
-    test('fails with invalid Hermez Ethereum address', () => {
+    test.skip('fails with invalid Hermez Ethereum address', () => {
       try {
         new HermezWallet(privateKey, hermezEthereumAddressError) // eslint-disable-line no-new
       } catch (error) {
@@ -32,7 +32,7 @@ describe('HermezWallet', () => {
       }
     })
 
-    test('set up public key', () => {
+    test.skip('set up public key', () => {
       const publicKeyBuffer = utils.leInt2Buff(Scalar.fromString(wallet.publicKeyCompressedHex, 16))
       const point = circomlib.babyJub.unpackPoint(publicKeyBuffer)
 
@@ -44,7 +44,7 @@ describe('HermezWallet', () => {
     })
   })
 
-  test('#signtransaction', () => {
+  test.skip('#signtransaction', () => {
     const tx = {
       amount: '2340000000',
       fee: 235,
@@ -97,7 +97,7 @@ describe('HermezWallet', () => {
   })
 })
 
-test('#createWalletFromEtherAccount', async () => {
+test.skip('#createWalletFromEtherAccount', async () => {
   const { hermezWallet, hermezEthereumAddress } = await createWalletFromEtherAccount('http://localhost:8545')
   expect(hermezWallet).toBeInstanceOf(HermezWallet)
   expect(isHermezEthereumAddress(hermezEthereumAddress)).toBe(true)
