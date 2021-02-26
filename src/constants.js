@@ -28,7 +28,7 @@ const CONTRACT_ADDRESSES = {
   [ContractNames.WithdrawalDelayer]: '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
 }
 
-const STORAGE_VERSION_KEY = 'version'
+const STORAGE_VERSION_KEY = 'hermezStorageVersion'
 
 const STORAGE_VERSION = 1
 
