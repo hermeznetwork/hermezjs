@@ -4,6 +4,7 @@ import { TRANSACTION_POOL_KEY } from './constants.js'
 import { getPoolTransaction } from './api.js'
 import { HttpStatusCode } from './http.js'
 import { TxState } from './enums.js'
+import { getProvider } from './providers.js'
 
 const LocalStorage = nodeLocalstorage.LocalStorage
 const storage = (typeof localStorage === 'undefined' || localStorage === null) ? new LocalStorage('./auxdata') : localStorage
@@ -26,36 +27,43 @@ function initializeTransactionPool () {
  * @returns {Array}
  */
 function getPoolTransactions (accountIndex, bJJ) {
+  const provider = getProvider()
   const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
-  const accountTransactionPool = transactionPool[bJJ]
 
-  if (typeof accountTransactionPool === 'undefined') {
-    return Promise.resolve([])
-  }
+  return provider.getNetwork()
+    .then(({ chainId }) => {
+      const chainIdTransactionPool = transactionPool[chainId] || {}
+      const accountTransactionPool = chainIdTransactionPool[bJJ] || []
 
-  const accountTransactionsPromises = accountTransactionPool
-    .filter(transaction => transaction.fromAccountIndex === accountIndex || !accountIndex)
-    .map(({ id: transactionId }) => {
-      return getPoolTransaction(transactionId)
-        .then((transaction) => {
-          if (transaction.state === TxState.Forged) {
-            removePoolTransaction(bJJ, transactionId)
-            return undefined
-          } else {
-            return transaction
-          }
-        })
-        .catch(err => {
-          if (err.response.status === HttpStatusCode.NOT_FOUND) {
-            removePoolTransaction(bJJ, transactionId)
-          }
+      if (typeof accountTransactionPool === 'undefined') {
+        return Promise.resolve([])
+      }
+
+      return accountTransactionPool
+        .filter(transaction => transaction.fromAccountIndex === accountIndex || !accountIndex)
+        .map(({ id: transactionId }) => {
+          return getPoolTransaction(transactionId)
+            .then((transaction) => {
+              if (transaction.state === TxState.Forged) {
+                removePoolTransaction(bJJ, transactionId)
+                return undefined
+              } else {
+                return transaction
+              }
+            })
+            .catch(err => {
+              if (err.response.status === HttpStatusCode.NOT_FOUND) {
+                removePoolTransaction(bJJ, transactionId)
+              }
+            })
         })
     })
-
-  return Promise.all(accountTransactionsPromises)
-    .then((transactions) => {
-      const successfulTransactions = transactions.filter(transaction => typeof transaction !== 'undefined')
-      return successfulTransactions
+    .then((accountTransactionsPromises) => {
+      return Promise.all(accountTransactionsPromises)
+        .then((transactions) => {
+          const successfulTransactions = transactions.filter(transaction => typeof transaction !== 'undefined')
+          return successfulTransactions
+        })
     })
 }
 
@@ -65,17 +73,22 @@ function getPoolTransactions (accountIndex, bJJ) {
  * @param {String} bJJ - The account with which the transaction was made
  */
 function addPoolTransaction (transaction, bJJ) {
+  const provider = getProvider()
   const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
-  const accountTransactionPool = transactionPool[bJJ]
-  const newAccountTransactionPool = accountTransactionPool === undefined
-    ? [transaction]
-    : [...accountTransactionPool, transaction]
-  const newTransactionPool = {
-    ...transactionPool,
-    [bJJ]: newAccountTransactionPool
-  }
 
-  storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+  provider.getNetwork().then(({ chainId }) => {
+    const chainIdTransactionPool = transactionPool[chainId] || {}
+    const accountTransactionPool = chainIdTransactionPool[bJJ] || []
+    const newTransactionPool = {
+      ...transactionPool,
+      [chainId]: {
+        ...chainIdTransactionPool,
+        [bJJ]: [...accountTransactionPool, transaction]
+      }
+    }
+
+    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+  })
 }
 
 /**
@@ -84,16 +97,22 @@ function addPoolTransaction (transaction, bJJ) {
  * @param {String} transactionId - The transaction identifier to remove from the pool
  */
 function removePoolTransaction (bJJ, transactionId) {
+  const provider = getProvider()
   const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
-  const accountTransactionPool = transactionPool[bJJ]
-  const newAccountTransactionPool = accountTransactionPool
-    .filter((transaction) => transaction.id !== transactionId)
-  const newTransactionPool = {
-    ...transactionPool,
-    [bJJ]: newAccountTransactionPool
-  }
 
-  storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+  provider.getNetwork().then(({ chainId }) => {
+    const chainIdTransactionPool = transactionPool[chainId] || {}
+    const accountTransactionPool = chainIdTransactionPool[bJJ] || []
+    const newTransactionPool = {
+      ...transactionPool,
+      [chainId]: {
+        ...chainIdTransactionPool,
+        [bJJ]: accountTransactionPool.filter((transaction) => transaction.id !== transactionId)
+      }
+    }
+
+    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+  })
 }
 
 export {
