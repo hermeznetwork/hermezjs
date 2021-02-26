@@ -1,6 +1,6 @@
 import nodeLocalstorage from 'node-localstorage'
 
-import { TRANSACTION_POOL_KEY } from './constants.js'
+import * as constants from './constants.js'
 import { getPoolTransaction } from './api.js'
 import { HttpStatusCode } from './http.js'
 import { TxState } from './enums.js'
@@ -14,9 +14,15 @@ const storage = (typeof localStorage === 'undefined' || localStorage === null) ?
  * This needs to be run when the Hermez client loads
  */
 function initializeTransactionPool () {
-  if (!storage.getItem(TRANSACTION_POOL_KEY)) {
-    const emptyTransactionPool = {}
-    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(emptyTransactionPool))
+  const storageVersion = JSON.parse(localStorage.getItem(constants.STORAGE_VERSION_KEY))
+  const emptyTransactionPool = {}
+
+  if (!storageVersion) {
+    localStorage.setItem(constants.STORAGE_VERSION_KEY, constants.STORAGE_VERSION)
+  }
+
+  if (!storage.getItem(constants.TRANSACTION_POOL_KEY) || storageVersion !== constants.STORAGE_VERSION) {
+    storage.setItem(constants.TRANSACTION_POOL_KEY, JSON.stringify(emptyTransactionPool))
   }
 }
 
@@ -28,7 +34,7 @@ function initializeTransactionPool () {
  */
 function getPoolTransactions (accountIndex, bJJ) {
   const provider = getProvider()
-  const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
+  const transactionPool = JSON.parse(storage.getItem(constants.TRANSACTION_POOL_KEY))
 
   return provider.getNetwork()
     .then(({ chainId }) => {
@@ -74,7 +80,7 @@ function getPoolTransactions (accountIndex, bJJ) {
  */
 function addPoolTransaction (transaction, bJJ) {
   const provider = getProvider()
-  const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
+  const transactionPool = JSON.parse(storage.getItem(constants.TRANSACTION_POOL_KEY))
 
   provider.getNetwork().then(({ chainId }) => {
     const chainIdTransactionPool = transactionPool[chainId] || {}
@@ -87,7 +93,7 @@ function addPoolTransaction (transaction, bJJ) {
       }
     }
 
-    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+    storage.setItem(constants.TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
   })
 }
 
@@ -98,7 +104,7 @@ function addPoolTransaction (transaction, bJJ) {
  */
 function removePoolTransaction (bJJ, transactionId) {
   const provider = getProvider()
-  const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
+  const transactionPool = JSON.parse(storage.getItem(constants.TRANSACTION_POOL_KEY))
 
   provider.getNetwork().then(({ chainId }) => {
     const chainIdTransactionPool = transactionPool[chainId] || {}
@@ -111,7 +117,7 @@ function removePoolTransaction (bJJ, transactionId) {
       }
     }
 
-    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
+    storage.setItem(constants.TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))
   })
 }
 
