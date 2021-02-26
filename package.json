@@ -39,7 +39,7 @@
     "base64url": "^3.0.1",
     "circomlib": "iden3/circomlib#eab1c212392a4f4a08afd45193baa8d47104e601",
     "core-js": "^3.8.1",
-    "ethers": "^5.0.17",
+    "ethers": "5.0.24",
     "ffjavascript": "^0.2.33",
     "graceful-fs": "4.2.4",
     "js-sha3": "^0.8.0",

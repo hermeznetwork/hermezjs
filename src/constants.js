@@ -1,8 +1,10 @@
 const TRANSACTION_POOL_KEY = 'transactionPool'
 
-const METAMASK_MESSAGE = 'HERMEZ_ACCOUNT. Don\'t share this signature with anyone as this would reveal your Hermez private key. Unless you are in a trusted application, DO NOT SIGN THIS'
+const METAMASK_MESSAGE = 'Hermez Network account access.\n\nSign this message if you are in a trusted application only.'
 
-const CREATE_ACCOUNT_AUTH_MESSAGE = 'I authorize this babyjubjub key for hermez rollup account creation'
+const CREATE_ACCOUNT_AUTH_MESSAGE = 'Account creation'
+const EIP_712_VERSION = '1'
+const EIP_712_PROVIDER = 'Hermez Network'
 
 const ETHER_TOKEN_ID = 0
 
@@ -32,6 +34,8 @@ export {
   TRANSACTION_POOL_KEY,
   METAMASK_MESSAGE,
   CREATE_ACCOUNT_AUTH_MESSAGE,
+  EIP_712_VERSION,
+  EIP_712_PROVIDER,
   ETHER_TOKEN_ID,
   GAS_LIMIT,
   GAS_MULTIPLIER,
