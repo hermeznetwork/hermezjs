@@ -14,11 +14,11 @@ const storage = (typeof localStorage === 'undefined' || localStorage === null) ?
  * This needs to be run when the Hermez client loads
  */
 function initializeTransactionPool () {
-  const storageVersion = JSON.parse(localStorage.getItem(constants.STORAGE_VERSION_KEY))
+  const storageVersion = JSON.parse(storage.getItem(constants.STORAGE_VERSION_KEY))
   const emptyTransactionPool = {}
 
   if (!storageVersion) {
-    localStorage.setItem(constants.STORAGE_VERSION_KEY, constants.STORAGE_VERSION)
+    storage.setItem(constants.STORAGE_VERSION_KEY, constants.STORAGE_VERSION)
   }
 
   if (!storage.getItem(constants.TRANSACTION_POOL_KEY) || storageVersion !== constants.STORAGE_VERSION) {
