@@ -332,7 +332,7 @@ async function generateL2Transaction (tx, bjj, token) {
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
     amount: decompressedAmount.toString(),
-    fee: getFeeIndex(feeInScalar, decompressedAmount, token.decimals),
+    fee: getFeeIndex(feeInScalar, decompressedAmount),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,
     requestToAccountIndex: null,
