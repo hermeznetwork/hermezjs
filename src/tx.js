@@ -196,6 +196,7 @@ const withdraw = async (
     getAccountIndex(accountIndex),
     isInstant
   ]
+  console.log(transactionParameters)
 
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
 }

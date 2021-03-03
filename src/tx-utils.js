@@ -3,14 +3,18 @@ import { Scalar } from 'ffjavascript'
 import circomlib from 'circomlib'
 import { keccak256 } from '@ethersproject/keccak256'
 
-import { feeFactors } from './fee-factors.js'
-import { bufToHex } from './utils.js'
+import { feeFactors, feeFactorsAsBigInts } from './fee-factors.js'
+import { bufToHex, getTokenAmountBigInt } from './utils.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { getPoolTransactions } from './tx-pool.js'
 import { getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex } from './addresses.js'
 import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 import { TxType, TxState } from './enums.js'
+
+// 60 bits is the minimum bits to achieve enough precision among fee factor values < 192
+// no shift value is applied for fee factor values >= 192
+const bitsShiftPrecision = 60
 
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
@@ -116,19 +120,17 @@ function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
 
 /**
  * Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
- * @param {Number} fee - The fee in token value
- * @param {String} amount - The amount as a BigInt string
- * @return {Number} feeFactor
+ * @param {Scalar} fee - The fee in token value
+ * @param {Scalar} amount - The amount of the transaction as a Scalar
+ * @return {Number} feeIndex
  */
-function getFee (fee, amount, decimals) {
-  const amountFloat = Number(amount) / Math.pow(10, decimals)
-  const percentage = fee / amountFloat
+function getFeeIndex (fee, amount) {
   let low = 0
   let mid
   let high = feeFactors.length - 1
   while (high - low > 1) {
     mid = Math.floor((low + high) / 2)
-    if (feeFactors[mid] < percentage) {
+    if (getFeeValue(mid, amount) < fee) {
       low = mid
     } else {
       high = mid
@@ -136,6 +138,61 @@ function getFee (fee, amount, decimals) {
   }
 
   return high
+}
+
+/**
+ * Compute fee in token value with an amount and a fee index
+ * @param {Scalar} amount - The amount of the transaction as a Scalar
+ * @param {Number} feeIndex - Fee selected among 0 - 255
+ * @returns {Scalar} Resulting fee in token value
+ */
+function getFeeValue (feeIndex, amount) {
+  if (feeIndex < 192) {
+    const fee = Scalar.mul(amount, feeFactorsAsBigInts[feeIndex])
+    return Scalar.shr(fee, bitsShiftPrecision)
+  } else {
+    return Scalar.mul(amount, feeFactorsAsBigInts[feeIndex])
+  }
+}
+
+/**
+ * Calculates the maximum amount that can be sent in an L2 tx
+ * so the account doesn't attempt to send more than its balance
+ * when the fee is applied
+ * @param {Scalar} minimumFee - The fee in token value
+ * @param {Scalar} amount - Amount in account balance
+ * @returns {Scalar} - Max amount that can be sent
+ */
+function getMaxAmountFromMinimumFee (minimumFee, balance) {
+  let maxAmount = balance
+  let bestRemainingAmount = Scalar.add(balance, Scalar.fromString(1))
+  let isNotBestRemainingAmount = true
+  let i = 0
+  while (isNotBestRemainingAmount) {
+    const feeIndex = getFeeIndex(minimumFee, maxAmount)
+    const fee = getFeeValue(feeIndex, maxAmount)
+    const amountAndFee = Scalar.add(maxAmount, fee)
+    if (amountAndFee > balance) {
+      // maxAmount - (maxAmount + fee - balance)
+      maxAmount = Scalar.sub(balance, fee)
+    } else {
+      const remainingAmount = Scalar.sub(balance, amountAndFee)
+      if (remainingAmount < bestRemainingAmount) {
+        bestRemainingAmount = remainingAmount
+      } else if (remainingAmount === bestRemainingAmount) {
+        isNotBestRemainingAmount = false
+        break
+      }
+      maxAmount = Scalar.add(maxAmount, remainingAmount)
+
+      // If it doesn't converge in 100 iterations, return
+      if (i === 100) {
+        isNotBestRemainingAmount = false
+      }
+      i++
+    }
+  }
+  return maxAmount
 }
 
 /**
@@ -265,6 +322,7 @@ function buildTransactionHashMessage (encodedTransaction) {
 async function generateL2Transaction (tx, bjj, token) {
   const toAccountIndex = isHermezAccountIndex(tx.to) ? tx.to : null
   const decompressedAmount = HermezCompressedAmount.decompressAmount(tx.amount)
+  const feeInScalar = Scalar.fromString(getTokenAmountBigInt(tx.fee.toFixed(token.decimals), token.decimals).toString())
   const transaction = {
     type: getTransactionType(tx),
     tokenId: token.id,
@@ -274,7 +332,7 @@ async function generateL2Transaction (tx, bjj, token) {
     toBjj: null,
     // Corrects precision errors using the same system used in the Coordinator
     amount: decompressedAmount.toString(),
-    fee: getFee(tx.fee, decompressedAmount, token.decimals),
+    fee: getFeeIndex(feeInScalar, decompressedAmount, token.decimals),
     nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
     requestFromAccountIndex: null,
     requestToAccountIndex: null,
@@ -311,7 +369,9 @@ export {
   encodeTransaction as _encodeTransaction,
   getL1UserTxId,
   getL2TxId,
-  getFee,
+  getFeeIndex,
+  getFeeValue,
+  getMaxAmountFromMinimumFee,
   getTransactionType,
   getNonce,
   buildTxCompressedData as _buildTxCompressedData,

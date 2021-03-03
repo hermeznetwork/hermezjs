@@ -101,9 +101,19 @@ test('#getL2TxId', () => {
   expect(txId).toBe('0x02c674951a81881b7bc50db3b9e5efd97ac88550c7426ac548720e5057cfba515a')
 })
 
-test('#getFee', () => {
-  const fee = TxUtils.getFee(0.000143, transferTransaction.amount, 8)
-  expect(fee).toBe(26)
+test('#getFeeIndex', () => {
+  const fee = TxUtils.getFeeIndex(Scalar.fromString('628771404325698'), Scalar.fromString('1531370348000000000'))
+  expect(fee).toBe(30)
+})
+
+test('#getFeeValue', () => {
+  const fee = TxUtils.getFeeValue(30, Scalar.fromString('1531370348000000000'))
+  expect(fee).toBe(Scalar.fromString('628771404325698'))
+})
+
+test('#getMaxAmountFromMinimumFee', () => {
+  const fee = TxUtils.getMaxAmountFromMinimumFee(Scalar.fromString('328771404325698'), Scalar.fromString('1532000000000000000'), 18)
+  expect(fee).toBe(Scalar.fromString('1531371228234255439'))
 })
 
 describe('#getTransactionType', () => {
