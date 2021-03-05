@@ -1,4 +1,5 @@
 import { ethers } from 'ethers'
+import { Scalar } from 'ffjavascript'
 
 /**
  * Converts a buffer to a hexadecimal representation
@@ -44,10 +45,23 @@ function padZeros (string, length) {
   return string
 }
 
+/**
+ * Mask and shift a Scalar
+ * @param {Scalar} num - Input number
+ * @param {Number} origin - Initial bit
+ * @param {Number} len - Bit lenght of the mask
+ * @returns {Scalar} Extracted Scalar
+ */
+function extract (num, origin, len) {
+  const mask = Scalar.sub(Scalar.shl(1, len), 1)
+  return Scalar.band(Scalar.shr(num, origin), mask)
+}
+
 export {
   bufToHex,
   hexToBuffer,
   getTokenAmountString,
   getTokenAmountBigInt,
-  padZeros
+  padZeros,
+  extract
 }

@@ -30,6 +30,8 @@ const CONTRACT_ADDRESSES = {
   [ContractNames.WithdrawalDelayer]: '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
 }
 
+const INTERNAL_ACCOUNT_ETH_ADDR = 'hez:0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF'
+
 const STORAGE_VERSION_KEY = 'hermezStorageVersion'
 
 const STORAGE_VERSION = 1
@@ -50,5 +52,6 @@ export {
   ContractNames,
   CONTRACT_ADDRESSES,
   STORAGE_VERSION_KEY,
-  STORAGE_VERSION
+  STORAGE_VERSION,
+  INTERNAL_ACCOUNT_ETH_ADDR
 }

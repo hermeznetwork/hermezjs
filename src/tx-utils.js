@@ -7,10 +7,14 @@ import { feeFactors, feeFactorsAsBigInts } from './fee-factors.js'
 import { bufToHex, getTokenAmountBigInt } from './utils.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { getPoolTransactions } from './tx-pool.js'
-import { getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex } from './addresses.js'
+import {
+  getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex, isHermezBjjAddress,
+  base64ToHexBJJ, getAySignFromBJJ
+} from './addresses.js'
 import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 import { TxType, TxState } from './enums.js'
+import { INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
 
 // 60 bits is the minimum bits to achieve enough precision among fee factor values < 192
 // no shift value is applied for fee factor values >= 192
@@ -39,6 +43,14 @@ async function encodeTransaction (transaction, providerUrl) {
 
   if (transaction.toHezEthereumAddress) {
     encodedTransaction.toEthereumAddress = getEthereumAddress(transaction.toHezEthereumAddress)
+  }
+
+  if (transaction.toBjj) {
+    const bjjHex = base64ToHexBJJ(transaction.toBjj)
+    const { ay, sign } = getAySignFromBJJ(bjjHex)
+    encodedTransaction.toBjjSign = sign
+    encodedTransaction.toBjjAy = ay
+    encodedTransaction.toEthereumAddress = getEthereumAddress(INTERNAL_ACCOUNT_ETH_ADDR)
   }
 
   return encodedTransaction
@@ -209,6 +221,8 @@ function getTransactionType (transaction) {
       return TxType.Transfer
     } else if (isHermezEthereumAddress(transaction.to)) {
       return TxType.TransferToEthAddr
+    } else if (isHermezBjjAddress(transaction.to)) {
+      return TxType.TransferToBJJ
     }
   } else {
     return TxType.Exit
@@ -320,16 +334,27 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateL2Transaction (tx, bjj, token) {
-  const toAccountIndex = isHermezAccountIndex(tx.to) ? tx.to : null
+  const type = tx.type || getTransactionType(tx)
+  const toAccountIndex = type === TxType.Transfer ? tx.to : null
   const decompressedAmount = HermezCompressedAmount.decompressAmount(tx.amount)
   const feeInScalar = Scalar.fromString(getTokenAmountBigInt(tx.fee.toFixed(token.decimals), token.decimals).toString())
+
+  let toHezEthereumAddress
+  if (type === TxType.TransferToEthAddr) {
+    toHezEthereumAddress = tx.to
+  } else if (type === TxType.TransferToBJJ) {
+    toHezEthereumAddress = tx.toAuxEthAddr || INTERNAL_ACCOUNT_ETH_ADDR
+  } else {
+    toHezEthereumAddress = null
+  }
+
   const transaction = {
-    type: getTransactionType(tx),
+    type: type,
     tokenId: token.id,
     fromAccountIndex: tx.from,
-    toAccountIndex: tx.type === 'Exit' ? `hez:${token.symbol}:1` : toAccountIndex,
-    toHezEthereumAddress: isHermezEthereumAddress(tx.to) ? tx.to : null,
-    toBjj: null,
+    toAccountIndex: type === TxType.Exit ? `hez:${token.symbol}:1` : toAccountIndex,
+    toHezEthereumAddress: toHezEthereumAddress,
+    toBjj: type === TxType.TransferToBJJ ? tx.to : null,
     // Corrects precision errors using the same system used in the Coordinator
     amount: decompressedAmount.toString(),
     fee: getFeeIndex(feeInScalar, decompressedAmount),
