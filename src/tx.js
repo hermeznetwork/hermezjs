@@ -237,6 +237,56 @@ const delayedWithdraw = async (
 }
 
 /**
+ *
+ * @param {BigInt} amount - The amount to be withdrawn
+ * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
+ * @param {Object} token - The token information object as returned from the API
+ * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @param {BigInt} batchNumber - The batch number where the exit being withdrawn was forged
+ * @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
+ * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @returns {Promise}
+ */
+async function isInstantWithdrawalAllowed (
+  amount,
+  accountIndex,
+  token,
+  babyJubJub,
+  batchNumber,
+  merkleSiblings,
+  signerData,
+  providerUrl) {
+  const account = await getAccount(accountIndex)
+    .catch(() => {
+      throw new Error('Invalid account index')
+    })
+  const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
+  const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
+  const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
+
+  const overrides = {
+    from: ethereumAddress
+  }
+  const transactionParameters = [
+    token.id,
+    amount,
+    `0x${babyJubJub}`,
+    batchNumber,
+    merkleSiblings,
+    getAccountIndex(accountIndex),
+    true
+  ]
+
+  try {
+    return hermezContract.callStatic.withdrawMerkleProof(...transactionParameters, overrides)
+  } catch (error) {
+    return Promise.reject(error)
+  }
+}
+
+/**
  * Sends a L2 transaction to the Coordinator
  * @param {Object} transaction - Transaction object prepared by TxUtils.generateL2Transaction
  * @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
@@ -279,6 +329,7 @@ export {
   forceExit,
   withdraw,
   delayedWithdraw,
+  isInstantWithdrawalAllowed,
   sendL2Transaction,
   generateAndSendL2Tx
 }
