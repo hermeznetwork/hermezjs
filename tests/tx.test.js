@@ -87,6 +87,16 @@ describe('Full flow', () => {
     })
 
     // WithdrawalDelayer
+    const isInstant = await Tx.isInstantWithdrawalAllowed(
+      withdrawAmount,
+      hezAccountIndex,
+      tokens[1],
+      account.hermezWallet.publicKeyCompressedHex,
+      exits[1].batchNum,
+      exits[1].merkleProof.siblings
+    )
+    expect(isInstant).toBe([])
+
     const nonInstantWithdrawTxData = await Tx.withdraw(withdrawAmount, hezAccountIndex, tokens[1],
       account.hermezWallet.publicKeyCompressedHex, exits[1].batchNum, exits[1].merkleProof.siblings, false)
 
