@@ -41,6 +41,31 @@ export default [
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "forgeL1L2BatchTimeout",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "feeAddToken",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "withdrawalDelay",
+        "type": "uint64"
+      }
+    ],
+    "name": "InitializeHermezEvent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "uint32",
         "name": "queueIndex",
@@ -215,14 +240,14 @@ export default [
         "type": "uint48"
       },
       {
-        "internalType": "uint16",
+        "internalType": "uint40",
         "name": "loadAmountF",
-        "type": "uint16"
+        "type": "uint40"
       },
       {
-        "internalType": "uint16",
+        "internalType": "uint40",
         "name": "amountF",
-        "type": "uint16"
+        "type": "uint40"
       },
       {
         "internalType": "uint32",
@@ -558,6 +583,25 @@ export default [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "name": "l1L2TxsDataHashMap",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "lastForgedBatch",
     "outputs": [
@@ -677,6 +721,19 @@ export default [
       {
         "internalType": "uint256",
         "name": "nLevels",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rollupVerifiersLength",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],

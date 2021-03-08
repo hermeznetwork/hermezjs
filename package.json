@@ -37,10 +37,11 @@
     "axios": "^0.20.0",
     "babel-eslint": "^10.1.0",
     "base64url": "^3.0.1",
-    "circomlib": "^0.2.4",
+    "circomlib": "iden3/circomlib#eab1c212392a4f4a08afd45193baa8d47104e601",
     "core-js": "^3.8.1",
-    "ethers": "^5.0.17",
+    "ethers": "5.0.24",
     "ffjavascript": "^0.2.33",
+    "graceful-fs": "4.2.4",
     "js-sha3": "^0.8.0",
     "node-localstorage": "^2.1.6",
     "trezor-connect": "^8.1.19"
@@ -50,7 +51,7 @@
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@hermeznetwork/commonjs": "0.0.2",
-    "@openzeppelin/test-helpers": "^0.5.9",
+    "@openzeppelin/test-helpers": "^0.5.10",
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.1.0",
     "eslint": "^7.11.0",
@@ -58,6 +59,9 @@
     "jest": "^26.6.3",
     "lint-staged": "^10.4.2",
     "standard": "^15.0.0"
+  },
+  "engines": {
+    "node": ">=14"
   },
   "standard": {
     "parser": "babel-eslint",

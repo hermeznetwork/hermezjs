@@ -116,10 +116,11 @@ Before being able to operate on the Hermez Network, we must ensure that the toke
 ## Deposit Tokens from Ethereum into Hermez Network
 Creating an Hermez account and depositing tokens is done simultaneously as an L1 transaction.  In this example we are going to deposit 100 `ERC20_2` tokens to the newly created Hermez account. The steps are:
 1. Select amount to deposit from Ethereum into Hermez using `getTokenAmountBigInt()`
-2. Select the token denomination of the deposit. 
+2. Compress the amount to make it a valid amount supported by Hermez
+3. Select the token denomination of the deposit. 
 
 ```js
-  const amountDeposit = hermez.Utils.getTokenAmountBigInt('100', 2)
+  const amountDeposit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('100', 2))
 
   // make deposit of ERC20 Tokens in 1st account
   await hermez.Tx.deposit(amountDeposit,
@@ -200,7 +201,8 @@ An `Exit` transaction is the first of two transactions used to recover the token
 
 ```js
   const amountExit = hermez.Utils.getTokenAmountBigInt('10', 2)
-  await hermez.Tx.forceExit(amountExit, account1t.accountIndex, tokenERC20)
+  const amountExitCompressed = hermez.HermezCompressedAmount.compressAmount(amountExit)
+  await hermez.Tx.forceExit(amountExitCompressed, account1t.accountIndex, tokenERC20)
 ```
 
 Once the transaction has been forged by a Coordinator, we can poll the account status again to check the balance
@@ -357,7 +359,7 @@ The last part is to make the actual transfer.
 
 ```js
   // amount to transfer
-  const amountTransfer = hermez.Utils.getTokenAmountBigInt('20', 2)
+  const amountTransfer = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('20', 2))
 
   // generate L2 transaction
   const l2Tx = {
@@ -483,7 +485,7 @@ The only difference  is that there is no `to` account recipient.
 ```js
   const l2ExitTx = {
     from: account2.accountIndex,
-    amount: amountExit,
+    amount: amountExitCompressed,
     fee
   }
 

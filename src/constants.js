@@ -1,8 +1,10 @@
 const TRANSACTION_POOL_KEY = 'transactionPool'
 
-const METAMASK_MESSAGE = 'HERMEZ_ACCOUNT. Don\'t share this signature with anyone as this would reveal your Hermez private key. Unless you are in a trusted application, DO NOT SIGN THIS'
+const METAMASK_MESSAGE = 'Hermez Network account access.\n\nSign this message if you are in a trusted application only.'
 
-const CREATE_ACCOUNT_AUTH_MESSAGE = 'I authorize this babyjubjub key for hermez rollup account creation'
+const CREATE_ACCOUNT_AUTH_MESSAGE = 'Account creation'
+const EIP_712_VERSION = '1'
+const EIP_712_PROVIDER = 'Hermez Network'
 
 const ETHER_TOKEN_ID = 0
 
@@ -16,6 +18,8 @@ const BASE_API_URL = 'http://localhost:8086'
 
 const BATCH_EXPLORER_URL = 'http://localhost:8080'
 
+const ETHERSCAN_URL = 'https://etherscan.io'
+
 const ContractNames = {
   Hermez: 'Hermez',
   WithdrawalDelayer: 'WithdrawalDelayer'
@@ -26,16 +30,25 @@ const CONTRACT_ADDRESSES = {
   [ContractNames.WithdrawalDelayer]: '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
 }
 
+const STORAGE_VERSION_KEY = 'hermezStorageVersion'
+
+const STORAGE_VERSION = 1
+
 export {
   TRANSACTION_POOL_KEY,
   METAMASK_MESSAGE,
   CREATE_ACCOUNT_AUTH_MESSAGE,
+  EIP_712_VERSION,
+  EIP_712_PROVIDER,
   ETHER_TOKEN_ID,
   GAS_LIMIT,
   GAS_MULTIPLIER,
   DEFAULT_PAGE_SIZE,
   BASE_API_URL,
   BATCH_EXPLORER_URL,
+  ETHERSCAN_URL,
   ContractNames,
-  CONTRACT_ADDRESSES
+  CONTRACT_ADDRESSES,
+  STORAGE_VERSION_KEY,
+  STORAGE_VERSION
 }

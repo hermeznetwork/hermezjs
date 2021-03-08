@@ -5,7 +5,7 @@ import {
   getAccounts,
   getAccount
 } from './api.js'
-import { fix2Float } from './float16.js'
+import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
 import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
 import { approve } from './tokens.js'
@@ -36,7 +36,7 @@ async function getGasPrice (multiplier, providerUrl) {
  * Makes a deposit.
  * It detects if it's a 'createAccountDeposit' or a 'deposit' and prepares the parameters accodingly.
  * Detects if it's an Ether, ERC 20 or ERC 777 token and sends the transaction accordingly.
- * @param {BigInt} amount - The amount to be deposited
+ * @param {HermezCompressedAmount} amount - The amount to be deposited in the compressed format
  * @param {String} hezEthereumAddress - The Hermez address of the transaction sender
  * @param {Object} token - The token information object as returned from the API
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
@@ -56,6 +56,10 @@ const deposit = async (
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
+  if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
+    throw new Error('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
+  }
+
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
@@ -71,30 +75,28 @@ const deposit = async (
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
     account ? getAccountIndex(account.accountIndex) : 0,
-    fix2Float(amount),
+    amount.value,
     0,
     token.id,
     0,
     '0x'
   ]
 
+  const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
+
   if (token.id === 0) {
-    overrides.value = amount
+    overrides.value = decompressedAmount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
-      .then(() => {
-        return transactionParameters
-      })
   }
 
-  await approve(amount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
+  await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
-    .then(() => transactionParameters)
 }
 
 /**
  * Makes a force Exit. This is the L1 transaction equivalent of Exit.
- * @param {BigInt} amount - The amount to be withdrawn
+ * @param {HermezCompressedAmount} amount - The amount to be withdrawn in the compressed format
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
@@ -113,6 +115,10 @@ const forceExit = async (
   gasLimit = GAS_LIMIT,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
+  if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
+    throw new Error('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
+  }
+
   const account = await getAccount(accountIndex)
     .catch(() => {
       throw new Error('Invalid account index')
@@ -130,14 +136,13 @@ const forceExit = async (
     0,
     getAccountIndex(accountIndex),
     0,
-    fix2Float(amount),
+    amount.value,
     token.id,
     1,
     '0x'
   ]
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
-    .then(() => transactionParameters)
 }
 
 /**
@@ -193,7 +198,6 @@ const withdraw = async (
   ]
 
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
-    .then(() => transactionParameters)
 }
 
 /**
@@ -230,7 +234,56 @@ const delayedWithdraw = async (
   ]
 
   return delayedWithdrawalContract.withdrawal(...transactionParameters, overrides)
-    .then(() => transactionParameters)
+}
+
+/**
+ *
+ * @param {BigInt} amount - The amount to be withdrawn
+ * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
+ * @param {Object} token - The token information object as returned from the API
+ * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @param {BigInt} batchNumber - The batch number where the exit being withdrawn was forged
+ * @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
+ * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @returns {Promise}
+ */
+async function isInstantWithdrawalAllowed (
+  amount,
+  accountIndex,
+  token,
+  babyJubJub,
+  batchNumber,
+  merkleSiblings,
+  signerData,
+  providerUrl) {
+  const account = await getAccount(accountIndex)
+    .catch(() => {
+      throw new Error('Invalid account index')
+    })
+  const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
+  const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
+  const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
+
+  const overrides = {
+    from: ethereumAddress
+  }
+  const transactionParameters = [
+    token.id,
+    amount,
+    `0x${babyJubJub}`,
+    batchNumber,
+    merkleSiblings,
+    getAccountIndex(accountIndex),
+    true
+  ]
+
+  try {
+    return hermezContract.callStatic.withdrawMerkleProof(...transactionParameters, overrides)
+  } catch (error) {
+    return Promise.reject(error)
+  }
 }
 
 /**
@@ -257,7 +310,7 @@ async function sendL2Transaction (transaction, bJJ) {
  * @param {Object} transaction - ethAddress and babyPubKey together
  * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
  * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {BigInt} transaction.amount - The amount being sent as a BigInt
+ * @param {HermezCompressedAmount} transaction.amount - The amount being sent in the compressed format
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account
  * @param {Object} wallet - Transaction sender Hermez Wallet
@@ -268,9 +321,7 @@ async function generateAndSendL2Tx (tx, wallet, token) {
 
   wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
 
-  const l2TxResult = await sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
-
-  return l2TxResult
+  return sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
 }
 
 export {
@@ -278,6 +329,7 @@ export {
   forceExit,
   withdraw,
   delayedWithdraw,
+  isInstantWithdrawalAllowed,
   sendL2Transaction,
   generateAndSendL2Tx
 }

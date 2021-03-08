@@ -48,7 +48,7 @@ function getBaseApiUrl () {
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with filtered token accounts and pagination data
  */
-async function getAccounts (address, tokenIds, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
+async function getAccounts (address, tokenIds, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
@@ -56,7 +56,7 @@ async function getAccounts (address, tokenIds, fromItem, order = PaginationOrder
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/accounts`, { params }))
+  return extractJSON(axios.get(`${baseApiUrl}/accounts`, { ...axiosConfig, params }))
 }
 
 /**
@@ -64,8 +64,8 @@ async function getAccounts (address, tokenIds, fromItem, order = PaginationOrder
  * @param {String} accountIndex - Account index in the format hez:DAI:4444
  * @returns {Object} Response data with the token account
  */
-async function getAccount (accountIndex) {
-  return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`))
+async function getAccount (accountIndex, axiosConfig = {}) {
+  return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`, axiosConfig))
 }
 
 /**
@@ -75,9 +75,10 @@ async function getAccount (accountIndex) {
  * @param {Number} batchNum - Filter by batch number
  * @param {String} accountIndex - Filter by an account index that sent or received the transactions
  * @param {Number} fromItem - Item from where to start the request
+ * @param {Object} axiosConfig - Additional Axios config to use in the request
  * @returns {Object} Response data with filtered transactions and pagination data
  */
-async function getTransactions (address, tokenIds, batchNum, accountIndex, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
+async function getTransactions (address, tokenIds, batchNum, accountIndex, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
@@ -87,7 +88,7 @@ async function getTransactions (address, tokenIds, batchNum, accountIndex, fromI
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { params }))
+  return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { ...axiosConfig, params }))
 }
 
 /**
@@ -95,8 +96,8 @@ async function getTransactions (address, tokenIds, batchNum, accountIndex, fromI
  * @param {String} transactionId - The ID for the specific transaction
  * @returns {Object} Response data with the transaction
  */
-async function getHistoryTransaction (transactionId) {
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-history/${transactionId}`))
+async function getHistoryTransaction (transactionId, axiosConfig = {}) {
+  return extractJSON(axios.get(`${baseApiUrl}/transactions-history/${transactionId}`, axiosConfig))
 }
 
 /**
@@ -104,8 +105,8 @@ async function getHistoryTransaction (transactionId) {
  * @param {String} transactionId - The ID for the specific transaction
  * @returns {Object} Response data with the transaction
  */
-async function getPoolTransaction (transactionId) {
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-pool/${transactionId}`))
+async function getPoolTransaction (transactionId, axiosConfig = {}) {
+  return extractJSON(axios.get(`${baseApiUrl}/transactions-pool/${transactionId}`, axiosConfig))
 }
 
 /**
@@ -113,8 +114,8 @@ async function getPoolTransaction (transactionId) {
  * @param {Object} transaction - Transaction data returned by TxUtils.generateL2Transaction
  * @returns {String} Transaction id
  */
-async function postPoolTransaction (transaction) {
-  return axios.post(`${baseApiUrl}/transactions-pool`, transaction)
+async function postPoolTransaction (transaction, axiosConfig = {}) {
+  return axios.post(`${baseApiUrl}/transactions-pool`, transaction, axiosConfig)
 }
 
 /**
@@ -124,15 +125,15 @@ async function postPoolTransaction (transaction) {
  * @param {Number} tokenId - Filter by token id
  * @returns {Object} Response data with the list of exits
  */
-async function getExits (address, onlyPendingWithdraws, tokenId) {
+async function getExits (address, onlyPendingWithdraws, tokenId, axiosConfig = {}) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
     ...(onlyPendingWithdraws ? { onlyPendingWithdraws } : {}),
-    ...(tokenId ? { tokenId } : {})
+    ...(typeof tokenId !== 'undefined' ? { tokenId } : {})
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/exits`, { params }))
+  return extractJSON(axios.get(`${baseApiUrl}/exits`, { ...axiosConfig, params }))
 }
 
 /**
@@ -141,22 +142,24 @@ async function getExits (address, onlyPendingWithdraws, tokenId) {
  * @param {String} accountIndex - Filter by an exit associated to an account index
  * @returns {Object} Response data with the specific exit
  */
-async function getExit (batchNum, accountIndex) {
-  return await extractJSON(axios.get(`${baseApiUrl}/exits/${batchNum}/${accountIndex}`))
+async function getExit (batchNum, accountIndex, axiosConfig = {}) {
+  return await extractJSON(axios.get(`${baseApiUrl}/exits/${batchNum}/${accountIndex}`, axiosConfig))
 }
 
 /**
  * GET request to the /tokens endpoint. Returns a list of token data
- * @param {number[]} tokenIds - An array of token IDs
+ * @param {Number[]} tokenIds - An array of token IDs
+ * @param {String[]} tokenSymbols - An array of token symbols
  * @returns {Object} Response data with the list of tokens
  */
-async function getTokens (tokenIds, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
+async function getTokens (tokenIds, tokenSymbols, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
     ...(tokenIds ? { ids: tokenIds.join(',') } : {}),
+    ...(tokenSymbols ? { symbols: tokenSymbols.join(',') } : {}),
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/tokens`, { params }))
+  return extractJSON(axios.get(`${baseApiUrl}/tokens`, { ...axiosConfig, params }))
 }
 
 /**
@@ -164,21 +167,16 @@ async function getTokens (tokenIds, fromItem, order = PaginationOrder.ASC, limit
  * @param {Number} tokenId - A token ID
  * @returns {Object} Response data with a specific token
  */
-async function getToken (tokenId) {
-  return extractJSON(axios.get(`${baseApiUrl}/tokens/${tokenId}`))
+async function getToken (tokenId, axiosConfig = {}) {
+  return extractJSON(axios.get(`${baseApiUrl}/tokens/${tokenId}`, axiosConfig))
 }
 
 /**
  * GET request to the /state endpoint.
  * @returns {Object} Response data with the current state of the coordinator
  */
-async function getState () {
-  const state = await extractJSON(axios.get(`${baseApiUrl}/state`))
-  state.network.nextForgers = [{
-    coordinator: {
-      URL: 'http://localhost:8086'
-    }
-  }]
+async function getState (axiosConfig = {}) {
+  const state = await extractJSON(axios.get(`${baseApiUrl}/state`, axiosConfig))
 
   return state
 }
@@ -190,14 +188,14 @@ async function getState () {
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with a paginated list of batches
  */
-async function getBatches (forgerAddr, slotNum, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
+async function getBatches (forgerAddr, slotNum, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
     ...(forgerAddr ? { forgerAddr } : {}),
     ...(slotNum ? { slotNum } : {}),
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/batches`, { params }))
+  return extractJSON(axios.get(`${baseApiUrl}/batches`, { ...axiosConfig, params }))
 }
 
 /**
@@ -205,8 +203,8 @@ async function getBatches (forgerAddr, slotNum, fromItem, order = PaginationOrde
  * @param {Number} batchNum - Number of a specific batch
  * @returns {Object} Response data with a specific batch
  */
-async function getBatch (batchNum) {
-  return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`))
+async function getBatch (batchNum, axiosConfig = {}) {
+  return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`, axiosConfig))
 }
 
 /**
@@ -215,13 +213,13 @@ async function getBatch (batchNum) {
  * @param {String} bidderAddr - A coordinator bidder address
  * @returns {Object} Response data with a specific coordinator
  */
-async function getCoordinators (forgerAddr, bidderAddr) {
+async function getCoordinators (forgerAddr, bidderAddr, axiosConfig = {}) {
   const params = {
     ...(forgerAddr ? { forgerAddr } : {}),
     ...(bidderAddr ? { bidderAddr } : {})
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/coordinators`, { params }))
+  return extractJSON(axios.get(`${baseApiUrl}/coordinators`, { ...axiosConfig, params }))
 }
 
 /**
@@ -229,8 +227,8 @@ async function getCoordinators (forgerAddr, bidderAddr) {
  * @param {Number} slotNum - The nunmber of a slot
  * @returns {Object} Response data with a specific slot
  */
-async function getSlot (slotNum) {
-  return extractJSON(axios.get(`${baseApiUrl}/slots/${slotNum}`))
+async function getSlot (slotNum, axiosConfig = {}) {
+  return extractJSON(axios.get(`${baseApiUrl}/slots/${slotNum}`, axiosConfig))
 }
 
 /**
@@ -240,14 +238,14 @@ async function getSlot (slotNum) {
  * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with the list of slots
  */
-async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE) {
+async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
     ...(slotNum ? { slotNum } : {}),
     ...(bidderAddr ? { bidderAddr } : {}),
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/bids`, { params }))
+  return extractJSON(axios.get(`${baseApiUrl}/bids`, { ...axiosConfig, params }))
 }
 
 /**
@@ -257,21 +255,30 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
  * @param {String} signature - The signature of the request
  * @returns {Object} Response data
  */
-async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature) {
+async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, axiosConfig = {}) {
   return axios.post(`${baseApiUrl}/account-creation-authorization`, {
     hezEthereumAddress,
     bjj: bJJ,
     signature
-  })
+  }, axiosConfig)
 }
 
-/** Get request to the /account-creation-authorization endpoint
+/**
+ * Get request to the /account-creation-authorization endpoint
  * Returns whether the Hermez account has previously sent a valid authorization
  * @param {String} hezEthereumAddress - A Hermez Ethereum Address
  * @returns {Object} Response data
  */
-async function getCreateAccountAuthorization (hezEthereumAddress) {
-  return extractJSON(axios.get(`${baseApiUrl}/account-creation-authorization/${hezEthereumAddress}`))
+async function getCreateAccountAuthorization (hezEthereumAddress, axiosConfig = {}) {
+  return extractJSON(axios.get(`${baseApiUrl}/account-creation-authorization/${hezEthereumAddress}`, axiosConfig))
+}
+
+/**
+ * GET request to the /config endpoint
+ * @returns {Object} Response data
+ */
+async function getConfig (axiosConfig) {
+  return extractJSON(axios.get(`${baseApiUrl}/config`, axiosConfig))
 }
 
 export {
@@ -296,5 +303,6 @@ export {
   getSlot,
   getBids,
   postCreateAccountAuthorization,
-  getCreateAccountAuthorization
+  getCreateAccountAuthorization,
+  getConfig
 }
