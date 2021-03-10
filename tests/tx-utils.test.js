@@ -311,7 +311,7 @@ test('#buildTransactionHashMessage', () => {
         nonce: 6,
         toEthereumAddress: '0xc58d29fA6e86E4FAe04DDcEd660d45BCf3Cb2370'
       },
-      hashSignature: '2d49ce1d4136e06f64e3eb1f79a346e6ee3e93ceeac909a57806a8d87005c263'
+      hashSignature: 'b8abaf6b7933464e4450df2514da8b72606c02bf7f89bf6e54816fbda9d9d57'
     },
     {
       tx: {
@@ -330,7 +330,7 @@ test('#buildTransactionHashMessage', () => {
         rqToEthAddr: '0x90ad476d5877c05262a74485393df18869965405',
         rqToBjjAy: '2d80c8e0a35c065ba5f8ec53d59282ca7664231704866d3875c338055b05dc39'
       },
-      hashSignature: '14d2991a0e4826edc31639877f4b2bc2ab4926a27c457f85a77964755e787a3e'
+      hashSignature: '2ed59795dac2758098e09cfd93c09936a5a7d9ca5ffdb5e0f71d77ef036d4d5a'
     },
     {
       tx: {
@@ -349,7 +349,7 @@ test('#buildTransactionHashMessage', () => {
         rqToEthAddr: '0xe7c6d376022ab8d70727f06276a4fead435a0a4d',
         rqToBjjAy: '2d4a25612fb2fd322ff0483627eb04cc6e81dde3d9c8cb654f9d16d5a347de64'
       },
-      hashSignature: '1e309632428a50370a148e59f3b9395732b54047100a8a06b6d459c2132357a2'
+      hashSignature: '5768de86d708006a4695dee75d1ae1b56ae100480e8b3a5179c7ec67717323f'
     },
     {
       tx: {
@@ -368,7 +368,7 @@ test('#buildTransactionHashMessage', () => {
         rqToEthAddr: '0x4a4547136a017c665fcedcdddca9dfd6d7dbc77f',
         rqToBjjAy: 'bc9e50b1e61510b2ad6f9c0784f4c028cde7f3581d2b9c8c365b90c96cb3426'
       },
-      hashSignature: '5f353b964b53850c90aa7ae6b9ad112553b7c1091b6de26e89db0a125b264d0'
+      hashSignature: '6226f6b16dc853fa8225e82e5fd675f51858e7cd6b3a951c169ac01d7125c71'
     }
   ]
 
@@ -408,8 +408,8 @@ describe('#generateL2Transaction', () => {
   }
 
   beforeEach(() => {
-    transferTransaction.id = '0x029c8aef9ef24531e4cf84e78cbab1018ba1626a5a10afb6b7c356be1b5c28e92c'
-    exitTransaction.id = '0x029c8aef9ef24531e4cf84e78cbab1018ba1626a5a10afb6b7c356be1b5c28e92c'
+    transferTransaction.id = '0x02c674951a81881b7bc50db3b9e5efd97ac88550c7426ac548720e5057cfba515a'
+    exitTransaction.id = '0x02c674951a81881b7bc50db3b9e5efd97ac88550c7426ac548720e5057cfba515a'
     TransactionPool.initializeTransactionPool()
   })
 
