@@ -114,8 +114,13 @@ async function getPoolTransaction (transactionId, axiosConfig = {}) {
  * @param {Object} transaction - Transaction data returned by TxUtils.generateL2Transaction
  * @returns {String} Transaction id
  */
-async function postPoolTransaction (transaction, axiosConfig = {}) {
-  return axios.post(`${baseApiUrl}/transactions-pool`, transaction, axiosConfig)
+async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfig = {}) {
+  if (!nextForgerUrls.includes(baseApiUrl)) {
+    nextForgerUrls.push(baseApiUrl)
+  }
+  return Promise.all(nextForgerUrls.map((apiUrl) => {
+    return axios.post(`${apiUrl}/transactions-pool`, transaction, axiosConfig)
+  }))
 }
 
 /**
@@ -255,12 +260,17 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
  * @param {String} signature - The signature of the request
  * @returns {Object} Response data
  */
-async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, axiosConfig = {}) {
-  return axios.post(`${baseApiUrl}/account-creation-authorization`, {
-    hezEthereumAddress,
-    bjj: bJJ,
-    signature
-  }, axiosConfig)
+async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, nextForgerUrls = [], axiosConfig = {}) {
+  if (!nextForgerUrls.includes(baseApiUrl)) {
+    nextForgerUrls.push(baseApiUrl)
+  }
+  return Promise.all(nextForgerUrls.map((apiUrl) => {
+    return axios.post(`${apiUrl}/account-creation-authorization`, {
+      hezEthereumAddress,
+      bjj: bJJ,
+      signature
+    }, axiosConfig)
+  }))
 }
 
 /**

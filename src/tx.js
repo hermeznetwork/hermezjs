@@ -290,17 +290,18 @@ async function isInstantWithdrawalAllowed (
  * Sends a L2 transaction to the Coordinator
  * @param {Object} transaction - Transaction object prepared by TxUtils.generateL2Transaction
  * @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+ * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
  * @return {Object} - Object with the response status, transaction id and the transaction nonce
 */
-async function sendL2Transaction (transaction, bJJ) {
-  const result = await postPoolTransaction(transaction)
-  if (result.status === 200) {
+async function sendL2Transaction (transaction, bJJ, nextForgers) {
+  const results = await postPoolTransaction(transaction, nextForgers)
+  if (results[0].status === 200) {
     addPoolTransaction(transaction, bJJ)
   }
 
   return {
-    status: result.status,
-    id: result.data,
+    status: results[0].status,
+    id: results[0].data,
     nonce: transaction.nonce
   }
 }
@@ -315,13 +316,14 @@ async function sendL2Transaction (transaction, bJJ) {
  * @param {Number} transaction.nonce - The current nonce of the sender's token account
  * @param {Object} wallet - Transaction sender Hermez Wallet
  * @param {Object} token - The token information object as returned from the Coordinator.
+ * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
 */
-async function generateAndSendL2Tx (tx, wallet, token) {
+async function generateAndSendL2Tx (tx, wallet, token, nextForgers) {
   const l2TxParams = await generateL2Transaction(tx, wallet.publicKeyCompressedHex, token)
 
   wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
 
-  return sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
+  return sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex, nextForgers)
 }
 
 export {
