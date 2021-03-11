@@ -2,10 +2,9 @@ import circomlib from 'circomlib'
 import jsSha3 from 'js-sha3'
 import { utils } from 'ffjavascript'
 import { ethers } from 'ethers'
-import crypto from 'crypto'
 
 import { buildTransactionHashMessage } from './tx-utils.js'
-import { hexToBuffer } from './utils.js'
+import { hexToBuffer, getRandomBytes } from './utils.js'
 import { getProvider } from './providers.js'
 import { getHermezAddress, isHermezEthereumAddress, hexToBase64BJJ } from './addresses.js'
 import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, EIP_712_VERSION, EIP_712_PROVIDER, CONTRACT_ADDRESSES, ContractNames, INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
@@ -113,15 +112,15 @@ async function createWalletFromEtherAccount (providerUrl, signerData) {
 }
 
 /**
- * Creates a HermezWallet from babyjubjub private key
+ * Creates a HermezWallet from Babyjubjub private key
  * This creates a wallet for an internal account
- * Internal account has babyjubjub key and ethereum account 0xFFFF...FFFF
- * Random wallet is created if no private key is submitted
- * @param {Buffer} privateKey - Signer data used to build a Signer to create the walet
+ * An internal account has a Babyjubjub key and Ethereum account 0xFFFF...FFFF
+ * Random wallet is created if no private key is provided
+ * @param {Buffer} privateKey - 32 bytes buffer
  * @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
  */
 async function createWalletFromBjjPvtKey (privateKey) {
-  const privateBjjKey = privateKey || crypto.randomBytes(32)
+  const privateBjjKey = privateKey || Buffer.from(getRandomBytes(32))
   const hermezWallet = new HermezWallet(privateBjjKey, INTERNAL_ACCOUNT_ETH_ADDR)
 
   return { hermezWallet, hermezEthereumAddress: INTERNAL_ACCOUNT_ETH_ADDR }

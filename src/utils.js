@@ -49,12 +49,27 @@ function padZeros (string, length) {
  * Mask and shift a Scalar
  * @param {Scalar} num - Input number
  * @param {Number} origin - Initial bit
- * @param {Number} len - Bit lenght of the mask
- * @returns {Scalar} Extracted Scalar
+ * @param {Number} len - Bit length of the mask
+ * @returns {Scalar} Scalar
  */
 function extract (num, origin, len) {
   const mask = Scalar.sub(Scalar.shl(1, len), 1)
   return Scalar.band(Scalar.shr(num, origin), mask)
+}
+
+/**
+ * Generates random bytes
+ * @param {Number} numBytes - number of bytes to generate
+ * @returns {Uint8Array} Array of random 'numBytes'
+ */
+function getRandomBytes (numBytes) {
+  const array = new Uint8Array(numBytes)
+  if (typeof window !== 'undefined' && typeof window.crypto !== 'undefined') {
+    window.crypto.getRandomValues(array)
+  } else {
+    require('crypto').randomFillSync(array)
+  }
+  return array
 }
 
 export {
@@ -63,5 +78,6 @@ export {
   getTokenAmountString,
   getTokenAmountBigInt,
   padZeros,
-  extract
+  extract,
+  getRandomBytes
 }

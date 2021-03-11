@@ -4,30 +4,6 @@ import * as CoordinatorAPI from '../../src/api.js'
 import { getL1UserTxId } from '../../src/tx-utils.js'
 
 /**
- * Wait a specific number of batches to be forged
- * @param {Number} nBatches
- */
-export async function waitNBatches (nBatches) {
-  let lastBatch = (await CoordinatorAPI.getState()).network.lastBatch
-  while (true) {
-    let currentBatch = (await CoordinatorAPI.getState()).network.lastBatch
-    if (lastBatch !== null &&
-        currentBatch !== null &&
-        currentBatch.batchNum - lastBatch.batchNum >= nBatches) {
-      return currentBatch.batchNum
-    }
-    if (lastBatch === null) {
-      lastBatch = (await CoordinatorAPI.getState()).network.lastBatch
-      currentBatch = lastBatch
-    }
-    if (currentBatch === null) {
-      currentBatch = (await CoordinatorAPI.getState()).network.lastBatch
-    }
-    await sleep(2000)
-  }
-}
-
-/**
  * Wait timeout
  * @param {Number} timeout
  */
@@ -86,7 +62,7 @@ export async function assertTxForged (txId, timeoutLoop) {
 
 /**
  * Generic balances asserts
- * @param {Array[Object]} accounts array of account to check its balances
+ * @param {Array[Object]} accounts array of account to check their balances
  * @param {Object} token token object
  */
 export async function assertBalances (accounts, token) {

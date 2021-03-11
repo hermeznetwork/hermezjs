@@ -33,6 +33,7 @@ test('#getTokenAmountString', () => {
     expect(utils.getTokenAmountString(testString, i)).toBe(testVector[i])
   }
 })
+
 test('#getTokenAmountBigInt', () => {
   const testString = '1234567'
   const testVector = [
@@ -51,4 +52,12 @@ test('#getTokenAmountBigInt', () => {
   for (var i = 0; i < testVector.length; i++) {
     expect(utils.getTokenAmountBigInt(testString, i).toString()).toBe(testVector[i])
   }
+})
+
+test('#getRandomBytes', () => {
+  const pvtBytes = 32
+  const pvtKeyRandom = utils.getRandomBytes(pvtBytes)
+  console.log(pvtKeyRandom)
+  expect(pvtKeyRandom.length).toBe(32)
+  expect(pvtKeyRandom).not.toBe(undefined)
 })

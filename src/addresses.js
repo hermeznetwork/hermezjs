@@ -78,7 +78,7 @@ function isHermezAccountIndex (test) {
 
 /**
  * Get API Bjj compressed data format
- * @param {String} bjjCompressedHex Bjj compressed address encoded as hex string
+ * @param {String} bjjCompressedHex - Bjj compressed address encoded as hex string
  * @returns {String} API adapted bjj compressed address
  */
 function hexToBase64BJJ (bjjCompressedHex) {
@@ -122,7 +122,7 @@ function base64ToHexBJJ (base64BJJ) {
 
 /**
  * Get Ay and Sign from Bjj compressed
- * @param {String} fromBjjCompressed Bjj compressed encoded as hexadecimal string
+ * @param {String} fromBjjCompressed - Bjj compressed encoded as hexadecimal string
  * @return {Object} Ay represented as hexadecimal string, Sign represented as BigInt
  */
 function getAySignFromBJJ (fromBjjCompressed) {
