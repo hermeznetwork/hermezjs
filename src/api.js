@@ -42,6 +42,17 @@ function getBaseApiUrl () {
 }
 
 /**
+ * Makes sure a list of next forgers includes the base API URL
+ * @param {Array} nextForgerUrls - Array of forger URLs that may or may not include the base API URL
+ * @returns nextForgerUrls - Array of next forgers that definitely includes the base API URL
+ */
+function getForgerUrls (nextForgerUrls) {
+  return nextForgerUrls.includes(baseApiUrl)
+    ? nextForgerUrls
+    : [...nextForgerUrls, baseApiUrl]
+}
+
+/**
  * GET request to the /accounts endpoint. Returns a list of token accountns associated to a Hermez address
  * @param {String} address - The account's address. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
  * @param {Number[]} tokenIds - Array of token IDs as registered in the network
@@ -114,8 +125,10 @@ async function getPoolTransaction (transactionId, axiosConfig = {}) {
  * @param {Object} transaction - Transaction data returned by TxUtils.generateL2Transaction
  * @returns {String} Transaction id
  */
-async function postPoolTransaction (transaction, axiosConfig = {}) {
-  return axios.post(`${baseApiUrl}/transactions-pool`, transaction, axiosConfig)
+async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfig = {}) {
+  return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
+    return axios.post(`${apiUrl}/transactions-pool`, transaction, axiosConfig)
+  }))
 }
 
 /**
@@ -255,12 +268,14 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
  * @param {String} signature - The signature of the request
  * @returns {Object} Response data
  */
-async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, axiosConfig = {}) {
-  return axios.post(`${baseApiUrl}/account-creation-authorization`, {
-    hezEthereumAddress,
-    bjj: bJJ,
-    signature
-  }, axiosConfig)
+async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, nextForgerUrls = [], axiosConfig = {}) {
+  return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
+    return axios.post(`${apiUrl}/account-creation-authorization`, {
+      hezEthereumAddress,
+      bjj: bJJ,
+      signature
+    }, axiosConfig)
+  }))
 }
 
 /**
