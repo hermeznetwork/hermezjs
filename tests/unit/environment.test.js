@@ -1,6 +1,6 @@
-import { getBaseApiUrl } from '../src/api'
-import { ContractNames, CONTRACT_ADDRESSES } from '../src/constants'
-import { setEnvironment, getBatchExplorerUrl, isEnvironmentSupported, getSupportedEnvironments } from '../src/environment'
+import { getBaseApiUrl } from '../../src/api'
+import { ContractNames, CONTRACT_ADDRESSES } from '../../src/constants'
+import { setEnvironment, getBatchExplorerUrl, isEnvironmentSupported, getSupportedEnvironments } from '../../src/environment'
 
 test('#getSupportedEnvironments', () => {
   const supportedEnvironments = getSupportedEnvironments()

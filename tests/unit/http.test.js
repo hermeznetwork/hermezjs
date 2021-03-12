@@ -1,4 +1,4 @@
-import * as http from '../src/http.js'
+import * as http from '../../src/http.js'
 
 test('#extractJSON', async () => {
   const response = {

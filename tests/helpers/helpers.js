@@ -7,7 +7,7 @@ import { getL1UserTxId } from '../../src/tx-utils.js'
  * Wait timeout
  * @param {Number} timeout
  */
-async function sleep (timeout) {
+export async function sleep (timeout) {
   await new Promise(resolve => setTimeout(resolve, timeout))
 }
 
