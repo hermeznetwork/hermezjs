@@ -1,8 +1,9 @@
 import circomlib from 'circomlib'
 import { utils, Scalar } from 'ffjavascript'
 
-import { HermezWallet, createWalletFromEtherAccount } from '../src/hermez-wallet.js'
+import { HermezWallet, createWalletFromEtherAccount, createWalletFromBjjPvtKey } from '../src/hermez-wallet.js'
 import { isHermezEthereumAddress } from '../src/addresses.js'
+import { INTERNAL_ACCOUNT_ETH_ADDR } from '../src/constants'
 
 describe('HermezWallet', () => {
   const hermezEthereumAddress = 'hez:0x4294cE558F2Eb6ca4C3191AeD502cF0c625AE995'
@@ -92,13 +93,33 @@ describe('HermezWallet', () => {
   })
 
   test('#signCreateAccountAuthorization', async () => {
-    const signature = await wallet.signCreateAccountAuthorization('http://localhost:8545')
-    expect(signature).toBe('0x688389b045ca0940c2dde5e02a01d0aedf652dd8f7c13eaa7218854c60e9b680381befe0a65ed83bca9932c49a6ebe30ae5d65f9a3d9d40254b7ea9e2b8a11901c')
-  })
-})
+    const expectedSignature = '0x05800968d7d6ffa8368ac363f62ae00213479591e84b7ed07ccbfd40de84cb0d0bb7130748f4d3150d77f1848e1372b84113ba3955a9cefe1bb26b773986d4191b'
+    const privateKeyEth = '0x0000000000000000000000000000000000000000000000000000000000000001'
 
-test('#createWalletFromEtherAccount', async () => {
-  const { hermezWallet, hermezEthereumAddress } = await createWalletFromEtherAccount('http://localhost:8545')
-  expect(hermezWallet).toBeInstanceOf(HermezWallet)
-  expect(isHermezEthereumAddress(hermezEthereumAddress)).toBe(true)
+    const signer = { type: 'WALLET', privateKey: privateKeyEth }
+    const hermezWallet = (await createWalletFromEtherAccount('http://localhost:8545', signer)).hermezWallet
+
+    const signature = await hermezWallet.signCreateAccountAuthorization('http://localhost:8545', signer)
+    expect(signature).toEqual(expectedSignature)
+  })
+
+  test('#createWalletFromBjjPvtKey', async () => {
+    const { hermezWallet, hermezEthereumAddress } = await createWalletFromBjjPvtKey(privateKey)
+    expect(hermezWallet).toBeInstanceOf(HermezWallet)
+    expect(isHermezEthereumAddress(hermezEthereumAddress)).toBe(true)
+    expect(hermezEthereumAddress).toBe(INTERNAL_ACCOUNT_ETH_ADDR)
+  })
+
+  test('#createWalletFromBjjPvtKey random private', async () => {
+    const { hermezWallet, hermezEthereumAddress } = await createWalletFromBjjPvtKey()
+    expect(hermezWallet).toBeInstanceOf(HermezWallet)
+    expect(isHermezEthereumAddress(hermezEthereumAddress)).toBe(true)
+    expect(hermezEthereumAddress).toBe(INTERNAL_ACCOUNT_ETH_ADDR)
+  })
+
+  test('#createWalletFromEtherAccount', async () => {
+    const { hermezWallet, hermezEthereumAddress } = await createWalletFromEtherAccount('http://localhost:8545')
+    expect(hermezWallet).toBeInstanceOf(HermezWallet)
+    expect(isHermezEthereumAddress(hermezEthereumAddress)).toBe(true)
+  })
 })

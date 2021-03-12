@@ -137,6 +137,13 @@ describe('#getTransactionType', () => {
     }
     expect(TxUtils.getTransactionType(exitTx)).toBe('Exit')
   })
+
+  test('Returns TransferToBJJ', () => {
+    const transferToBJJ = {
+      to: 'hez:CCBCP-a9lp7jCTYWOlioJyuStfkAT-OxQXZ-OkC7KIF6'
+    }
+    expect(TxUtils.getTransactionType(transferToBJJ)).toBe('TransferToBJJ')
+  })
 })
 
 describe('#getNonce', () => {

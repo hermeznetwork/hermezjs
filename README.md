@@ -6,8 +6,12 @@ To deploy a local setup of a Hermez Coordinator with the Hermez smart contracts 
 ```sh
 git clone https://github.com/hermeznetwork/integration-testing.git
 cd integration-testing
-make build
-make start
+make start BUILD=sandbox-geth DEV_PERIOD=3 MODE=coord
+```
+
+To stop environment:
+```
+make stop
 ```
 
 **NOTE** To run all tests, type:

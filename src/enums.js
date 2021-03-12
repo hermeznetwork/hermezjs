@@ -3,6 +3,7 @@ const TxType = {
   CreateAccountDeposit: 'CreateAccountDeposit',
   Transfer: 'Transfer',
   TransferToEthAddr: 'TransferToEthAddr',
+  TransferToBJJ: 'TransferToBJJ',
   Withdraw: 'Withdrawn',
   Exit: 'Exit',
   ForceExit: 'ForceExit'

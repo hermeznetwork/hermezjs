@@ -1,7 +1,7 @@
 import { utils as utilsScalar, Scalar } from 'ffjavascript'
 import base64url from 'base64url'
 
-import { padZeros } from './utils.js'
+import { padZeros, extract } from './utils.js'
 
 const hermezPrefix = 'hez:'
 const hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}$')
@@ -78,7 +78,7 @@ function isHermezAccountIndex (test) {
 
 /**
  * Get API Bjj compressed data format
- * @param {String} bjjCompressedHex Bjj compressed address encoded as hex string
+ * @param {String} bjjCompressedHex - Bjj compressed address encoded as hex string
  * @returns {String} API adapted bjj compressed address
  */
 function hexToBase64BJJ (bjjCompressedHex) {
@@ -104,6 +104,35 @@ function hexToBase64BJJ (bjjCompressedHex) {
   return `hez:${base64url.encode(finalBuffBjj)}`
 }
 
+/**
+ * Gets the Babyjubjub hexadecimal from its base64 representation
+ * @param {String} base64BJJ
+ * @returns {String} babyjubjub address in hex string
+ */
+function base64ToHexBJJ (base64BJJ) {
+  if (base64BJJ.includes('hez:')) {
+    base64BJJ = base64BJJ.replace('hez:', '')
+  }
+
+  const bjjSwapHex = base64url.decode(base64BJJ, 'hex')
+  const bjjSwapBuff = Buffer.from(bjjSwapHex, 'hex').slice(0, 32)
+
+  return padZeros(utilsScalar.leBuff2int(bjjSwapBuff).toString(16), 64)
+}
+
+/**
+ * Get Ay and Sign from Bjj compressed
+ * @param {String} fromBjjCompressed - Bjj compressed encoded as hexadecimal string
+ * @return {Object} Ay represented as hexadecimal string, Sign represented as BigInt
+ */
+function getAySignFromBJJ (fromBjjCompressed) {
+  const scalarFromBjjCompressed = Scalar.fromString(fromBjjCompressed, 16)
+  const ay = extract(scalarFromBjjCompressed, 0, 254).toString(16)
+  const sign = Number(extract(scalarFromBjjCompressed, 255, 1))
+
+  return { ay, sign }
+}
+
 export {
   getHermezAddress,
   getEthereumAddress,
@@ -111,5 +140,7 @@ export {
   isHermezBjjAddress,
   isHermezAccountIndex,
   getAccountIndex,
-  hexToBase64BJJ
+  hexToBase64BJJ,
+  base64ToHexBJJ,
+  getAySignFromBJJ
 }
