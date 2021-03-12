@@ -1,4 +1,5 @@
 import { Scalar } from 'ffjavascript'
+import { groth16 } from 'snarkjs'
 
 import {
   postPoolTransaction,
@@ -16,6 +17,7 @@ import { generateL2Transaction } from './tx-utils.js'
 import HermezABI from './abis/HermezABI.js'
 import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
 import { SignerType } from './signers.js'
+import { buildZkInputWithdraw, buildProofContract } from './withdraw-utils.js'
 
 /**
  * Get current average gas price from the last ethereum blocks and multiply it
@@ -146,7 +148,7 @@ const forceExit = async (
 }
 
 /**
- * Finalise the withdraw. This is a L1 transaction.
+ * Finalise the withdraw with merkle proof. This is a L1 transaction.
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
  * @param {Object} token - The token information object as returned from the API
@@ -198,6 +200,53 @@ const withdraw = async (
   ]
 
   return hermezContract.withdrawMerkleProof(...transactionParameters, overrides)
+}
+
+/**
+ * Finalise the withdraw with zkProof. This is a L1 transaction.
+ * @param {Object} exitInfo - exit object as it is returned by hermez-node API
+ * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
+ * @param {Object} wasmFilePath - wasm witness file
+ * @param {Object} zkeyFilePath - zkey proving key
+ * @param {Object} signerData - Signer data used to build a Signer to send the transaction
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {Number} gasLimit - Optional gas limit
+ * @param {Number} gasMultiplier - Optional gas multiplier
+ * @returns {Promise} transaction parameters
+ * @throws {Error} Throws an error if account index isn't valid
+ */
+const withdrawCircuit = async (
+  exitInfo,
+  isInstant = true,
+  wasmFilePath,
+  zkeyFilePath,
+  signerData,
+  providerUrl,
+  gasLimit = GAS_LIMIT,
+  gasMultiplier = GAS_MULTIPLIER
+) => {
+  const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, signerData, providerUrl)
+
+  const zkInputs = await buildZkInputWithdraw(exitInfo)
+  const zkProofSnarkJs = await groth16.fullProve(zkInputs, wasmFilePath, zkeyFilePath)
+  const zkProofContract = await buildProofContract(zkProofSnarkJs.proof)
+
+  const overrides = {
+    gasLimit,
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
+  }
+  const transactionParameters = [
+    zkProofContract.proofA,
+    zkProofContract.proofB,
+    zkProofContract.proofC,
+    exitInfo.token.id,
+    exitInfo.balance,
+    exitInfo.batchNum,
+    getAccountIndex(exitInfo.accountIndex),
+    isInstant
+  ]
+
+  return hermezContract.withdrawCircuit(...transactionParameters, overrides)
 }
 
 /**
@@ -335,5 +384,6 @@ export {
   delayedWithdraw,
   isInstantWithdrawalAllowed,
   sendL2Transaction,
-  generateAndSendL2Tx
+  generateAndSendL2Tx,
+  withdrawCircuit
 }

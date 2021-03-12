@@ -104,6 +104,9 @@ test('#getL2TxId', () => {
 test('#getFeeIndex', () => {
   const fee = TxUtils.getFeeIndex(Scalar.fromString('628771404325698'), Scalar.fromString('1531370348000000000'))
   expect(fee).toBe(30)
+
+  const noFee = TxUtils.getFeeIndex(Scalar.fromString('0'), Scalar.fromString('1531370348000000000'))
+  expect(noFee).toBe(0)
 })
 
 test('#getFeeValue', () => {

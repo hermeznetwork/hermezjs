@@ -36,6 +36,14 @@ const STORAGE_VERSION_KEY = 'hermezStorageVersion'
 
 const STORAGE_VERSION = 1
 
+const MAX_NLEVELS = 48
+
+const WITHDRAWAL_CIRCUIT_NLEVELS = 32
+
+const WITHDRAWAL_WASM = 'https://github.com/hermeznetwork/hermezjs/blob/feature/withdrawal-circuit/withdraw-circuit-files/withdraw.wasm'
+
+const WITHDRAWAL_ZKEY = 'https://github.com/hermeznetwork/hermezjs/blob/feature/withdrawal-circuit/withdraw-circuit-files/withdraw_hez3_0001.zkey'
+
 export {
   TRANSACTION_POOL_KEY,
   METAMASK_MESSAGE,
@@ -53,5 +61,9 @@ export {
   CONTRACT_ADDRESSES,
   STORAGE_VERSION_KEY,
   STORAGE_VERSION,
-  INTERNAL_ACCOUNT_ETH_ADDR
+  INTERNAL_ACCOUNT_ETH_ADDR,
+  MAX_NLEVELS,
+  WITHDRAWAL_CIRCUIT_NLEVELS,
+  WITHDRAWAL_WASM,
+  WITHDRAWAL_ZKEY
 }

@@ -57,7 +57,7 @@ test('#getTokenAmountBigInt', () => {
 test('#getRandomBytes', () => {
   const pvtBytes = 32
   const pvtKeyRandom = utils.getRandomBytes(pvtBytes)
-  console.log(pvtKeyRandom)
+
   expect(pvtKeyRandom.length).toBe(32)
   expect(pvtKeyRandom).not.toBe(undefined)
 })
