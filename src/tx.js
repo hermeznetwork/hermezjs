@@ -294,14 +294,14 @@ async function isInstantWithdrawalAllowed (
  * @return {Object} - Object with the response status, transaction id and the transaction nonce
 */
 async function sendL2Transaction (transaction, bJJ, nextForgers) {
-  const results = await postPoolTransaction(transaction, nextForgers)
-  if (results[0].status === 200) {
+  const result = await postPoolTransaction(transaction, nextForgers)
+  if (result.status === 200) {
     addPoolTransaction(transaction, bJJ)
   }
 
   return {
-    status: results[0].status,
-    id: results[0].data,
+    status: result.status,
+    id: result.data,
     nonce: transaction.nonce
   }
 }

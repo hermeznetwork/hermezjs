@@ -53,6 +53,23 @@ function getForgerUrls (nextForgerUrls) {
 }
 
 /**
+ * Checks a list of responses from one same POST request to different coordinators
+ * If all responses are errors, throw the error
+ * If at least 1 was successful, return it
+ * @param {Array} responsesArray - An array of responses, including errors
+ * @returns response
+ * @throws Axios Error
+ */
+function filterResponses (responsesArray) {
+  const invalidResponses = responsesArray.filter((res) => res.isAxiosError)
+  if (invalidResponses.length) {
+    throw invalidResponses[0]
+  } else {
+    return responsesArray.filter((res) => !res.isAxiosError)[0]
+  }
+}
+
+/**
  * GET request to the /accounts endpoint. Returns a list of token accountns associated to a Hermez address
  * @param {String} address - The account's address. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
  * @param {Number[]} tokenIds - Array of token IDs as registered in the network
@@ -127,8 +144,8 @@ async function getPoolTransaction (transactionId, axiosConfig = {}) {
  */
 async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfig = {}) {
   return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
-    return axios.post(`${apiUrl}/transactions-pool`, transaction, axiosConfig)
-  }))
+    return axios.post(`${apiUrl}/transactions-pool`, transaction, axiosConfig).catch((error) => error)
+  })).then(filterResponses)
 }
 
 /**
@@ -274,8 +291,8 @@ async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signatur
       hezEthereumAddress,
       bjj: bJJ,
       signature
-    }, axiosConfig)
-  }))
+    }, axiosConfig).catch((error) => error)
+  })).then(filterResponses)
 }
 
 /**
