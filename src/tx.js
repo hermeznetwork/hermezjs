@@ -295,7 +295,7 @@ async function isInstantWithdrawalAllowed (
 */
 async function sendL2Transaction (transaction, bJJ, nextForgers) {
   const results = await postPoolTransaction(transaction, nextForgers)
-  if (results[0].status === 200) {
+  if (results.status === 200) {
     addPoolTransaction(transaction, bJJ)
   }
 
