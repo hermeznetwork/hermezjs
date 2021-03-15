@@ -6,6 +6,10 @@ const {
   configureEnvironment
 } = require('./constants.js')
 
+async function sleep (timeout) {
+  await new Promise(resolve => setTimeout(resolve, timeout))
+}
+
 async function main () {
   const privKey1 = EXAMPLES_PRIVATE_KEY1
   const privKey2 = EXAMPLES_PRIVATE_KEY2
@@ -29,7 +33,7 @@ async function main () {
   const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
 
   // set amount to deposit
-  const amountDeposit = hermez.Utils.getTokenAmountBigInt('0.1', 18)
+  const amountDeposit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.1', 18))
 
   // perform deposit account 1
   await hermez.Tx.deposit(
@@ -39,6 +43,18 @@ async function main () {
     hermezWallet.publicKeyCompressedHex,
     { type: 'WALLET', privateKey: privKey1 }
   )
+
+  // WAIT until account is created
+  var pollingAccountCreate = true
+  while (pollingAccountCreate) {
+    const accountInfo = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])
+    if (accountInfo.accounts.length === 0) {
+      console.log('Waiting for deposit to be forged...')
+      await sleep(10000)
+    } else {
+      pollingAccountCreate = false
+    }
+  }
 
   // performs create account authorization account 2
   const signature = await hermezWallet2.signCreateAccountAuthorization(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: privKey2 })
@@ -56,7 +72,7 @@ async function main () {
     .accounts[0]
 
   // set amount to transfer
-  const amountTransfer = hermez.Utils.getTokenAmountBigInt('0.0001', 18)
+  const amountTransfer = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.1', 18))
   // set fee in transaction
   const state = await hermez.CoordinatorAPI.getState()
   const recommendedFees = state.recommendedFee
@@ -66,9 +82,8 @@ async function main () {
     from: infoAccountSender.accountIndex,
     to: hermezEthereumAddress2,
     amount: amountTransfer,
-    fee: recommendedFees.CreatesAccount
+    fee: recommendedFees.createAccount
   }
-
   const transferResponse = await hermez.Tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token).catch(console.log)
   console.log('transferResponse: ', transferResponse)
 }
