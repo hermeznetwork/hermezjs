@@ -45,7 +45,7 @@ async function main () {
   )
 
   // WAIT until account is created
-  var pollingAccountCreate = true
+  let pollingAccountCreate = true
   while (pollingAccountCreate) {
     const accountInfo = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id])
     if (accountInfo.accounts.length === 0) {
