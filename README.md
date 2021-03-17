@@ -1,335 +1,445 @@
 # HermezJS
-HermezJS is an open source SDK to interact with the Hermez Rollup network.
+HermezJS is an open source SDK to interact with the Hermez Rollup network. In examples folder you can find some worked-out examples to send the available transactions.
 
-To deploy a local setup of a Hermez Coordinator with the Hermez smart contracts we recommend using our sandbox. To do so:
-
-```sh
-git clone https://github.com/hermeznetwork/integration-testing.git
-cd integration-testing
-make start BUILD=sandbox-geth DEV_PERIOD=3 MODE=coord
-```
-
-To stop environment:
-```
-make stop
-```
-
-**NOTE** To run all tests, type:
-```
-npm run test
+## Install Hermezjs
+```bash
+npm i @hermeznetwork/hermezjs
 ```
 
 ## Import modules
-Load hermezjs library
+Load Hermezjs library
 
 ```js
 import hermez from './src/index.js'
 ```
 
-## Create Transaction Pool
+## Initialization
+### Create Transaction Pool
 Initialize the storage where user transactions are stored. This needs to be initialized at the start of your application.
 
 ```js
   hermez.txPool.initializeTransactionPool()
 ```
 
-## Connect to Ethereum Network
-Some of the operations in Hermez network, such as sending L1 transactions, require interacting with smart contracts. It is thus necessary to initialize an Ethereum provider.
-During this example, we have deployed the contracts in our local blockchain.
+### Configure Hermez Environment
+In these examples, we are going to connect to `Hermez Testnet` which is deployed in Rinkeby Ethereum Network. To configure `Hermezjs` to work with the Testnet, we need to configure a Rinkeby Ethereum node, the Hermez API URL, and the addresses of the Hermez and Withdrawal Delayer smart contracts.
+
+Hermez Testnet API URL is deployed at https://api.testnet.hermez.io. 
+
+>**NOTE:** In order to interact with Hermez Testnet, you will need to supply your own Rinkeby Ethereum node. You can check these links to help you set up a Rinkeby node (https://blog.infura.io/getting-started-with-infura-28e41844cc89, https://blog.infura.io/getting-started-with-infuras-ethereum-api).
+
+Currently, Testnet Hermez smart contract is deployed at address `0x14a3b6f3328766c7421034e14472f5c14c5ba090` and Withdrawal Delayer contract is deployed at address `0x6ea0abf3ef52d24427043cad3ec26aa4f2c8e8fd`. These addresses could change in the future, so please check these addresses with a query of the [API](https://api.testnet.hermez.io/config) using the browser.
+
+For the remainder of the examples, we will configure the basic Hermezjs parameters
 
 ```js
-  hermez.Providers.setProvider('http://localhost:8545')
+const EXAMPLES_WEB3_URL = 'https://rinkeby.infura.io/v3/80496a41d0a134ccbc6e856ffd034696'
+const EXAMPLES_HERMEZ_API_URL = 'https://api.testnet.hermez.io'
+const EXAMPLES_HERMEZ_ROLLUP_ADDRESS = '0x14a3b6f3328766c7421034e14472f5c14c5ba090'
+const EXAMPLES_HERMEZ_WDELAYER_ADDRESS = '0x6ea0abf3ef52d24427043cad3ec26aa4f2c8e8fd'
+
+hermez.Providers.setProvider(EXAMPLES_WEB3_URL)
+hermez.Environment.setEnvironment({
+        baseApiUrl: EXAMPLES_HERMEZ_API_URL,
+        contractAddresses: {
+          [hermez.Constants.ContractNames.Hermez]: EXAMPLES_HERMEZ_ROLLUP_ADDRESS,
+          [hermez.Constants.ContractNames.WithdrawalDelayer]: EXAMPLES_HERMEZ_WDELAYER_ADDRESS
+        }
+})
+
+```
+
+## Check token exists in Hermez Network
+Before being able to operate on the Hermez Network, we must ensure that the token we want to operate with is listed. For that we make a call to the Hermez Coordinator API that will list all available tokens. All tokens in Hermez Network must be ERC20.
+
+We can see there are 2 tokens registered. `ETH` will always be configured at index 0. The second token is `HEZ`. For the rest of the examples we will work with `ETH`. In the future, more tokens will be included in Hermez.
+
+```js
+  const token = await hermez.CoordinatorAPI.getTokens()
+  const tokenERC20 = token.tokens[0]
+  console.log(token)
+
+>>>>
+{
+  tokens: [
+    {
+      itemId: 1,
+      id: 0,
+      ethereumBlockNum: 0,
+      ethereumAddress: '0x0000000000000000000000000000000000000000',
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+      USD: 1787,
+      fiatUpdate: '2021-02-28T18:55:17.372008Z'
+    },
+    {
+      itemId: 2,
+      id: 1,
+      ethereumBlockNum: 8153596,
+      ethereumAddress: '0x2521bc90b4f5fb9a8d61278197e5ff5cdbc4fbf2',
+      name: 'Hermez Network Token',
+      symbol: 'HEZ',
+      decimals: 18,
+      USD: 5.365,
+      fiatUpdate: '2021-02-28T18:55:17.386805Z'
+    }
+  ],
+  pendingItems: 0
+
 ```
 
 ## Create a Wallet 
-We can create a new Hermez wallet by providing the Ethereum account index associated with the provider initialized. This wallet will store the Ethereum and BabyJubJub keys for the Hermez account. The Ethereum address is used to authorize L1 transactions, and the BabyJubJub key is used to authorize L2 transactions. We will create two wallets
+We can create a new Hermez wallet by providing the Ethereum private key of an Ethereum account. This wallet will store the Ethereum and Baby JubJub keys for the Hermez account. The Ethereum address is used to authorize L1 transactions, and the Baby JubJub key is used to authorize L2 transactions. We will create two wallets.
+
+> **NOTE** You will need to supply two Rinkeby private keys to initialize both accounts. The keys provided here are invalid and are shown as an example.
 
 ```js
-  // Create 1st wallet
-  const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(1)
+  const EXAMPLES_PRIVATE_KEY1 = 0x705d123e707e25fa37ca84461ac6eb83eb4921b65680cfdc594b60bea1bb4e52
+  const EXAMPLES_PRIVATE_KEY2 = 0x3a9270c05ac169097808da4b02e8f9146be0f8a38cfad3dcfc0b398076381fdd
+
+  // load first account
+  const wallet = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY1 })
   const hermezWallet = wallet.hermezWallet
   const hermezEthereumAddress = wallet.hermezEthereumAddress
 
-  // Create 2nd wallet
-  const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(2)
+  // load second account
+  const wallet2 = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY2 })
   const hermezWallet2 = wallet2.hermezWallet
   const hermezEthereumAddress2 = wallet2.hermezEthereumAddress
 
 ```
 
-## Check token exists in Hermez Network
-Before being able to operate on the Hermez Network, we must ensure that the token we want to operate with is listed. For that we make a call to the Hermez Coordinator API that will list all available tokens. All tokens in Hermez Network must be ERC20. For the rest of the example, we will use one of the tokens that have been registered in the Hermez Network. In this example there are 4 tokens registered.
-
-```js
-  const token = await hermez.CoordinatorAPI.getTokens()
-  console.log(token)
-  const tokenERC20 = token.tokens[3]
-
->>>>
-   {
-      tokens: [
-        {
-          itemId: 1,
-          id: 0,
-          ethereumBlockNum: 0,
-          ethereumAddress: '0x0000000000000000000000000000000000000000',
-          name: 'Ether',
-          symbol: 'ETH',
-          decimals: 18,
-          USD: null,
-          fiatUpdate: null
-        },
-        {
-          itemId: 2,
-          id: 1,
-          ethereumBlockNum: 37,
-          ethereumAddress: '0x24650cad431915051e2987455b76e0cdcaa1d4d8',
-          name: 'ERC20_0',
-          symbol: '20_0',
-          decimals: 18,
-          USD: null,
-          fiatUpdate: null
-        },
-        {
-          itemId: 3,
-          id: 2,
-          ethereumBlockNum: 49,
-          ethereumAddress: '0x715752d24f27224d4a88957896a141df87a50448',
-          name: 'ERC20_1',
-          symbol: '20_1',
-          decimals: 18,
-          USD: null,
-          fiatUpdate: null
-        },
-        {
-          itemId: 4,
-          id: 3,
-          ethereumBlockNum: 61,
-          ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-          name: 'ERC20_2',
-          symbol: '20_2',
-          decimals: 18,
-          USD: null,
-          fiatUpdate: null
-        }
-      ]
-   }
-
-```
 
 ## Deposit Tokens from Ethereum into Hermez Network
-Creating an Hermez account and depositing tokens is done simultaneously as an L1 transaction.  In this example we are going to deposit 100 `ERC20_2` tokens to the newly created Hermez account. The steps are:
-1. Select amount to deposit from Ethereum into Hermez using `getTokenAmountBigInt()`
-2. Compress the amount to make it a valid amount supported by Hermez
-3. Select the token denomination of the deposit. 
+Creating a Hermez account and depositing tokens is done simultaneously as an L1 transaction.  In this example we are going to deposit 1 `ETH` tokens into the newly created Hermez accounts. 
 
 ```js
-  const amountDeposit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('100', 2))
+  // set amount to deposit
+  const amountDepositString = '1.0'
+  const amountDeposit = hermez.Utils.getTokenAmountBigInt(amountDepositString, 18)
+  const compressedDepositAmount = hermez.HermezCompressedAmount.compressAmount(amountDeposit)
 
-  // make deposit of ERC20 Tokens in 1st account
-  await hermez.Tx.deposit(amountDeposit,
+  // perform deposit account 1
+  await hermez.Tx.deposit(
+    compressedDepositAmount,
     hermezEthereumAddress,
     tokenERC20,
-    hermezWallet.publicKeyCompressedHex)
+    hermezWallet.publicKeyCompressedHex,
+    { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY1 }
+  )
 
-  // make deposit of ERC20 Tokens in 2nd account
-  await hermez.Tx.deposit(amountDeposit,
+  // perform deposit account 2
+  await hermez.Tx.deposit(
+    compressedDepositAmount,
     hermezEthereumAddress2,
     tokenERC20,
-    hermezWallet2.publicKeyCompressedHex)
+    hermezWallet2.publicKeyCompressedHex,
+    { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY2 }
+  )
 
 ```
 Internally, the deposit funcion calls the Hermez smart contract to add the L1 transaction.
 
 ## Verify Balance
-A token balance can be obtained by querying a Hermez node and passing the `hermezEthereumAddress` of the Hermez account.
+A token balance can be obtained by querying the API and passing the `hermezEthereumAddress` of the Hermez account.
 
 ```js
-  const acount1 = await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress)
-  console.log(accountInfo)
+    // get sender account information
+    const infoAccountSender = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+      .accounts[0]
+
+    // get receiver account information
+    const infoAccountReceiver = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress2, [tokenERC20.id]))
+      .accounts[0]
+
+    console.log(infoAccountSender)
+    console.log(infoAccountReceiver)
 
 >>>>>
-    {
-      accounts: [
-        {
-          accountIndex: 'hez:20_2:256',
-          balance: '10000',
-          bjj: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-          hezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-          itemId: 1,
-          nonce: 0,
-          token: [Object]
-        }
-      ],
-      pendingItems: 0
-    }
+{
+  accountIndex: 'hez:ETH:4253',
+  balance: '1099600000000000000',
+  bjj: 'hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO',
+  hezEthereumAddress: 'hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6',
+  itemId: 4342,
+  nonce: 1,
+  token: {
+    USD: 1789,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  }
+}
+{
+  accountIndex: 'hez:ETH:4254',
+  balance: '1097100000000000000',
+  bjj: 'hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U',
+  hezEthereumAddress: 'hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4',
+  itemId: 4343,
+  nonce: 6,
+  token: {
+    USD: 1789,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  }
+}
 
 ```
+We can see that the field `accountIndex` is formed by the token symbol it holds and an index. A Hermez account can only hold one type of token.
+Account indexes start at 256. Indexes 0-255 are reserved for internal use.
+Note that the balances do not match with the ammount deposited of 1 `ETH` because accounts already existed in Hermez Network before the deposit, so we performed a `deposit on top` instead.
 
-> Note that the `bjj` reported by some of the API endpoints is the same as the one included in the `Hermez Wallet` object, but they are represented in a different format.
-
-Alternatively, an account query can be filtered using the `accountIndex`
+Alternatively, an account query can be filtered using the assigned `accountIndex`
 
 ```js
-    const account1ByIdx = await hermez.CoordinatorAPI.getAccount(`hez:${tokenERC20.symbol}:256`)
+    const account1ByIdx = await hermez.CoordinatorAPI.getAccount(infoAccountSender.accountIndex)
+    const account2ByIdx = await hermez.CoordinatorAPI.getAccount(infoAccountReceiver.accountIndex)
+
     console.log(account1ByIdx)
+    console.log(account2ByIdx)
 
 >>>>>
 
-    {
-      accountIndex: 'hez:20_2:256',
-      balance: '10000',
-      bjj: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-      hezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-      itemId: 1,
-      nonce: 0,
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      }
-    }
+{
+  accountIndex: 'hez:ETH:4253',
+  balance: '1099600000000000000',
+  bjj: 'hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO',
+  hezEthereumAddress: 'hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6',
+  itemId: 4342,
+  nonce: 1,
+  token: {
+    USD: 1789,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  }
+}
+{
+  accountIndex: 'hez:ETH:4254',
+  balance: '1097100000000000000',
+  bjj: 'hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U',
+  hezEthereumAddress: 'hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4',
+  itemId: 4343,
+  nonce: 6,
+  token: {
+    USD: 1789,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  }
+}
+
 ```
+## Withdrawing
+Withdrawing funds is a two step process:
+1. Exit
+2. Withdrawal
+
+### Exit
+
+The `Exit` transaction is used as a first step to retrieve the funds from `Hermez Network` back to Ethereum.
+There are two types of `Exit` transactions:
+- Normal Exit, referred as `Exit` from now on. This is a L2 transaction type.
+- `Force Exit`, an L1 transaction type which has extended guarantees that will be processed by the Coordinator. We will
+talk more about `Force Exit` [here](#force-exit)
+
+The `Exit` is requested as follows:
+
+```js
+  // set amount to exit
+  const amountExit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('1.0', 18))
+
+  // set fee in transaction
+  const state = await hermez.CoordinatorAPI.getState()
+  const userFee = state.recommendedFee.existingAccount
+
+  // generate L2 transaction
+  const l2ExitTx = {
+    type: 'Exit',
+    from: infoAccountSender.accountIndex,
+    amount: amountExit,
+    fee: userFee
+  }
+
+  const exitResponse = await hermez.Tx.generateAndSendL2Tx(l2ExitTx, hermezWallet, infoAccountSender.token)
+  console.log(exitResponse)
+
+>>>>
+{
+  status: 200,
+  id: '0x0257305cdc43060a754a5c2ea6b0e0f6e28735ea8e75d841ca4a7377aa099d91b7',
+  nonce: 2
+}
+
+```
+
+After submitting our `Exit` request to the Coordinator, we can check the status of the transaction by calling
+the Coordinator's Transaction Pool. The Coordinator's transaction pool stores all those transactions 
+that are waiting to be forged.
+
+```js
+  const txPool = await hermez.CoordinatorAPI.getPoolTransaction(exitResponse.id)
+  console.log(txPool)
+
+>>>>>
+{
+  amount: '1000000000000000000',
+  fee: 204,
+  fromAccountIndex: 'hez:ETH:4253',
+  fromBJJ: 'hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO',
+  fromHezEthereumAddress: 'hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6',
+  id: '0x0257305cdc43060a754a5c2ea6b0e0f6e28735ea8e75d841ca4a7377aa099d91b7',
+  info: null,
+  nonce: 2,
+  requestAmount: null,
+  requestFee: null,
+  requestFromAccountIndex: null,
+  requestNonce: null,
+  requestToAccountIndex: null,
+  requestToBJJ: null,
+  requestToHezEthereumAddress: null,
+  requestTokenId: null,
+  signature: '38f23d06826be8ea5a0893ee67f4ede885a831523c0c626c102edb05e1cf890e418b5820e3e6d4b530386d0bc84b3c3933d655527993ad77a55bb735d5a67c03',
+  state: 'pend',
+  timestamp: '2021-03-16T12:31:50.407428Z',
+  toAccountIndex: 'hez:ETH:1',
+  toBjj: null,
+  toHezEthereumAddress: null,
+  token: {
+    USD: 1781.9,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  },
+  type: 'Exit'
+}
+
+
+```
+We can see the `state` field is set to `pend` (meaning pending). There are 4 possible states: 
+1. **pend** : Pending
+2. **fging** : Forging
+3. **fged** : Forged
+4. **invl** : Invalid
+
+If we continue polling the Coordinator about the status of the transaction, the state will eventually be set to `fged`.
+
+
+We can also query the Coordinator to check whether or not our transaction has been forged. `getHistoryTransaction` reports those transactions
+that have been forged by the Coordinator.
+
+```js
+  const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
+  console.log(txExitConf)
+
+```
+
+And we can confirm our account status and check that the correct amount has been transfered out of the account.
+
+```js
+  console.log((await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+    .accounts[0])
+
+```
+
+### Withdrawing Funds from Hermez
+
+After doing any type of `Exit` transaction, which moves the user's funds from their token account to a specific Exit Merkle tree, one needs to do a `Withdraw` of those funds to an Ethereum L1 account.
+To do a `Withdraw` we need to indicate the `accountIndex` that includes the Ethereum address where the funds will be transferred, the amount and type of tokens, and some information
+to verify the ownership of those tokens. Additionally, there is one boolean flag. If set to true, the `Withdraw` will be instantaneous.
+
+```js
+    const exitInfoN = (await hermez.CoordinatorAPI.getExits(infoAccountSender.hezEthereumAddress, true)).exits
+    const exitInfo = exitInfoN[exitInfoN.length - 1]
+    // set to perform instant withdraw
+    const isInstant = true
+
+    // perform withdraw
+    await hermez.Tx.withdraw(
+      exitInfo.balance,
+      exitInfo.accountIndex,
+      exitInfo.token,
+      hermezWallet.publicKeyCompressedHex,
+      exitInfo.batchNum,
+      exitInfo.merkleProof.siblings,
+      isInstant,
+      { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY1 }
+    )
+
+```
+
+The funds should now appear in the Ethereum account that made the withdrawal.
+
 ### Force Exit
 
-This is the L1 equivalent of an Exit. With this option, the Smart Contract forces Coordinators to pick up these transactions before they pick up L2 transactions. Meaning that these transactions will always be picked up.
+This is the L1 equivalent of an Exit. With this option, the smart contract forces Coordinators to pick up L1 transactions before they pick up L2 transactions to ensure that L1 transactions will eventually be picked up.
 
 This is a security measure. We don't expect users to need to make a Force Exit.
-An `Exit` transaction is the first of two transactions used to recover the tokens from Hermez Network to Ethereum. The second transaction is a `withdraw` wich we will see later on.
 
 ```js
-  const amountExit = hermez.Utils.getTokenAmountBigInt('10', 2)
-  const amountExitCompressed = hermez.HermezCompressedAmount.compressAmount(amountExit)
-  await hermez.Tx.forceExit(amountExitCompressed, account1t.accountIndex, tokenERC20)
-```
+  // set amount to force-exit
+  const amountForceExit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('1.0', 18))
 
-Once the transaction has been forged by a Coordinator, we can poll the account status again to check the balance
-
-```js
-    const account1Update = (await hermez.CoordinatorAPI.getAccounts(hermezEthereumAddress, [tokenERC20.id]))
-    console.log(account1Update)
-
->>>>>>
-
-    {
-      accounts: [
-        {
-          accountIndex: 'hez:20_2:256',
-          balance: '9000',
-          bjj: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-          hezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-          itemId: 1,
-          nonce: 0,
-          token: [Object]
-        }
-      ],
-      pendingItems: 0
-    }
-```
-
-We can verify that the balance has been updated as a result of the `forceExit` transaction.
-
-The `Exit` transaction status can be verified using the API.
-
-```js
-  const exitInf1 = (await hermez.CoordinatorAPI.getExits(account1.hezEthereumAddress, true)).exits[0]
-  console.log(exitInfo1)
-
->>>>>>
-
-    {
-      accountIndex: 'hez:20_2:256',
-      balance: '1000',
-      batchNum: 8,
-      delayedWithdrawRequest: null,
-      delayedWithdrawn: null,
-      instantWithdrawn: null,
-      itemId: 1,
-      merkleProof: {
-        root: '15930773634968394848237533688003473773942383021984352642025769371194419863398',
-        siblings: [
-          '20237069565860242721214833379834325487539366600821058428836422236689460816735',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0',
-          '0'
-        ],
-        oldKey: '0',
-        oldValue: '0',
-        isOld0: false,
-        key: '256',
-        value: '3233189796127090573603784718448359930448209299931418775008529513224557435764',
-        fnc: 0
-      },
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      }
-    }
-```
-
-The information reported will be necessary to complete the `withdraw` stage.
-
-### Withdrawing funds from Hermez
-
-After doing any type of `Exit` transaction, which moves the user's funds from their token account to a specific Exit merkle tree, one needs to do a `withdraw` of those funds to an Ethereum L1 account.
-To do a `withdraw` we need to indicate the `accountIndex` the includes the Ethereum address where the funds will be transferred, the amount and type of tokens, and some information
-to verify the ownership of those tokens. Additionally, there is one boolean flag. If set to true, the `withdraw` will be instantaneous.
-
-```js
-  await hermez.Tx.withdraw(
-    amountExit,
-    account1.accountIndex,
+  // perform force-exit
+  await hermez.Tx.forceExit(
+    amountForceExit,
+    infoAccountSender.accountIndex,
     tokenERC20,
-    hermezWallet.publicKeyCompressedHex,
-    exitInfo1.batchNum,
-    exitInfo1.merkleProof.siblings,
-    true)
+    { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY1 }
+  )
 ```
 
-## Transfer
-At this point, a Hermez account is already created with some tokens. The next step is to transfer some funds to another Hermez account.
+The last step to recover the funds will be to send a new `Withdraw` request to the smart contract as we did after the regular `Exit` request.
+
+```js 
+  ```js
+    const exitInfoN = (await hermez.CoordinatorAPI.getExits(infoAccountSender.hezEthereumAddress, true)).exits
+    const exitInfo = exitInfoN[exitInfoN.length - 1]
+    // set to perform instant withdraw
+    const isInstant = true
+
+    // perform withdraw
+    await hermez.Tx.withdraw(
+      exitInfo.balance,
+      exitInfo.accountIndex,
+      exitInfo.token,
+      hermezWallet.publicKeyCompressedHex,
+      exitInfo.batchNum,
+      exitInfo.merkleProof.siblings,
+      isInstant,
+      { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY1 }
+    )
+
+```
+
+## Transfers
 
 First, we compute the fees for the transaction. For this we consult the recommended fees from the Coordinator.
 
@@ -340,17 +450,17 @@ First, we compute the fees for the transaction. For this we consult the recommen
 
 >>>>
 {
-  existingAccount: 0.1,
-  createAccount: 1.3,
-  createAccountInternal: 0.5
+  existingAccount: 96.34567219671051,
+  createAccount: 192.69134439342102,
+  createAccountInternal: 240.86418049177627
 }
 
 ```
 
 The returned fees are the suggested fees for different transactions:
-- existingAccount : Make a transfer to an existing account.
-- createAccount   : Make a transfer to an non-existent account, and create a regular account
-- createAccountInternal : Make a transfer to an non-existent account and create internal account
+- **existingAccount** : Make a transfer to an existing account
+- **createAccount**   : Make a transfer to a non-existent account, and create a regular account
+- **createAccountInternal** : Make a transfer to an non-existent account and create internal account
 
 The fee amounts are given in USD. However, fees are payed in the token of the transaction. So, we need to do a conversion.
 
@@ -359,234 +469,334 @@ The fee amounts are given in USD. However, fees are payed in the token of the tr
   const fee = fees.existingAccount / usdTokenExchangeRate
 ```
 
-The last part is to make the actual transfer. 
+Finally we make the final transfer transaction.
 
 ```js
-  // amount to transfer
-  const amountTransfer = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('20', 2))
-
+  // set amount to transfer
+  const amountTransfer = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('1.0', 18))
   // generate L2 transaction
-  const l2Tx = {
-    from: account1.accountIndex,
-    to: account2.accountIndex,
+  const l2TxTransfer = {
+    from: infoAccountSender.accountIndex,
+    to: infoAccountReceiver.accountIndex,
     amount: amountTransfer,
-    fee
+    fee: fee
   }
-
-  const XferResult = await hermez.Tx.generateAndSendL2Tx(l2Tx, hermezWallet, srcAccount.token)
-  console.log(xferResult)
-
+  const transferResponse = await hermez.Tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token)
+  console.log(transferResponse)
+ 
 >>>>>
-
-  { status: 200, id: '0x020000000001000000000000', nonce: 0 }
+{
+  status: 200,
+  id: '0x02e7c2c293173f21249058b1d71afd5b1f3c0de4f1a173bac9b9aa4a2d149483a2',
+  nonce: 3
+}
 
 ```
-The result status 200 shows that transaction has been correctly received. Additionally, we receive the nonce matching the transaction we sent, and an id that we can use to verify the status of the transaction.
+The result status 200 shows that transaction has been correctly received. Additionally, we receive the nonce matching the transaction we sent,
+and an id that we can use to verify the status of the transaction either using `hermez.CoordinatorAPI.getHistoryTransaction()` or `hermez.CoordinatorAPI.getPoolTransaction()`.
 
-## Verifying Transaction status
-Transactions received by the Coordinator will be stored in its transaction pool while they haven't been processed. To check a transaction in the transaction pool we make a query to the coordinator node.
+As we saw with the `Exit` transaction, every transaction includes a ´nonce´. This `nonce` is a protection mechanism to avoid replay attacks. Every L2 transaction will increase the nonce by 1.
+
+## Verifying Transaction Status
+Transactions received by the Coordinator will be stored in its transaction pool while they haven't been processed. To check a transaction in the transaction pool we make a query to the Coordinator node.
 
 ```js
-  const txXferPool = await hermez.CoordinatorAPI.getPoolTransaction(xferResult.id)
+  const txXferPool = await hermez.CoordinatorAPI.getPoolTransaction(transferResponse.id)
   console.log(txXferPool)
 
->>>>
+>>>>>
+{
+  amount: '100000000000000',
+  fee: 202,
+  fromAccountIndex: 'hez:ETH:4253',
+  fromBJJ: 'hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO',
+  fromHezEthereumAddress: 'hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6',
+  id: '0x02e7c2c293173f21249058b1d71afd5b1f3c0de4f1a173bac9b9aa4a2d149483a2',
+  info: null,
+  nonce: 3,
+  requestAmount: null,
+  requestFee: null,
+  requestFromAccountIndex: null,
+  requestNonce: null,
+  requestToAccountIndex: null,
+  requestToBJJ: null,
+  requestToHezEthereumAddress: null,
+  requestTokenId: null,
+  signature: 'c9e1a61ce2c3c728c6ec970ae646b444a7ab9d30aa6015eb10fb729078c1302978fe9fb0419b4d944d4f11d83582043a48546dff7dda22de7c1e1da004cd5401',
+  state: 'pend',
+  timestamp: '2021-03-16T13:20:33.336469Z',
+  toAccountIndex: 'hez:ETH:4254',
+  toBjj: 'hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U',
+  toHezEthereumAddress: 'hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4',
+  token: {
+    USD: 1786,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  },
+  type: 'Transfer'
+}
 
-   {
-      amount: '2000',
-      batchNum: null,
-      fee: 1,
-      fromAccountIndex: 'hez:20_2:256',
-      fromBJJ: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-      fromHezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-      id: '0x020000000001000000000000',
-      nonce: 0,
-      requestAmount: null,
-      requestFee: null,
-      requestFromAccountIndex: null,
-      requestNonce: null,
-      requestToAccountIndex: null,
-      requestToBJJ: null,
-      requestToHezEthereumAddress: null,
-      requestTokenId: null,
-      signature: 'ef27fca61db77585d1e54bc21b404ca227c7776726c94002d95702877cd0468b556523bec7d3ac3dd16bfaea92ae99e188cb4899071d295f5dd8cfed0ef97402',
-      state: 'pend',
-      timestamp: '2020-12-17T14:36:35.700549Z',
-      toAccountIndex: 'hez:20_2:257',
-      toBjj: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      toHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Transfer'
-    }
- 
+
 ```
 
-At this point, the transactions is still in the coordinator's transaction pool as we can see in the `state` field. There are 4 possible states:
-1. **pend** : Pending
-2. **fging** : Forging
-3. **fged** : Forged
-4. **invl** : Invalid
-
-After a few seconds, we verify tthe ransaction status in the list of forged transactions to check if the transaction has been processed:
+We can also check directly with the Coordinator in the database of forged transactions.
 
 ```js
-    // Get transaction confirmation
-    const txXferConf = await hermez.CoordinatorAPI.getHistoryTransaction(txXferPool.id)
-    console.log(txXferConf)
+  const transferConf = await hermez.CoordinatorAPI.getHistoryTransaction(transferResponse.id)
+  console.log(transferConf)
+
+>>>>>
+{
+  L1Info: null,
+  L1orL2: 'L2',
+  L2Info: { fee: 202, historicFeeUSD: 182.8352, nonce: 3 },
+  amount: '100000000000000',
+  batchNum: 4724,
+  fromAccountIndex: 'hez:ETH:4253',
+  fromBJJ: 'hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO',
+  fromHezEthereumAddress: 'hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6',
+  historicUSD: 0.17855,
+  id: '0x02e7c2c293173f21249058b1d71afd5b1f3c0de4f1a173bac9b9aa4a2d149483a2',
+  itemId: 14590,
+  position: 1,
+  timestamp: '2021-03-16T13:24:48Z',
+  toAccountIndex: 'hez:ETH:4254',
+  toBJJ: 'hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U',
+  toHezEthereumAddress: 'hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4',
+  token: {
+    USD: 1787.2,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  },
+  type: 'Transfer'
+}
+
+```
+
+At this point, the balances in both accounts will be updated with the result of the transfer
+
+```js 
+  // check balances
+  console.log((await hermez.CoordinatorAPI.getAccounts(wallet.hermezEthereumAddress, [tokenERC20.id])).accounts[0])
+  console.log((await hermez.CoordinatorAPI.getAccounts(wallet2.hermezEthereumAddress2, [tokenERC20.id])).accounts[0])
+>>>>>
+
+{
+  accountIndex: 'hez:ETH:4253',
+  balance: '477700000000000000',
+  bjj: 'hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO',
+  hezEthereumAddress: 'hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6',
+  itemId: 4342,
+  nonce: 4,
+  token: {
+    USD: 1793,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  }
+}
+{
+  accountIndex: 'hez:ETH:256',
+  balance: '1874280899837791518',
+  bjj: 'hez:YN2DmRh0QgDrxz3NLDqH947W5oNys7YWqkxsQmFVeI_m',
+  hezEthereumAddress: 'hez:0x9F255048EC1141831A28019e497F3f76e559356E',
+  itemId: 1,
+  nonce: 2,
+  token: {
+    USD: 1793,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-02-28T18:55:17.372008Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  }
+}
+
+```
+## Create Account Authorization
+Imagine that Bob wants to send a transfer of Ether to Mary using Hermez, but Mary only has an Ethereum account but no Hermez account. To complete this transfer, Mary could open a Hermez account and proceed as the previous transfer example.
+Alternatively, Mary could authorize the Coordinator to create a Hermez account on her behalf so that she can receive Bob's transfer. 
+
+First we create a wallet for Mary:
+```js
+  // load second account
+  const wallet3 = await hermez.HermezWallet.createWalletFromEtherAccount(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY3 })
+  const hermezWallet3 = wallet3.hermezWallet
+  const hermezEthereumAddress3 = wallet3.hermezEthereumAddress
+```
+
+The authorization for the creation of a Hermez account is done using the private key stored in the newly created Hermez wallet. 
+> Note that the account is not created at this moment. The account will be created when Bob performs the transfer. Also, it is Bob  that pays for the fees associated with the account creation.
+
+```js
+  const EXAMPLES_PRIVATE_KEY3 = '0x3d228fed4dc371f56b8f82f66ff17cd6bf1da7806d7eabb21810313dee819a53'
+  const signature = await hermezWallet3.signCreateAccountAuthorization(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: EXAMPLES_PRIVATE_KEY3 })
+  const res = await hermez.CoordinatorAPI.postCreateAccountAuthorization(
+    hermezWallet3.hermezEthereumAddress,
+    hermezWallet3.publicKeyBase64,
+    signature
+  )
+```
+
+We can find out if the Coordinator has been authorized to create a Hermez account on behalf of a user by:
+
+```js
+  const authResponse = await hermez.CoordinatorAPI.getCreateAccountAuthorization(wallet3.hermezEthereumAddress)
+  console.log(authResponse)
+
+>>>>
+
+{
+  hezEthereumAddress: 'hez:0xd3B6DcfCA7Eb3207905Be27Ddfa69453625ffbf9',
+  bjj: 'hez:ct0ml6FjdUN6uGUHZ70qOq5-58cZ19SJDeldMH021oOk',
+  signature: '0x22ffc6f8d569a92c48a4e784a11a9e57b840fac21eaa7fedc9dc040c4a45d502744a35eeb0ab173234c0f687b252bd0364647bff8db270ffcdf1830257de28e41c',
+  timestamp: '2021-03-16T14:56:05.295946Z'
+}
+
+```
+
+Once we verify the receiving Ethereum account has authorized the creation of a Hermez account, we can proceed with the transfer from Bob's account to Mary's account. For this, we set the destination address to Mary's Ethereum address and set the fee using  the `createAccount` value.
+
+```js
+  // set amount to transfer
+  const amountTransferAuth = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('1.0', 18))
+  // generate L2 transaction
+  const l2AuthTxTransfer = {
+    from: infoAccountSender.accountIndex,
+    to: hermezWallet3.hermezEthereumAddress
+    amount: amountTransferAuth,
+    fee: state.recommendedFee.createAccount / usdTokenExchangeRate
+  }
+  const accountAuthTransferResponse = await hermez.Tx.generateAndSendL2Tx(l2AuthTxTransfer, hermezWallet, infoAccountSender.token)
+  console.log(accountAuthTransferResponse)
+ 
+>>>>>
+{
+  status: 200,
+  id: '0x025398af5b69f132d8c2c5b7b225df1436baf7d1774a6b017a233bf273b4675c8f',
+  nonce: 0
+}
+
+```
+
+After the transfer has been forged, we can check Mary's account on Hermez
+```js
+    // get receiver account information
+    const infoAccountAuth = (await hermez.CoordinatorAPI.getAccounts(hermezWallet3.hermezEthereumAddress, [tokenERC20.id]))
+      .accounts[0]
+    console.log(infoAccountAuth)
 
 >>>>>
 
-    {
-      L1Info: null,
-      L1orL2: 'L2',
-      L2Info: { fee: 1, historicFeeUSD: null, nonce: 1 },
-      amount: '2000',
-      batchNum: 15,
-      fromAccountIndex: 'hez:20_2:256',
-      fromBJJ: 'hez:1-WYg_cDxmLQPTxBDF2BdJYNsmK2KcaL6tcueTqWoQ6v',
-      fromHezEthereumAddress: 'hez:0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
-      historicUSD: null,
-      id: '0x020000000001000000000000',
-      itemId: 9,
-      position: 0,
-      timestamp: '2020-12-17T21:41:53Z',
-      toAccountIndex: 'hez:20_2:257',
-      toBJJ: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      toHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Transfer'
-    }
+{
+  accountIndex: 'hez:ETH:265',
+  balance: '1000000000000000',
+  bjj: 'hez:ct0ml6FjdUN6uGUHZ70qOq5-58cZ19SJDeldMH021oOk',
+  hezEthereumAddress: 'hez:0xd3B6DcfCA7Eb3207905Be27Ddfa69453625ffbf9',
+  itemId: 10,
+  nonce: 0,
+  token: {
+    USD: 1795.94,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-03-16T14:56:57.460862Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
   }
-```
-If the API returns an object, it means that the transaction has been forged.
-
-### Exit
-
-A different alternative to retrieve the funds back is by using an L2 `Exit` transaction. The steps
-involved to generate an `Exit` transaction are the same as for the `Transfer` transaction we already saw.
-The only difference  is that there is no `to` account recipient.
-
-```js
-  const l2ExitTx = {
-    from: account2.accountIndex,
-    amount: amountExitCompressed,
-    fee
-  }
-
-  const l2TxExitResult = await hermez.Tx.generateAndSendL2Tx(l2ExitTx, hermezWallet2, dstAccount.token)
-  console.log(l2TxExitResult)
-
->>>>
-  { status: 200, id: '0x020000000001010000000000', nonce: 0 }
+}
 ```
 
-Again, we can check the status of this last transaction in the Coordinator pool
+## Create Internal Accounts
+Until now we have seen that accounts have an Ethereum address and a Baby JubJub key. This is the case for normal accounts. However, there is a second type of account that only requires a Baby JubJub key. These accounts are called `internal accounts`.
+
+The advantage of these accounts is that they are much more inexpensive to create than a `normal account`, since these accounts only exist on Hermez. The downside is that one cannot perform deposits or withdrawals from this type of account. However, there are some scenarios where these accounts are useful. For example, in those scenarios where one requires a temporary account. (for example, Exchanges could use these accounts to receive a transfer from users).
+
 
 ```js
-  // Check transaction in coordinator's transaction pool
-  const txExitPool = await hermez.CoordinatorAPI.getPoolTransaction(l2TxExitResult.id)
+  // Create Internal Account
+  // create new bjj private key to receive user transactions
+  const pvtBjjKey = Buffer.allocUnsafe(32).fill('1')
+
+  // create rollup internal account from bjj private key
+  const wallet4 = await hermez.HermezWallet.createWalletFromBjjPvtKey(pvtBjjKey)
+  const hermezWallet4 = wallet4.hermezWallet
+
+  // set amount to transfer
+  const amountTransferInternal = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('1.0', 18))
+  // generate L2 transaction
+  const transferToInternal = {
+    from: infoAccountSender.accountIndex,
+    to: hermezWallet4.publicKeyBase64,
+    amount: amountTransferInternal,
+    fee: state.recommendedFee.createAccountInternal / usdTokenExchangeRate
+  }
+  const internalAccountResponse = await hermez.Tx.generateAndSendL2Tx(transferToInternal, hermezWallet, tokenERC20)
+  console.log(internalAccountResponse)
+
+
+>>>>>
+
+{
+  status: 200,
+  id: '0x02ac000f39eee60b198c85348443002991753de912337720b9ef85d48e9dcfe83e',
+  nonce: 0
+}
+```
+
+Once the transaction is forged, we can check the account information
+```js
+    // get internal account information
+    const infoAccountInternal = (await hermez.CoordinatorAPI.getAccounts(hermezWallet4.publicKeyBase64, [tokenERC20.id]))
+      .accounts[0]
+    console.log(infoAccountInternal)
+
 
 >>>>>>
 
-    {
-      amount: '1000',
-      batchNum: null,
-      fee: 1,
-      fromAccountIndex: 'hez:20_2:257',
-      fromBJJ: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      fromHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      id: '0x020000000001010000000000',
-      nonce: 0,
-      requestAmount: null,
-      requestFee: null,
-      requestFromAccountIndex: null,
-      requestNonce: null,
-      requestToAccountIndex: null,
-      requestToBJJ: null,
-      requestToHezEthereumAddress: null,
-      requestTokenId: null,
-      signature: 'f3c73394b3c167d9fc259081dbe69ff742a52c9db0cd3feb9bff5603487aae042d90a4d46becc7dbe4245c2bfd28f62b590236470338f1687840b82d990c4e05',
-      state: 'pend',
-      timestamp: '2020-12-17T22:21:43.870526Z',
-      toAccountIndex: 'hez:20_2:1',
-      toBjj: null,
-      toHezEthereumAddress: null,
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Exit'
-    }
+{
+  accountIndex: 'hez:ETH:259',
+  balance: '1000000000000000000',
+  bjj: 'hez:KmbnR34pOUhSaaPOkeWbaeZVjMqojfyYy8sYIHRSlaKx',
+  hezEthereumAddress: 'hez:0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
+  itemId: 4,
+  nonce: 0,
+  token: {
+    USD: 1798.51,
+    decimals: 18,
+    ethereumAddress: '0x0000000000000000000000000000000000000000',
+    ethereumBlockNum: 0,
+    fiatUpdate: '2021-03-16T15:44:08.33507Z',
+    id: 0,
+    itemId: 1,
+    name: 'Ether',
+    symbol: 'ETH'
+  }
+}
+
 
 ```
-
-And we can query the Coordinator whether or not our transaction has been forged
-
-```js
-  const txExitConf = await hermez.CoordinatorAPI.getHistoryTransaction(txExitPool.id)
-  console.log(txExitConf)
-
->>>>>>
-
-    {
-      L1Info: null,
-      L1orL2: 'L2',
-      L2Info: { fee: 1, historicFeeUSD: null, nonce: 1 },
-      amount: '1000',
-      batchNum: 16,
-      fromAccountIndex: 'hez:20_2:257',
-      fromBJJ: 'hez:_ayj1cwk6Kuch4oodEgYYTRWidBywlsV8cYlOyVPiZzl',
-      fromHezEthereumAddress: 'hez:0x306469457266CBBe7c0505e8Aad358622235e768',
-      historicUSD: null,
-      id: '0x020000000001010000000000',
-      itemId: 10,
-      position: 0,
-      timestamp: '2020-12-17T22:21:59Z',
-      toAccountIndex: 'hez:20_2:1',
-      toBJJ: null,
-      toHezEthereumAddress: null,
-      token: {
-        USD: null,
-        decimals: 18,
-        ethereumAddress: '0x2e9f55f7266d8c7e07d359daba0e743e331b7a1a',
-        ethereumBlockNum: 61,
-        fiatUpdate: null,
-        id: 3,
-        itemId: 4,
-        name: 'ERC20_2',
-        symbol: '20_2'
-      },
-      type: 'Exit'
-    }
-
-```
-
-The funds should now appear in the Ethereum account that made the withdrawal.
+We can verify it is in fact an `internal account` because the associated `hezEthereumAddress` is `hez:0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`.
 
