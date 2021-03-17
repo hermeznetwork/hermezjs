@@ -35,9 +35,16 @@ describe('Withdraw utils', () => {
 
     const proofContract = await withdrawUtils.buildProofContract(proofSnarkjs)
 
-    expect(proofContract.proofA).not.toBe(undefined)
-    expect(proofContract.proofB).not.toBe(undefined)
-    expect(proofContract.proofC).not.toBe(undefined)
+    expect(proofContract.proofA[0]).toBe(proofSnarkjs.pi_a[0])
+    expect(proofContract.proofA[1]).toBe(proofSnarkjs.pi_a[1])
+
+    expect(proofContract.proofB[0][0]).toBe(proofSnarkjs.pi_b[0][1])
+    expect(proofContract.proofB[0][1]).toBe(proofSnarkjs.pi_b[0][0])
+    expect(proofContract.proofB[1][0]).toBe(proofSnarkjs.pi_b[1][1])
+    expect(proofContract.proofB[1][1]).toBe(proofSnarkjs.pi_b[1][0])
+
+    expect(proofContract.proofC[0]).toBe(proofSnarkjs.pi_c[0])
+    expect(proofContract.proofC[1]).toBe(proofSnarkjs.pi_c[1])
   })
 
   test('#buildZkInputWithdraw', async () => {

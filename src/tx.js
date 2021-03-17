@@ -8,7 +8,7 @@ import {
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
 import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
@@ -206,14 +206,13 @@ const withdraw = async (
  * Finalise the withdraw with zkProof. This is a L1 transaction.
  * @param {Object} exitInfo - exit object as it is returned by hermez-node API
  * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
- * @param {Object} wasmFilePath - wasm witness file
- * @param {Object} zkeyFilePath - zkey proving key
+ * @param {String} wasmFilePath - wasm witness file path
+ * @param {String} zkeyFilePath - zkey proving key path
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
- * @throws {Error} Throws an error if account index isn't valid
  */
 const withdrawCircuit = async (
   exitInfo,
@@ -226,9 +225,11 @@ const withdrawCircuit = async (
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, signerData, providerUrl)
+  const wasmFileInput = typeof window === 'undefined' ? wasmFilePath : wasmFilePath || WITHDRAWAL_WASM_URL
+  const zkeyFileInput = typeof window === 'undefined' ? zkeyFilePath : zkeyFilePath || WITHDRAWAL_ZKEY_URL
 
   const zkInputs = await buildZkInputWithdraw(exitInfo)
-  const zkProofSnarkJs = await groth16.fullProve(zkInputs, wasmFilePath, zkeyFilePath)
+  const zkProofSnarkJs = await groth16.fullProve(zkInputs, wasmFileInput, zkeyFileInput)
   const zkProofContract = await buildProofContract(zkProofSnarkJs.proof)
 
   const overrides = {

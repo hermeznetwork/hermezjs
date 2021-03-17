@@ -316,7 +316,8 @@ describe('Full flow', () => {
 
   test('Exit and circuit withdrawal', async () => {
     const oldBalance = Scalar.e(await provider.getBalance(getEthereumAddress(
-      accounts[0].hermezWallet.hermezEthereumAddress)))
+      accounts[0].hermezWallet.hermezEthereumAddress)
+    ))
 
     // setup amounts
     const exitAmount = getTokenAmountBigInt('0.22', tokenEth.decimals)
