@@ -43,7 +43,6 @@
     "ethers": "5.0.24",
     "ffjavascript": "^0.2.33",
     "graceful-fs": "4.2.4",
-    "js-sha3": "^0.8.0",
     "node-localstorage": "^2.1.6",
     "snarkjs": "^0.3.59",
     "trezor-connect": "^8.1.19"
