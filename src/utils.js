@@ -11,6 +11,7 @@ function bufToHex (buf) {
 }
 
 const hexToBuffer = (hexString) => {
+  hexString = hexString.startsWith('0x') ? hexString.slice(2) : hexString
   return Buffer.from(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)))
 }
 
