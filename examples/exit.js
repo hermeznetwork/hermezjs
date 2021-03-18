@@ -28,14 +28,15 @@ async function main () {
   // set amount to transfer
   const amountExit = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.0001', 18))
   // set fee in transaction
-  const userFee = 0
+  const state = await hermez.CoordinatorAPI.getState()
+  const userFee = state.recommendedFee.existingAccount
 
   // generate L2 transaction
   const l2ExitTx = {
     type: 'Exit',
     from: infoAccountSender.accountIndex,
     amount: amountExit,
-    userFee
+    fee: userFee
   }
 
   const exitResponse = await hermez.Tx.generateAndSendL2Tx(l2ExitTx, hermezWallet, infoAccountSender.token)

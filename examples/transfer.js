@@ -38,18 +38,19 @@ async function main () {
   // set amount to transfer
   const amountTransfer = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.0001', 18))
   // set fee in transaction
-  const userFee = 0
+  const state = await hermez.CoordinatorAPI.getState()
+  const usdTokenExchangeRate = tokenERC20.USD
+  const fee = usdTokenExchangeRate ? state.recommendedFee.createAccount / usdTokenExchangeRate : 0
 
   // generate L2 transaction
   const l2TxTransfer = {
-    type: 'Transfer',
     from: infoAccountSender.accountIndex,
     to: infoAccountReceiver.accountIndex,
     amount: amountTransfer,
-    userFee
+    fee: fee
   }
-
-  const transferResponse = await hermez.Tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token)
+  console.log('Params', l2TxTransfer)
+  const transferResponse = await hermez.Tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token).catch(console.log)
   console.log('transferResponse: ', transferResponse)
 }
 

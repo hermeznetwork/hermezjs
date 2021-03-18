@@ -4,10 +4,10 @@ import { utils } from 'ffjavascript'
 import { ethers } from 'ethers'
 
 import { buildTransactionHashMessage } from './tx-utils.js'
-import { hexToBuffer } from './utils.js'
+import { hexToBuffer, getRandomBytes } from './utils.js'
 import { getProvider } from './providers.js'
 import { getHermezAddress, isHermezEthereumAddress, hexToBase64BJJ } from './addresses.js'
-import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, EIP_712_VERSION, EIP_712_PROVIDER, CONTRACT_ADDRESSES, ContractNames } from './constants.js'
+import { METAMASK_MESSAGE, CREATE_ACCOUNT_AUTH_MESSAGE, EIP_712_VERSION, EIP_712_PROVIDER, CONTRACT_ADDRESSES, ContractNames, INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
 import { getSigner } from './signers.js'
 
 /**
@@ -101,7 +101,7 @@ class HermezWallet {
 async function createWalletFromEtherAccount (providerUrl, signerData) {
   const provider = getProvider(providerUrl)
   const signer = getSigner(provider, signerData)
-  const ethereumAddress = await signer.getAddress(signerData && signerData.addressOrIndex)
+  const ethereumAddress = await signer.getAddress()
   const hermezEthereumAddress = getHermezAddress(ethereumAddress)
   const signature = await signer.signMessage(METAMASK_MESSAGE)
   const hashedSignature = jsSha3.keccak256(signature)
@@ -111,7 +111,23 @@ async function createWalletFromEtherAccount (providerUrl, signerData) {
   return { hermezWallet, hermezEthereumAddress }
 }
 
+/**
+ * Creates a HermezWallet from Babyjubjub private key
+ * This creates a wallet for an internal account
+ * An internal account has a Babyjubjub key and Ethereum account 0xFFFF...FFFF
+ * Random wallet is created if no private key is provided
+ * @param {Buffer} privateKey - 32 bytes buffer
+ * @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
+ */
+async function createWalletFromBjjPvtKey (privateKey) {
+  const privateBjjKey = privateKey || Buffer.from(getRandomBytes(32))
+  const hermezWallet = new HermezWallet(privateBjjKey, INTERNAL_ACCOUNT_ETH_ADDR)
+
+  return { hermezWallet, hermezEthereumAddress: INTERNAL_ACCOUNT_ETH_ADDR }
+}
+
 export {
   HermezWallet,
-  createWalletFromEtherAccount
+  createWalletFromEtherAccount,
+  createWalletFromBjjPvtKey
 }

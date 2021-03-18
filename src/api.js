@@ -42,6 +42,34 @@ function getBaseApiUrl () {
 }
 
 /**
+ * Makes sure a list of next forgers includes the base API URL
+ * @param {Array} nextForgerUrls - Array of forger URLs that may or may not include the base API URL
+ * @returns nextForgerUrls - Array of next forgers that definitely includes the base API URL
+ */
+function getForgerUrls (nextForgerUrls) {
+  return nextForgerUrls.includes(baseApiUrl)
+    ? nextForgerUrls
+    : [...nextForgerUrls, baseApiUrl]
+}
+
+/**
+ * Checks a list of responses from one same POST request to different coordinators
+ * If all responses are errors, throw the error
+ * If at least 1 was successful, return it
+ * @param {Array} responsesArray - An array of responses, including errors
+ * @returns response
+ * @throws Axios Error
+ */
+function filterResponses (responsesArray) {
+  const invalidResponses = responsesArray.filter((res) => res.isAxiosError)
+  if (invalidResponses.length) {
+    throw invalidResponses[0]
+  } else {
+    return responsesArray.filter((res) => !res.isAxiosError)[0]
+  }
+}
+
+/**
  * GET request to the /accounts endpoint. Returns a list of token accountns associated to a Hermez address
  * @param {String} address - The account's address. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
  * @param {Number[]} tokenIds - Array of token IDs as registered in the network
@@ -114,8 +142,10 @@ async function getPoolTransaction (transactionId, axiosConfig = {}) {
  * @param {Object} transaction - Transaction data returned by TxUtils.generateL2Transaction
  * @returns {String} Transaction id
  */
-async function postPoolTransaction (transaction, axiosConfig = {}) {
-  return axios.post(`${baseApiUrl}/transactions-pool`, transaction, axiosConfig)
+async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfig = {}) {
+  return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
+    return axios.post(`${apiUrl}/transactions-pool`, transaction, axiosConfig).catch((error) => error)
+  })).then(filterResponses)
 }
 
 /**
@@ -255,12 +285,14 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
  * @param {String} signature - The signature of the request
  * @returns {Object} Response data
  */
-async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, axiosConfig = {}) {
-  return axios.post(`${baseApiUrl}/account-creation-authorization`, {
-    hezEthereumAddress,
-    bjj: bJJ,
-    signature
-  }, axiosConfig)
+async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, nextForgerUrls = [], axiosConfig = {}) {
+  return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
+    return axios.post(`${apiUrl}/account-creation-authorization`, {
+      hezEthereumAddress,
+      bjj: bJJ,
+      signature
+    }, axiosConfig).catch((error) => error)
+  })).then(filterResponses)
 }
 
 /**

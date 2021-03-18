@@ -24,6 +24,7 @@
     "prebuild": "rm -rf dist",
     "build-publish": "npm run build-node && npm publish",
     "test": "jest",
+    "test:int": "jest --forceExit --detectOpenHandles",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
@@ -37,13 +38,14 @@
     "axios": "^0.20.0",
     "babel-eslint": "^10.1.0",
     "base64url": "^3.0.1",
-    "circomlib": "iden3/circomlib#eab1c212392a4f4a08afd45193baa8d47104e601",
+    "circomlib": "^0.5.1",
     "core-js": "^3.8.1",
     "ethers": "5.0.24",
     "ffjavascript": "^0.2.33",
     "graceful-fs": "4.2.4",
     "js-sha3": "^0.8.0",
     "node-localstorage": "^2.1.6",
+    "snarkjs": "^0.3.59",
     "trezor-connect": "^8.1.19"
   },
   "devDependencies": {
