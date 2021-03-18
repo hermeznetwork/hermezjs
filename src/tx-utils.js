@@ -137,6 +137,8 @@ function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
  * @return {Number} feeIndex
  */
 function getFeeIndex (fee, amount) {
+  if (Scalar.eq(fee, 0)) return 0
+
   let low = 0
   let mid
   let high = feeFactors.length - 1

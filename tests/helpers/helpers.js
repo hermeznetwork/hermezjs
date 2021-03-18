@@ -38,10 +38,11 @@ export function getL1TxIdFromReceipt (l1Receipt) {
 export async function assertTxForged (txId, timeoutLoop) {
   let forged = false
   let counter = 0
+  let txInfo
 
   while (!forged && counter < 20) {
     try {
-      const txInfo = await CoordinatorAPI.getHistoryTransaction(txId)
+      txInfo = await CoordinatorAPI.getHistoryTransaction(txId)
       if (txInfo.batchNum != null) {
         forged = true
         continue
@@ -57,6 +58,8 @@ export async function assertTxForged (txId, timeoutLoop) {
   }
   if (!forged) {
     throw new Error(`TxId ${txId} has not been forged`)
+  } else {
+    return txInfo
   }
 }
 

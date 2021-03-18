@@ -242,9 +242,9 @@ describe.skip('#getBids', () => {
 })
 
 test('#postCreateAccountAuthorization', async () => {
-  const { hermezWallet } = await createWalletFromEtherAccount('http://localhost:8545')
   const privateKeyEth = '0x0000000000000000000000000000000000000000000000000000000000000001'
   const signer = { type: 'WALLET', privateKey: privateKeyEth }
+  const { hermezWallet } = await createWalletFromEtherAccount('http://localhost:8545', signer)
 
   const signature = await hermezWallet.signCreateAccountAuthorization('http://localhost:8545', signer)
   const res = await CoordinatorAPI.postCreateAccountAuthorization(

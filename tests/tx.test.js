@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
 import axios from 'axios'
+import path from 'path'
 import { ethers } from 'ethers'
 
 import { Scalar } from 'ffjavascript'
@@ -55,9 +56,7 @@ describe('Full flow', () => {
     tokenEth = tokens[0]
 
     // setup fee
-    const state = await CoordinatorAPI.getState()
-    const usdTokenExchangeRate = tokenEth.USD
-    fee = usdTokenExchangeRate ? state.recommendedFee.existingAccount / usdTokenExchangeRate : 0
+    fee = 0
 
     // setup tx pool
     TransactionPool.initializeTransactionPool()
@@ -139,32 +138,6 @@ describe('Full flow', () => {
     await assertBalances(accounts, tokenEth)
   })
 
-  // NOTE: not supported by the hermez-node API
-  test.skip('Transfer to an existent Bjj address', async () => {
-    // setup amounts
-    const transferAmount = getTokenAmountBigInt('0.22', tokenEth.decimals)
-    const compressedTransferAmount = HermezCompressedAmount.compressAmount(transferAmount)
-
-    // transfer to Bjj
-    const txTransfer = {
-      from: accounts[1].index,
-      to: accounts[0].hermezWallet.publicKeyBase64,
-      toAuxEthAddr: accounts[0].hermezWallet.hermezEthereumAddress,
-      amount: compressedTransferAmount,
-      fee
-    }
-
-    // send transaction to coordinator
-    const res = await Tx.generateAndSendL2Tx(txTransfer, accounts[1].hermezWallet, tokenEth)
-    expect(res.status).toEqual(200)
-    await assertTxForged(res.id)
-
-    // update and assert balances
-    accounts[0].expectedBalance = Scalar.add(accounts[0].expectedBalance, transferAmount)
-    accounts[1].expectedBalance = Scalar.sub(accounts[1].expectedBalance, transferAmount)
-    await assertBalances(accounts, tokenEth)
-  })
-
   test('Transfer to hermez ethereum address from internal account', async () => {
     // setup amounts
     const transferAmount = getTokenAmountBigInt('0.05', tokenEth.decimals)
@@ -194,7 +167,7 @@ describe('Full flow', () => {
     const transferAmount = getTokenAmountBigInt('0.4', tokenEth.decimals)
     const compressedTransferAmount = HermezCompressedAmount.compressAmount(transferAmount)
 
-    // transfer to ethereum address using internal account
+    // transfer to ethereum address
     const txTransfer = {
       from: accounts[1].index,
       to: accounts[0].hermezWallet.hermezEthereumAddress,
@@ -218,7 +191,7 @@ describe('Full flow', () => {
     const transferAmount = getTokenAmountBigInt('0.33', tokenEth.decimals)
     const compressedTransferAmount = HermezCompressedAmount.compressAmount(transferAmount)
 
-    // transfer to ethereum address using internal account
+    // transfer to index
     const txTransfer = {
       from: accounts[0].index,
       to: accounts[2].index,
@@ -242,7 +215,7 @@ describe('Full flow', () => {
     const exitAmount = getTokenAmountBigInt('0.16', tokenEth.decimals)
     const compressedExitAmount = HermezCompressedAmount.compressAmount(exitAmount)
 
-    // transfer to ethereum address using internal account
+    // exit transaction
     const txExit = {
       from: accounts[0].index,
       type: 'Exit',
@@ -275,8 +248,10 @@ describe('Full flow', () => {
       accounts[0].hermezWallet.publicKeyCompressedHex,
       exitInfo.batchNum,
       exitInfo.merkleProof.siblings,
+      accounts[0].signer
     )
-    expect(isInstant).toBe([])
+
+    expect(isInstant.length).toBe(0)
 
     const withdrawTxData = await Tx.withdraw(
       exitInfo.balance,
@@ -335,6 +310,52 @@ describe('Full flow', () => {
     await withdrawTxData.wait()
 
     const newBalance = Scalar.e(await provider.getBalance(getEthereumAddress(hermezEthAddress)))
+
+    expect(Scalar.gt(newBalance, oldBalance)).toEqual(true)
+  })
+
+  test('Exit and circuit withdrawal', async () => {
+    const oldBalance = Scalar.e(await provider.getBalance(getEthereumAddress(
+      accounts[0].hermezWallet.hermezEthereumAddress)
+    ))
+
+    // setup amounts
+    const exitAmount = getTokenAmountBigInt('0.22', tokenEth.decimals)
+    const compressedExitAmount = HermezCompressedAmount.compressAmount(exitAmount)
+
+    // build exit tx
+    const txExit = {
+      from: accounts[0].index,
+      type: 'Exit',
+      amount: compressedExitAmount,
+      fee
+    }
+
+    // send transaction to coordinator
+    const res = await Tx.generateAndSendL2Tx(txExit, accounts[0].hermezWallet, tokenEth)
+    expect(res.status).toEqual(200)
+    await assertTxForged(res.id)
+
+    // Perform circuit withdrawal
+    const hermezEthAddress = accounts[0].hermezWallet.hermezEthereumAddress
+    const exitInfoAll = await CoordinatorAPI.getExits(hermezEthAddress, true)
+    const exitInfo = exitInfoAll.exits[0]
+
+    // setup paths for wasm and zkey files
+    const wasmFilePath = path.join(__dirname, '../withdraw-circuit-files/withdraw.wasm')
+    const zkeyFilePath = path.join(__dirname, '../withdraw-circuit-files/withdraw_hez3_0001.zkey')
+
+    const withdrawCircuitTxData = await Tx.withdrawCircuit(
+      exitInfo,
+      true,
+      wasmFilePath,
+      zkeyFilePath,
+      accounts[0].signer
+    )
+    await withdrawCircuitTxData.wait()
+
+    const newBalance = Scalar.e(await provider.getBalance(getEthereumAddress(
+      accounts[0].hermezWallet.hermezEthereumAddress)))
 
     expect(Scalar.gt(newBalance, oldBalance)).toEqual(true)
   })
