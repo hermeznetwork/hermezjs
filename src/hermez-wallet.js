@@ -1,4 +1,5 @@
 import circomlib from 'circomlib'
+import jsSha3 from 'js-sha3'
 import { utils } from 'ffjavascript'
 import { ethers } from 'ethers'
 
@@ -103,7 +104,7 @@ async function createWalletFromEtherAccount (providerUrl, signerData) {
   const ethereumAddress = await signer.getAddress()
   const hermezEthereumAddress = getHermezAddress(ethereumAddress)
   const signature = await signer.signMessage(METAMASK_MESSAGE)
-  const hashedSignature = ethers.utils.keccak256(signature)
+  const hashedSignature = jsSha3.keccak256(signature)
   const bufferSignature = hexToBuffer(hashedSignature)
   const hermezWallet = new HermezWallet(bufferSignature, hermezEthereumAddress)
 
