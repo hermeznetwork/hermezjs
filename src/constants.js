@@ -14,6 +14,8 @@ const GAS_MULTIPLIER = 1
 
 const DEFAULT_PAGE_SIZE = 20
 
+const API_VERSION = 'v0'
+
 const BASE_API_URL = 'http://localhost:8086'
 
 const BATCH_EXPLORER_URL = 'http://localhost:8080'
@@ -54,6 +56,7 @@ export {
   GAS_LIMIT,
   GAS_MULTIPLIER,
   DEFAULT_PAGE_SIZE,
+  API_VERSION,
   BASE_API_URL,
   BATCH_EXPLORER_URL,
   ETHERSCAN_URL,
