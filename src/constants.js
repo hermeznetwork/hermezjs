@@ -14,7 +14,7 @@ const GAS_MULTIPLIER = 1
 
 const DEFAULT_PAGE_SIZE = 20
 
-const API_VERSION = 'v0'
+const API_VERSION = 'v1'
 
 const BASE_API_URL = 'http://localhost:8086'
 
