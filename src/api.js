@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import { extractJSON } from './http.js'
-import { DEFAULT_PAGE_SIZE, BASE_API_URL } from './constants.js'
+import { DEFAULT_PAGE_SIZE, BASE_API_URL, API_VERSION } from './constants.js'
 import { isHermezEthereumAddress, isHermezBjjAddress } from './addresses.js'
 
 const PaginationOrder = {
@@ -84,7 +84,7 @@ async function getAccounts (address, tokenIds, fromItem, order = PaginationOrder
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/accounts`, { ...axiosConfig, params }))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/accounts`, { ...axiosConfig, params }))
 }
 
 /**
@@ -93,7 +93,7 @@ async function getAccounts (address, tokenIds, fromItem, order = PaginationOrder
  * @returns {Object} Response data with the token account
  */
 async function getAccount (accountIndex, axiosConfig = {}) {
-  return extractJSON(axios.get(`${baseApiUrl}/accounts/${accountIndex}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/accounts/${accountIndex}`, axiosConfig))
 }
 
 /**
@@ -116,7 +116,7 @@ async function getTransactions (address, tokenIds, batchNum, accountIndex, fromI
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-history`, { ...axiosConfig, params }))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/transactions-history`, { ...axiosConfig, params }))
 }
 
 /**
@@ -125,7 +125,7 @@ async function getTransactions (address, tokenIds, batchNum, accountIndex, fromI
  * @returns {Object} Response data with the transaction
  */
 async function getHistoryTransaction (transactionId, axiosConfig = {}) {
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-history/${transactionId}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/transactions-history/${transactionId}`, axiosConfig))
 }
 
 /**
@@ -134,7 +134,7 @@ async function getHistoryTransaction (transactionId, axiosConfig = {}) {
  * @returns {Object} Response data with the transaction
  */
 async function getPoolTransaction (transactionId, axiosConfig = {}) {
-  return extractJSON(axios.get(`${baseApiUrl}/transactions-pool/${transactionId}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/transactions-pool/${transactionId}`, axiosConfig))
 }
 
 /**
@@ -163,7 +163,7 @@ async function getExits (address, onlyPendingWithdraws, tokenId, axiosConfig = {
     ...(typeof tokenId !== 'undefined' ? { tokenId } : {})
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/exits`, { ...axiosConfig, params }))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/exits`, { ...axiosConfig, params }))
 }
 
 /**
@@ -173,7 +173,7 @@ async function getExits (address, onlyPendingWithdraws, tokenId, axiosConfig = {
  * @returns {Object} Response data with the specific exit
  */
 async function getExit (batchNum, accountIndex, axiosConfig = {}) {
-  return await extractJSON(axios.get(`${baseApiUrl}/exits/${batchNum}/${accountIndex}`, axiosConfig))
+  return await extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/exits/${batchNum}/${accountIndex}`, axiosConfig))
 }
 
 /**
@@ -189,7 +189,7 @@ async function getTokens (tokenIds, tokenSymbols, fromItem, order = PaginationOr
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/tokens`, { ...axiosConfig, params }))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/tokens`, { ...axiosConfig, params }))
 }
 
 /**
@@ -198,7 +198,7 @@ async function getTokens (tokenIds, tokenSymbols, fromItem, order = PaginationOr
  * @returns {Object} Response data with a specific token
  */
 async function getToken (tokenId, axiosConfig = {}) {
-  return extractJSON(axios.get(`${baseApiUrl}/tokens/${tokenId}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/tokens/${tokenId}`, axiosConfig))
 }
 
 /**
@@ -206,7 +206,7 @@ async function getToken (tokenId, axiosConfig = {}) {
  * @returns {Object} Response data with the current state of the coordinator
  */
 async function getState (axiosConfig = {}) {
-  const state = await extractJSON(axios.get(`${baseApiUrl}/state`, axiosConfig))
+  const state = await extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/state`, axiosConfig))
 
   return state
 }
@@ -225,7 +225,7 @@ async function getBatches (forgerAddr, slotNum, fromItem, order = PaginationOrde
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/batches`, { ...axiosConfig, params }))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/batches`, { ...axiosConfig, params }))
 }
 
 /**
@@ -234,7 +234,7 @@ async function getBatches (forgerAddr, slotNum, fromItem, order = PaginationOrde
  * @returns {Object} Response data with a specific batch
  */
 async function getBatch (batchNum, axiosConfig = {}) {
-  return extractJSON(axios.get(`${baseApiUrl}/batches/${batchNum}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/batches/${batchNum}`, axiosConfig))
 }
 
 /**
@@ -249,7 +249,7 @@ async function getCoordinators (forgerAddr, bidderAddr, axiosConfig = {}) {
     ...(bidderAddr ? { bidderAddr } : {})
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/coordinators`, { ...axiosConfig, params }))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/coordinators`, { ...axiosConfig, params }))
 }
 
 /**
@@ -258,7 +258,7 @@ async function getCoordinators (forgerAddr, bidderAddr, axiosConfig = {}) {
  * @returns {Object} Response data with a specific slot
  */
 async function getSlot (slotNum, axiosConfig = {}) {
-  return extractJSON(axios.get(`${baseApiUrl}/slots/${slotNum}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/slots/${slotNum}`, axiosConfig))
 }
 
 /**
@@ -275,7 +275,7 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
     ..._getPageData(fromItem, order, limit)
   }
 
-  return extractJSON(axios.get(`${baseApiUrl}/bids`, { ...axiosConfig, params }))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/bids`, { ...axiosConfig, params }))
 }
 
 /**
@@ -302,7 +302,7 @@ async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signatur
  * @returns {Object} Response data
  */
 async function getCreateAccountAuthorization (hezEthereumAddress, axiosConfig = {}) {
-  return extractJSON(axios.get(`${baseApiUrl}/account-creation-authorization/${hezEthereumAddress}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/account-creation-authorization/${hezEthereumAddress}`, axiosConfig))
 }
 
 /**
@@ -310,7 +310,7 @@ async function getCreateAccountAuthorization (hezEthereumAddress, axiosConfig = 
  * @returns {Object} Response data
  */
 async function getConfig (axiosConfig) {
-  return extractJSON(axios.get(`${baseApiUrl}/config`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/config`, axiosConfig))
 }
 
 export {
