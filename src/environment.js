@@ -39,8 +39,8 @@ const PUBLIC_BASE_API_URLS = {
 
 const PUBLIC_CONTRACT_ADDRESSES = {
   [SUPPORTED_ENVIRONMENTS.Mainnet.chainId]: {
-    [constants.ContractNames.Hermez]: '0xA7bFf53521C43fC50BBaee79C05527C959d0a571',
-    [constants.ContractNames.WithdrawalDelayer]: '0xbD9264F01452F3Ee9BFC269779ecB3dD1cb10BCD'
+    [constants.ContractNames.Hermez]: '0xA68D85dF56E733A06443306A095646317B5Fa633',
+    [constants.ContractNames.WithdrawalDelayer]: '0x392361427Ef5e17b69cFDd1294F31ab555c86124'
   },
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: {
     [constants.ContractNames.Hermez]: '0x679b11E0229959C1D3D27C9d20529E4C5DF7997c',
