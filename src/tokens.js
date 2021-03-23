@@ -19,14 +19,9 @@ async function approve (amount, accountAddress, contractAddress, signerData, pro
 
   if (allowance.lt(amount)) {
     return erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], amount)
+  } else {
+    return Promise.resolve()
   }
-
-  if (!allowance.isZero()) {
-    const tx = await erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], '0')
-    await tx.wait(1)
-  }
-
-  return erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], amount)
 }
 
 export {
