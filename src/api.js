@@ -144,7 +144,7 @@ async function getPoolTransaction (transactionId, axiosConfig = {}) {
  */
 async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfig = {}) {
   return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
-    return axios.post(`${apiUrl}/transactions-pool`, transaction, axiosConfig).catch((error) => error)
+    return axios.post(`${apiUrl}/${API_VERSION}/transactions-pool`, transaction, axiosConfig).catch((error) => error)
   })).then(filterResponses)
 }
 
@@ -287,7 +287,7 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
  */
 async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, nextForgerUrls = [], axiosConfig = {}) {
   return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
-    return axios.post(`${apiUrl}/account-creation-authorization`, {
+    return axios.post(`${apiUrl}/${API_VERSION}/account-creation-authorization`, {
       hezEthereumAddress,
       bjj: bJJ,
       signature

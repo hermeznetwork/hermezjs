@@ -5,6 +5,10 @@ let batchExplorerUrl = constants.BATCH_EXPLORER_URL
 let etherscanUrl = constants.ETHERSCAN_URL
 
 const SUPPORTED_ENVIRONMENTS = {
+  Mainnet: {
+    name: 'Mainnet',
+    chainId: 1
+  },
   Rinkeby: {
     name: 'Rinkeby',
     chainId: 4
@@ -16,21 +20,28 @@ const SUPPORTED_ENVIRONMENTS = {
 }
 
 const BATCH_EXPLORER_URLS = {
+  [SUPPORTED_ENVIRONMENTS.Mainnet.chainId]: 'https://explorer.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'https://explorer.testnet.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8080'
 }
 
 const ETHERSCAN_URLS = {
+  [SUPPORTED_ENVIRONMENTS.Mainnet.chainId]: 'https://etherscan.io',
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'https://rinkeby.etherscan.io',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'https://etherscan.io'
 }
 
 const PUBLIC_BASE_API_URLS = {
+  [SUPPORTED_ENVIRONMENTS.Mainnet.chainId]: 'https://api.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: 'https://api.testnet.hermez.io',
   [SUPPORTED_ENVIRONMENTS.Local.chainId]: 'http://localhost:8086'
 }
 
 const PUBLIC_CONTRACT_ADDRESSES = {
+  [SUPPORTED_ENVIRONMENTS.Mainnet.chainId]: {
+    [constants.ContractNames.Hermez]: '0xA68D85dF56E733A06443306A095646317B5Fa633',
+    [constants.ContractNames.WithdrawalDelayer]: '0x392361427Ef5e17b69cFDd1294F31ab555c86124'
+  },
   [SUPPORTED_ENVIRONMENTS.Rinkeby.chainId]: {
     [constants.ContractNames.Hermez]: '0x679b11E0229959C1D3D27C9d20529E4C5DF7997c',
     [constants.ContractNames.WithdrawalDelayer]: '0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724'
