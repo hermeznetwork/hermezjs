@@ -8,7 +8,7 @@ import {
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { ContractNames, CONTRACT_ADDRESSES, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
 import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
@@ -44,6 +44,7 @@ async function getGasPrice (multiplier, providerUrl) {
  * @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {Number} gasLimit - Optional gas limit
  * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
  */
@@ -89,7 +90,9 @@ const deposit = async (
   }
 
   await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
-
+  // Deposits need a gas limit to not have to wait for the approve to occur
+  // before calculating it automatically, which would slow down the process
+  overrides.gasLimit = GAS_LIMIT
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
 
