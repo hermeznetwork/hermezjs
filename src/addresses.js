@@ -4,6 +4,7 @@ import base64url from 'base64url'
 import { padZeros, extract } from './utils.js'
 
 const hermezPrefix = 'hez:'
+const ethereumAddressPattern = new RegExp('^0x[a-fA-F0-9]{40}$')
 const hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}$')
 const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
 const accountIndexPattern = new RegExp('^hez:[a-zA-Z0-9]{2,6}:[0-9]{0,9}$')
@@ -28,6 +29,18 @@ function getEthereumAddress (hezEthereumAddress) {
   } else {
     return hezEthereumAddress
   }
+}
+
+/**
+ * Checks if given string matches regex of a Ethereum address
+ * @param {String} test
+ * @returns {Boolean}
+ */
+function isEthereumAddress (test) {
+  if (ethereumAddressPattern.test(test)) {
+    return true
+  }
+  return false
 }
 
 /**
@@ -136,6 +149,7 @@ function getAySignFromBJJ (fromBjjCompressed) {
 export {
   getHermezAddress,
   getEthereumAddress,
+  isEthereumAddress,
   isHermezEthereumAddress,
   isHermezBjjAddress,
   isHermezAccountIndex,
