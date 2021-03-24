@@ -132,11 +132,14 @@ function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
 
 /**
  * Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
- * @param {Scalar} fee - The fee in token value
+ * @param {Scalar|String} fee - The fee in token value
  * @param {Scalar} amount - The amount of the transaction as a Scalar
  * @return {Number} feeIndex
  */
 function getFeeIndex (fee, amount) {
+  if (typeof fee === 'string') {
+    fee = Scalar.fromString(fee)
+  }
   if (Scalar.eq(fee, 0)) return 0
 
   let low = 0
@@ -144,7 +147,7 @@ function getFeeIndex (fee, amount) {
   let high = feeFactors.length - 1
   while (high - low > 1) {
     mid = Math.floor((low + high) / 2)
-    if (getFeeValue(mid, amount) < fee) {
+    if (Scalar.lt(getFeeValue(mid, amount), fee)) {
       low = mid
     } else {
       high = mid
@@ -186,12 +189,12 @@ function getMaxAmountFromMinimumFee (minimumFee, balance) {
     const feeIndex = getFeeIndex(minimumFee, maxAmount)
     const fee = getFeeValue(feeIndex, maxAmount)
     const amountAndFee = Scalar.add(maxAmount, fee)
-    if (amountAndFee > balance) {
+    if (Scalar.gt(amountAndFee, balance)) {
       // maxAmount - (maxAmount + fee - balance)
       maxAmount = Scalar.sub(balance, fee)
     } else {
       const remainingAmount = Scalar.sub(balance, amountAndFee)
-      if (remainingAmount < bestRemainingAmount) {
+      if (Scalar.lt(remainingAmount, bestRemainingAmount)) {
         bestRemainingAmount = remainingAmount
       } else if (remainingAmount === bestRemainingAmount) {
         isNotBestRemainingAmount = false

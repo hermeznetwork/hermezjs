@@ -102,10 +102,10 @@ test('#getL2TxId', () => {
 })
 
 test('#getFeeIndex', () => {
-  const fee = TxUtils.getFeeIndex(Scalar.fromString('628771404325698'), Scalar.fromString('1531370348000000000'))
-  expect(fee).toBe(30)
+  const fee = TxUtils.getFeeIndex('35598708204417712', '123947159100000000000000000')
+  expect(fee).toBe(18)
 
-  const noFee = TxUtils.getFeeIndex(Scalar.fromString('0'), Scalar.fromString('1531370348000000000'))
+  const noFee = TxUtils.getFeeIndex('0', '1531370348000000000')
   expect(noFee).toBe(0)
 })
 
@@ -115,7 +115,7 @@ test('#getFeeValue', () => {
 })
 
 test('#getMaxAmountFromMinimumFee', () => {
-  const fee = TxUtils.getMaxAmountFromMinimumFee(Scalar.fromString('328771404325698'), Scalar.fromString('1532000000000000000'), 18)
+  const fee = TxUtils.getMaxAmountFromMinimumFee(Scalar.fromString('32459016393442626'), Scalar.fromString('666000000000000000000'), 18)
   expect(fee).toBe(Scalar.fromString('1531371228234255439'))
 })
 
