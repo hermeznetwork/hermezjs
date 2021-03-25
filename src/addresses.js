@@ -33,38 +33,29 @@ function getEthereumAddress (hezEthereumAddress) {
 
 /**
  * Checks if given string matches regex of a Ethereum address
- * @param {String} test
+ * @param {String} ethereumAddress
  * @returns {Boolean}
  */
-function isEthereumAddress (test) {
-  if (ethereumAddressPattern.test(test)) {
-    return true
-  }
-  return false
+function isEthereumAddress (ethereumAddress) {
+  return ethereumAddressPattern.test(ethereumAddress)
 }
 
 /**
  * Checks if given string matches regex of a Hermez address
- * @param {String} test
+ * @param {String} hermezEthereumAddress
  * @returns {Boolean}
  */
-function isHermezEthereumAddress (test) {
-  if (hezEthereumAddressPattern.test(test)) {
-    return true
-  }
-  return false
+function isHermezEthereumAddress (hermezEthereumAddress) {
+  return hezEthereumAddressPattern.test(hermezEthereumAddress)
 }
 
 /**
  * Checks if given string matches regex of a Hermez BJJ address
- * @param {String} test
+ * @param {String} bjjAddress
  * @returns {Boolean}
  */
-function isHermezBjjAddress (test) {
-  if (bjjAddressPattern.test(test)) {
-    return true
-  }
-  return false
+function isHermezBjjAddress (bjjAddress) {
+  return bjjAddressPattern.test(bjjAddress)
 }
 
 /**
