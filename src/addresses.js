@@ -4,6 +4,7 @@ import base64url from 'base64url'
 import { padZeros, extract } from './utils.js'
 
 const hermezPrefix = 'hez:'
+const ethereumAddressPattern = new RegExp('^0x[a-fA-F0-9]{40}$')
 const hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}$')
 const bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}$')
 const accountIndexPattern = new RegExp('^hez:[a-zA-Z0-9]{2,6}:[0-9]{0,9}$')
@@ -31,27 +32,30 @@ function getEthereumAddress (hezEthereumAddress) {
 }
 
 /**
- * Checks if given string matches regex of a Hermez address
- * @param {String} test
+ * Checks if given string matches regex of a Ethereum address
+ * @param {String} ethereumAddress
  * @returns {Boolean}
  */
-function isHermezEthereumAddress (test) {
-  if (hezEthereumAddressPattern.test(test)) {
-    return true
-  }
-  return false
+function isEthereumAddress (ethereumAddress) {
+  return ethereumAddressPattern.test(ethereumAddress)
+}
+
+/**
+ * Checks if given string matches regex of a Hermez address
+ * @param {String} hermezEthereumAddress
+ * @returns {Boolean}
+ */
+function isHermezEthereumAddress (hermezEthereumAddress) {
+  return hezEthereumAddressPattern.test(hermezEthereumAddress)
 }
 
 /**
  * Checks if given string matches regex of a Hermez BJJ address
- * @param {String} test
+ * @param {String} bjjAddress
  * @returns {Boolean}
  */
-function isHermezBjjAddress (test) {
-  if (bjjAddressPattern.test(test)) {
-    return true
-  }
-  return false
+function isHermezBjjAddress (bjjAddress) {
+  return bjjAddressPattern.test(bjjAddress)
 }
 
 /**
@@ -136,6 +140,7 @@ function getAySignFromBJJ (fromBjjCompressed) {
 export {
   getHermezAddress,
   getEthereumAddress,
+  isEthereumAddress,
   isHermezEthereumAddress,
   isHermezBjjAddress,
   isHermezAccountIndex,

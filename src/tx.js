@@ -8,7 +8,7 @@ import {
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_HIGH, GAS_LIMIT_LOW, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
 import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
@@ -85,6 +85,7 @@ const deposit = async (
   const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
 
   if (token.id === 0) {
+    overrides.gasLimit = GAS_LIMIT_LOW
     overrides.value = decompressedAmount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
   }
@@ -92,7 +93,7 @@ const deposit = async (
   await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
   // Deposits need a gas limit to not have to wait for the approve to occur
   // before calculating it automatically, which would slow down the process
-  overrides.gasLimit = GAS_LIMIT
+  overrides.gasLimit = GAS_LIMIT_HIGH
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
 
@@ -129,6 +130,7 @@ const forceExit = async (
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
 
   const overrides = {
+    gasLimit: GAS_LIMIT_LOW,
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
