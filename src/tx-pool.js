@@ -50,7 +50,7 @@ function getPoolTransactions (accountIndex, bJJ) {
         .map(({ id: transactionId }) => {
           return getPoolTransaction(transactionId)
             .then((transaction) => {
-              if (transaction.state === TxState.Forged) {
+              if (transaction.state === TxState.Forged || transaction.state === TxState.Invalid) {
                 removePoolTransaction(bJJ, transactionId)
                 return undefined
               } else {
