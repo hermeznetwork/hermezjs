@@ -115,8 +115,8 @@ test('#getFeeValue', () => {
 })
 
 test('#getMaxAmountFromMinimumFee', () => {
-  const fee = TxUtils.getMaxAmountFromMinimumFee(Scalar.fromString('32459016393442626'), Scalar.fromString('666000000000000000000'), 18)
-  expect(fee).toBe(Scalar.fromString('1531371228234255439'))
+  const fee = TxUtils.getMaxAmountFromMinimumFee(Scalar.fromString('32459016393442626'), Scalar.fromString('666000000000000000000'))
+  expect(fee).toBe(Scalar.fromString('665911354799599785458'))
 })
 
 describe('#getTransactionType', () => {

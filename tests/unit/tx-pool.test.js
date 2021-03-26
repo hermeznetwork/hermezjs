@@ -5,7 +5,6 @@ import * as TransactionPool from '../../src/tx-pool.js'
 import { setProvider, getProvider } from '../../src/providers.js'
 import { TRANSACTION_POOL_KEY } from '../../src/constants.js'
 import { HttpStatusCode } from '../../src/http.js'
-import { sleep } from '../helpers/helpers'
 
 test('#initializeTransactionPool', () => {
   TransactionPool.initializeTransactionPool()
@@ -13,7 +12,6 @@ test('#initializeTransactionPool', () => {
 })
 
 describe('#addPoolTransaction', () => {
-  const timeoutStore = 200
   const bjj1 = 'bjj1'
   const tx1 = {
     test: 1
@@ -44,26 +42,23 @@ describe('#addPoolTransaction', () => {
   })
 
   test('Adds a transaction to the pool', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
     const transactionPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(transactionPool[chainId][bjj1]).toEqual([tx1])
   })
 
   test('Adds a second transaction to the same BJJ account', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx2, bjj1)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
+    await TransactionPool.addPoolTransaction(tx2, bjj1)
+
     const transactionPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(transactionPool[chainId][bjj1]).toEqual([tx1, tx2])
   })
 
   test('Adds a transaction to a second BJJ account', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx3, bjj2)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
+    await TransactionPool.addPoolTransaction(tx3, bjj2)
+
     const transactionPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(transactionPool[chainId][bjj1]).toEqual([tx1])
     expect(transactionPool[chainId][bjj2]).toEqual([tx3])
@@ -71,8 +66,6 @@ describe('#addPoolTransaction', () => {
 })
 
 describe('#removePoolTransaction', () => {
-  const timeoutStore = 200
-
   const bjj1 = 'bjj1'
   const id1 = 1
   const tx1 = {
@@ -106,42 +99,37 @@ describe('#removePoolTransaction', () => {
   })
 
   test('Removes a transaction from the pool', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
     const initialPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(initialPool[chainId][bjj1]).toEqual([tx1])
 
-    TransactionPool.removePoolTransaction(bjj1, id1)
-    await sleep(timeoutStore)
+    await TransactionPool.removePoolTransaction(bjj1, id1)
     const finalPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(finalPool[chainId][bjj1]).toEqual([])
   })
 
   test('Removes correct transaction when there are multiple with the same BJJ account', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx2, bjj1)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
+    await TransactionPool.addPoolTransaction(tx2, bjj1)
+
     const initialPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(initialPool[chainId][bjj1]).toEqual([tx1, tx2])
 
-    TransactionPool.removePoolTransaction(bjj1, id1)
-    await sleep(timeoutStore)
+    await TransactionPool.removePoolTransaction(bjj1, id1)
     const finalPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(finalPool[chainId][bjj1]).toEqual([tx2])
   })
 
   test('Removes a transaction from the correct BJJ account', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx3, bjj2)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
+    await TransactionPool.addPoolTransaction(tx3, bjj2)
+
     const initialPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(initialPool[chainId][bjj1]).toEqual([tx1])
     expect(initialPool[chainId][bjj2]).toEqual([tx3])
 
-    TransactionPool.removePoolTransaction(bjj1, id1)
-    await sleep(timeoutStore)
+    await TransactionPool.removePoolTransaction(bjj1, id1)
+
     const finalPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(finalPool[chainId][bjj1]).toEqual([])
     expect(finalPool[chainId][bjj2]).toEqual([tx3])
@@ -149,8 +137,6 @@ describe('#removePoolTransaction', () => {
 })
 
 describe('#getPoolTransactions', () => {
-  const timeoutStore = 200
-
   const bjj1 = 'bjj1'
   const accountIndex1 = 1
   const id1 = 1
@@ -192,21 +178,18 @@ describe('#getPoolTransactions', () => {
   })
 
   test('Fetches transaction from the pool', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx2, bjj1)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
+    await TransactionPool.addPoolTransaction(tx2, bjj1)
+
     const txs = await TransactionPool.getPoolTransactions(accountIndex1, bjj1)
     expect(txs).toEqual([tx1, tx1])
   })
 
   test('Fetches transaction from the pool, only from the correct account index', async () => {
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx2, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx3, bjj2)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
+    await TransactionPool.addPoolTransaction(tx2, bjj1)
+    await TransactionPool.addPoolTransaction(tx3, bjj2)
+
     const txs = await TransactionPool.getPoolTransactions(accountIndex1, bjj1)
 
     expect(txs).toEqual([tx1, tx1])
@@ -225,15 +208,14 @@ describe('#getPoolTransactions', () => {
       }
     })
 
-    TransactionPool.addPoolTransaction(tx1, bjj1)
-    await sleep(timeoutStore)
-    TransactionPool.addPoolTransaction(tx2, bjj1)
-    await sleep(timeoutStore)
+    await TransactionPool.addPoolTransaction(tx1, bjj1)
+    await TransactionPool.addPoolTransaction(tx2, bjj1)
+
     const initialPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
     expect(initialPool[chainId][bjj1]).toEqual([tx1, tx2])
 
     const txs = await TransactionPool.getPoolTransactions(accountIndex1, bjj1)
-    await sleep(timeoutStore)
+
     expect(txs).toEqual([tx1])
 
     const finalPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
