@@ -97,9 +97,9 @@ async function getAccount (accountIndex, axiosConfig = {}) {
 }
 
 /**
- * GET request to the /transactions-histroy endpoint. Returns a list of forged transaction based on certain filters
+ * GET request to the /transactions-history endpoint. Returns a list of forged transaction based on certain filters
  * @param {String} address - Filter by the address that sent or received the transactions. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
- * @param {Number} tokenId - token ID as registered in the network
+ * @param {Number} tokenId - Token ID as registered in the network
  * @param {Number} batchNum - Filter by batch number
  * @param {String} accountIndex - Filter by an account index that sent or received the transactions
  * @param {Number} fromItem - Item from where to start the request
@@ -110,7 +110,7 @@ async function getTransactions (address, tokenId, batchNum, accountIndex, fromIt
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
-    ...(tokenId ? { tokenId } : {}),
+    ...(typeof tokenId !== 'undefined' ? { tokenId } : {}),
     ...(batchNum ? { batchNum } : {}),
     ...(accountIndex ? { accountIndex } : {}),
     ..._getPageData(fromItem, order, limit)
