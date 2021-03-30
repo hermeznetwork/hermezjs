@@ -181,16 +181,23 @@ function getFeeValue (feeIndex, amount) {
  * @returns {Scalar} - Max amount that can be sent
  */
 function getMaxAmountFromMinimumFee (minimumFee, balance) {
-  let maxAmount = balance
+  let maxAmount = Scalar.fromString(balance.toString())
   let bestRemainingAmount = Scalar.add(balance, Scalar.fromString(1))
   let isNotBestRemainingAmount = true
   let i = 0
   while (isNotBestRemainingAmount) {
     const feeIndex = getFeeIndex(minimumFee, maxAmount)
     const fee = getFeeValue(feeIndex, maxAmount)
+
+    if (Scalar.geq(fee, maxAmount)) {
+      maxAmount = Scalar.fromString(0)
+      isNotBestRemainingAmount = false
+      break
+    }
+
     const amountAndFee = Scalar.add(maxAmount, fee)
     if (Scalar.gt(amountAndFee, balance)) {
-      // maxAmount - (maxAmount + fee - balance)
+      // Equation: maxAmount - (maxAmount + fee - balance)
       maxAmount = Scalar.sub(balance, fee)
     } else {
       const remainingAmount = Scalar.sub(balance, amountAndFee)
