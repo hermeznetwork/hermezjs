@@ -86,7 +86,7 @@ class HermezCompressedAmount {
   static floorCompressAmount (_f) {
     const f = Scalar.e(_f)
     if (Scalar.isZero(f)) {
-      return 0
+      return new HermezCompressedAmount(0)
     }
 
     let m = f
