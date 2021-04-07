@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 
-import * as Providers from '../src/providers.js'
+import * as Providers from '../../src/providers.js'
 
 test('#getProvider', () => {
   const providerUrl = 'http://localhost:8545'
