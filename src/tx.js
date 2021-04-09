@@ -16,6 +16,7 @@ import { getProvider } from './providers.js'
 import { generateL2Transaction } from './tx-utils.js'
 import HermezABI from './abis/HermezABI.js'
 import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
+import ERC20ABI from './abis/ERC20ABI.js'
 import { SignerType } from './signers.js'
 import { buildZkInputWithdraw, buildProofContract } from './withdraw-utils.js'
 
@@ -64,6 +65,7 @@ const deposit = async (
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
+  const tokenContract = getContract(token.ethereumAddress, ERC20ABI, txSignerData, providerUrl)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
@@ -93,7 +95,9 @@ const deposit = async (
   await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
   // Deposits need a gas limit to not have to wait for the approve to occur
   // before calculating it automatically, which would slow down the process
-  overrides.gasLimit = GAS_LIMIT_HIGH
+  const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, overrides)
+  const estimatedTransferGas = Number(estimatedTransferGasBigNumber.toString()) + GAS_LIMIT_HIGH
+  overrides.gasLimit = estimatedTransferGas
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
 
