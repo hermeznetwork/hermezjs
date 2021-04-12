@@ -1,4 +1,4 @@
-import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
+import { HermezCompressedAmount } from '../../src/hermez-compressed-amount.js'
 
 test('#vectors floating point number', () => {
   const testVector = [

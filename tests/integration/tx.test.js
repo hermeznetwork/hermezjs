@@ -1,19 +1,18 @@
-import { jest } from '@jest/globals'
-import axios from 'axios'
 import path from 'path'
 import { ethers } from 'ethers'
 
 import { Scalar } from 'ffjavascript'
 
-import * as Tx from '../src/tx.js'
-import * as TransactionPool from '../src/tx-pool.js'
-import * as CoordinatorAPI from '../src/api.js'
-import { TRANSACTION_POOL_KEY } from '../src/constants.js'
-import { getEthereumAddress } from '../src/addresses.js'
-import { createWalletFromEtherAccount, createWalletFromBjjPvtKey } from '../src/hermez-wallet.js'
-import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
-import { getTokenAmountBigInt } from '../src/utils.js'
-import { getL1TxIdFromReceipt, assertTxForged, assertBalances } from './helpers/helpers.js'
+import * as Tx from '../../src/tx.js'
+import * as TransactionPool from '../../src/tx-pool.js'
+import * as CoordinatorAPI from '../../src/api.js'
+import { getEthereumAddress } from '../../src/addresses.js'
+import { createWalletFromEtherAccount, createWalletFromBjjPvtKey } from '../../src/hermez-wallet.js'
+import { HermezCompressedAmount } from '../../src/hermez-compressed-amount.js'
+import { getTokenAmountBigInt } from '../../src/utils.js'
+import { getL1TxIdFromReceipt, assertTxForged, assertBalances } from '../helpers/helpers.js'
+
+// Requires `integration-testing` environment running
 
 describe('Full flow', () => {
   const urlEthNode = 'http://localhost:8545'
@@ -358,35 +357,5 @@ describe('Full flow', () => {
       accounts[0].hermezWallet.hermezEthereumAddress)))
 
     expect(Scalar.gt(newBalance, oldBalance)).toEqual(true)
-  })
-
-  test.skip('#sendL2Transaction mock', async () => {
-    jest.mock('axios')
-
-    const txId = '0x000000000000000007000300'
-    const bjj = ''
-    const tx = {
-      id: txId,
-      bJJ: bjj,
-      nonce: 2
-    }
-    axios.post = jest.fn().mockResolvedValue({
-      status: 200,
-      data: txId
-    })
-    TransactionPool.initializeTransactionPool()
-
-    const txResult = await Tx.sendL2Transaction(tx, bjj)
-    expect(txResult).toEqual({
-      status: 200,
-      id: txId,
-      nonce: 2
-    })
-
-    const transactionPool = JSON.parse(TransactionPool._storage.getItem(TRANSACTION_POOL_KEY))
-    expect(transactionPool[bjj]).toEqual([tx])
-
-    axios.post.mockRestore()
-    TransactionPool._storage.clear()
   })
 })

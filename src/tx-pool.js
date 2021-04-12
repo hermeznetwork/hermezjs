@@ -50,16 +50,15 @@ function getPoolTransactions (accountIndex, bJJ) {
         .map(({ id: transactionId }) => {
           return getPoolTransaction(transactionId)
             .then((transaction) => {
-              if (transaction.state === TxState.Forged || transaction.state === TxState.Invalid) {
-                removePoolTransaction(bJJ, transactionId)
-                return undefined
+              if (transaction.state === TxState.Forged) {
+                return removePoolTransaction(bJJ, transactionId)
               } else {
                 return transaction
               }
             })
             .catch(err => {
               if (err.response.status === HttpStatusCode.NOT_FOUND) {
-                removePoolTransaction(bJJ, transactionId)
+                return removePoolTransaction(bJJ, transactionId)
               }
             })
         })
@@ -77,12 +76,13 @@ function getPoolTransactions (accountIndex, bJJ) {
  * Adds a transaction to the transaction pool
  * @param {String} transaction - The transaction to add to the pool
  * @param {String} bJJ - The account with which the transaction was made
+ * @returns {Promise}
  */
 function addPoolTransaction (transaction, bJJ) {
   const provider = getProvider()
   const transactionPool = JSON.parse(storage.getItem(constants.TRANSACTION_POOL_KEY))
 
-  provider.getNetwork().then(({ chainId }) => {
+  return provider.getNetwork().then(({ chainId }) => {
     const chainIdTransactionPool = transactionPool[chainId] || {}
     const accountTransactionPool = chainIdTransactionPool[bJJ] || []
     const newTransactionPool = {
@@ -101,12 +101,13 @@ function addPoolTransaction (transaction, bJJ) {
  * Removes a transaction from the transaction pool
  * @param {String} bJJ - The account with which the transaction was originally made
  * @param {String} transactionId - The transaction identifier to remove from the pool
+ * @returns {Promise}
  */
 function removePoolTransaction (bJJ, transactionId) {
   const provider = getProvider()
   const transactionPool = JSON.parse(storage.getItem(constants.TRANSACTION_POOL_KEY))
 
-  provider.getNetwork().then(({ chainId }) => {
+  return provider.getNetwork().then(({ chainId }) => {
     const chainIdTransactionPool = transactionPool[chainId] || {}
     const accountTransactionPool = chainIdTransactionPool[bJJ] || []
     const newTransactionPool = {

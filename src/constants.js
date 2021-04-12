@@ -8,7 +8,7 @@ const EIP_712_PROVIDER = 'Hermez Network'
 
 const ETHER_TOKEN_ID = 0
 
-const GAS_LIMIT_HIGH = 200000
+const GAS_LIMIT_HIGH = 170000
 const GAS_LIMIT_LOW = 150000
 // @deprecated
 const GAS_LIMIT = GAS_LIMIT_HIGH

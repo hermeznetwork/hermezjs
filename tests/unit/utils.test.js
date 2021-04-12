@@ -1,4 +1,4 @@
-import * as utils from '../src/utils.js'
+import * as utils from '../../src/utils.js'
 
 test('#hexToBuffer', () => {
   const testString = '1122334455aa'
