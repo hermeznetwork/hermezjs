@@ -1,11 +1,12 @@
-import { getBaseApiUrl } from '../src/api'
-import { ContractNames, CONTRACT_ADDRESSES } from '../src/constants'
-import { setEnvironment, getBatchExplorerUrl, isEnvironmentSupported, getSupportedEnvironments } from '../src/environment'
+import { getBaseApiUrl } from '../../src/api'
+import { ContractNames, CONTRACT_ADDRESSES } from '../../src/constants'
+import { setEnvironment, getBatchExplorerUrl, isEnvironmentSupported, getSupportedEnvironments } from '../../src/environment'
 
 test('#getSupportedEnvironments', () => {
   const supportedEnvironments = getSupportedEnvironments()
 
-  expect(supportedEnvironments).toHaveLength(2)
+  expect(supportedEnvironments).toHaveLength(3)
+  expect(supportedEnvironments).toContainEqual({ name: 'Mainnet', chainId: 1 })
   expect(supportedEnvironments).toContainEqual({ name: 'Rinkeby', chainId: 4 })
   expect(supportedEnvironments).toContainEqual({ name: 'Localhost', chainId: 1337 })
 })
@@ -13,7 +14,7 @@ test('#getSupportedEnvironments', () => {
 test('#isEnvironmentSupported', () => {
   expect(isEnvironmentSupported(4)).toBe(true)
   expect(isEnvironmentSupported(1337)).toBe(true)
-  expect(isEnvironmentSupported(1)).toBe(false)
+  expect(isEnvironmentSupported(1)).toBe(true)
 })
 
 test('#setEnvironment', () => {

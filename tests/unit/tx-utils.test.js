@@ -2,9 +2,9 @@ import { jest } from '@jest/globals'
 import axios from 'axios'
 import { Scalar } from 'ffjavascript'
 
-import * as TransactionPool from '../src/tx-pool.js'
-import * as TxUtils from '../src/tx-utils.js'
-import { HermezCompressedAmount } from '../src/hermez-compressed-amount.js'
+import * as TransactionPool from '../../src/tx-pool.js'
+import * as TxUtils from '../../src/tx-utils.js'
+import { HermezCompressedAmount } from '../../src/hermez-compressed-amount.js'
 
 const transferTransaction = {
   type: 'Transfer',
@@ -115,8 +115,8 @@ test('#getFeeValue', () => {
 })
 
 test('#getMaxAmountFromMinimumFee', () => {
-  const fee = TxUtils.getMaxAmountFromMinimumFee(Scalar.fromString('32459016393442626'), Scalar.fromString('666000000000000000000'), 18)
-  expect(fee).toBe(Scalar.fromString('1531371228234255439'))
+  const fee = TxUtils.getMaxAmountFromMinimumFee(Scalar.fromString('32459016393442626'), Scalar.fromString('666000000000000000000'))
+  expect(fee).toBe(Scalar.fromString('665911354799599785458'))
 })
 
 describe('#getTransactionType', () => {

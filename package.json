@@ -20,11 +20,14 @@
     "test": "tests"
   },
   "scripts": {
+    "start-local-blockchain": "npx ganache-cli > /dev/null &",
+    "stop-local-blockchain": "./tests/helpers/stop-local-blockchain.sh",
     "build-node": "babel src --out-dir dist/node",
     "prebuild": "rm -rf dist",
     "build-publish": "npm run build-node && npm publish",
     "test": "jest",
-    "test:int": "jest --forceExit --detectOpenHandles",
+    "test:integration": "jest --forceExit --detectOpenHandles ./tests/integration/*",
+    "test:unit": "npm run start-local-blockchain && jest ./tests/unit/* && npm run stop-local-blockchain",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
@@ -57,6 +60,7 @@
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.1.0",
     "eslint": "^7.11.0",
+    "ganache-cli": "^6.12.2",
     "husky": "^4.3.0",
     "jest": "^26.6.3",
     "lint-staged": "^10.4.2",

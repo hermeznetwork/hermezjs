@@ -1,4 +1,4 @@
-import * as addresses from '../src/addresses.js'
+import * as addresses from '../../src/addresses.js'
 
 const ethereumAddress = '0x4294cE558F2Eb6ca4C3191AeD502cF0c625AE995'
 const hermezEthereumAddress = 'hez:0x4294cE558F2Eb6ca4C3191AeD502cF0c625AE995'
