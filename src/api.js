@@ -62,11 +62,20 @@ function getForgerUrls (nextForgerUrls) {
  */
 function filterResponses (responsesArray) {
   const invalidResponses = responsesArray.filter((res) => res.isAxiosError)
-  if (invalidResponses.length) {
+  if (invalidResponses.length === responsesArray.length) {
     throw invalidResponses[0]
   } else {
     return responsesArray.filter((res) => !res.isAxiosError)[0]
   }
+}
+
+/**
+ * Fetches the URLs of the next forgers from the /state API
+ * @returns {Array} An array of URLs of the next forgers
+ */
+async function getNextForgerUrls () {
+  const coordinatorState = await getState()
+  return [...new Set(coordinatorState.network.nextForgers.map((nextForger) => nextForger.coordinator.URL))]
 }
 
 /**
@@ -143,6 +152,9 @@ async function getPoolTransaction (transactionId, axiosConfig = {}) {
  * @returns {String} Transaction id
  */
 async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfig = {}) {
+  nextForgerUrls = nextForgerUrls.length === 0
+    ? await getNextForgerUrls()
+    : nextForgerUrls
   return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
     return axios.post(`${apiUrl}/${API_VERSION}/transactions-pool`, transaction, axiosConfig).catch((error) => error)
   })).then(filterResponses)
@@ -286,7 +298,10 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
  * @returns {Object} Response data
  */
 async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, nextForgerUrls = [], axiosConfig = {}) {
-  return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
+  nextForgerUrls = nextForgerUrls.length === 0
+    ? getNextForgerUrls()
+    : nextForgerUrls
+  return Promise.allSettled(getForgerUrls(nextForgerUrls).map((apiUrl) => {
     return axios.post(`${apiUrl}/${API_VERSION}/account-creation-authorization`, {
       hezEthereumAddress,
       bjj: bJJ,
