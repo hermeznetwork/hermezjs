@@ -21,6 +21,11 @@ describe('Txs', () => {
   beforeAll(async () => {
     setProvider(providerUrl)
     chainId = (await getProvider().getNetwork()).chainId
+
+    axios.post = jest.fn().mockResolvedValue({
+      status: 200,
+      data: txId
+    })
   })
 
   afterAll(async () => {
@@ -29,12 +34,8 @@ describe('Txs', () => {
   })
 
   test('#sendL2Transaction mock', async () => {
-    axios.post = jest.fn().mockResolvedValue({
-      status: 200,
-      data: txId
-    })
     TransactionPool.initializeTransactionPool()
-    const txResult = await Tx.sendL2Transaction(tx, bjj, [], true)
+    const txResult = await Tx.sendL2Transaction(tx, bjj, ['http://127.0.0.1:8086'], true)
 
     expect(txResult).toEqual({
       status: 200,
