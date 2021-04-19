@@ -56,6 +56,7 @@ const deposit = async (
   babyJubJub,
   signerData,
   providerUrl,
+  gasLimit,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
@@ -87,7 +88,7 @@ const deposit = async (
   const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
 
   if (token.id === 0) {
-    overrides.gasLimit = GAS_LIMIT_LOW
+    overrides.gasLimit = typeof gasLimit !== 'undefined' ? gasLimit : GAS_LIMIT_LOW
     overrides.value = decompressedAmount
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
   }
@@ -95,9 +96,13 @@ const deposit = async (
   await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
   // Deposits need a gas limit to not have to wait for the approve to occur
   // before calculating it automatically, which would slow down the process
-  const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, overrides)
-  const estimatedTransferGas = Number(estimatedTransferGasBigNumber.toString()) + GAS_LIMIT_HIGH
-  overrides.gasLimit = estimatedTransferGas
+  if (typeof gasLimit !== 'undefined') {
+    overrides.gasLimit = gasLimit
+  } else {
+    const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, overrides)
+    const estimatedTransferGas = Number(estimatedTransferGasBigNumber.toString()) + GAS_LIMIT_HIGH
+    overrides.gasLimit = estimatedTransferGas
+  }
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
 
@@ -119,6 +124,7 @@ const forceExit = async (
   token,
   signerData,
   providerUrl,
+  gasLimit,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
@@ -134,7 +140,7 @@ const forceExit = async (
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
 
   const overrides = {
-    gasLimit: GAS_LIMIT_LOW,
+    gasLimit: typeof gasLimit !== 'undefined' ? gasLimit : GAS_LIMIT_LOW,
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
 
@@ -178,6 +184,7 @@ const withdraw = async (
   isInstant = true,
   signerData,
   providerUrl,
+  gasLimit,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   const account = await getAccount(accountIndex)
@@ -191,6 +198,11 @@ const withdraw = async (
   const overrides = {
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
+
+  if (typeof gasLimit !== 'undefined') {
+    overrides.gasLimit = gasLimit
+  }
+
   const transactionParameters = [
     token.id,
     amount,
@@ -223,6 +235,7 @@ const withdrawCircuit = async (
   zkeyFilePath,
   signerData,
   providerUrl,
+  gasLimit,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, signerData, providerUrl)
@@ -236,6 +249,11 @@ const withdrawCircuit = async (
   const overrides = {
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
+
+  if (typeof gasLimit !== 'undefined') {
+    overrides.gasLimit = gasLimit
+  }
+
   const transactionParameters = [
     zkProofContract.proofA,
     zkProofContract.proofB,
@@ -266,6 +284,7 @@ const delayedWithdraw = async (
   token,
   signerData,
   providerUrl,
+  gasLimit,
   gasMultiplier = GAS_MULTIPLIER
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
@@ -274,6 +293,10 @@ const delayedWithdraw = async (
 
   const overrides = {
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
+  }
+
+  if (typeof gasLimit !== 'undefined') {
+    overrides.gasLimit = gasLimit
   }
 
   const transactionParameters = [
