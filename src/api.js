@@ -299,7 +299,7 @@ async function getBids (slotNum, bidderAddr, fromItem, order = PaginationOrder.A
  */
 async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signature, nextForgerUrls = [], axiosConfig = {}) {
   nextForgerUrls = nextForgerUrls.length === 0
-    ? getNextForgerUrls()
+    ? await getNextForgerUrls()
     : nextForgerUrls
   return Promise.allSettled(getForgerUrls(nextForgerUrls).map((apiUrl) => {
     return axios.post(`${apiUrl}/${API_VERSION}/account-creation-authorization`, {
