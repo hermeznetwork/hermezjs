@@ -6,9 +6,9 @@ const {
 } = require('./constants.js')
 
 function getRandomPrivKey (length) {
-  var randomChars = 'ABCDEF0123456789'
-  var result = ''
-  for (var i = 0; i < length; i++) {
+  const randomChars = 'ABCDEF0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
     result += randomChars.charAt(Math.floor(Math.random() * randomChars.length))
   }
   return result
@@ -57,12 +57,11 @@ async function main () {
     fee: fee
   }
 
-  // Transfer should fail because there is no account authoization
+  // Transfer should fail because there is no account authorization
   await hermez.Tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token).catch(console.log)
 
   // performs create account authorization account 2
   const signature = await hermezWallet2.signCreateAccountAuthorization(EXAMPLES_WEB3_URL, { type: 'WALLET', privateKey: privKey2 })
-  console.log(hermezWallet2.hermezEthereumAddress, hermezWallet2.publicKeyBase64, signature)
   await hermez.CoordinatorAPI.postCreateAccountAuthorization(
     hermezWallet2.hermezEthereumAddress,
     hermezWallet2.publicKeyBase64,
