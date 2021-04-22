@@ -33,7 +33,7 @@ async function main () {
   const hermezWallet2 = wallet2.hermezWallet
 
   // share public bjj key with the user
-  console.log(`Transfer funds to this hermez address:\n   ${hermezWallet.publicKeyBase64}\n\n`)
+  console.log(`Transfer funds to this hermez address:\n   ${hermezWallet2.publicKeyBase64}\n\n`)
 
   const state = await hermez.CoordinatorAPI.getState()
   const usdTokenExchangeRate = tokenERC20.USD
