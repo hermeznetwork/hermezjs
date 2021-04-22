@@ -8,7 +8,7 @@ import {
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_HIGH, GAS_LIMIT_LOW, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_HIGH, GAS_LIMIT_LOW, GAS_STANDARD_ERC20_TX, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
 import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
@@ -99,9 +99,13 @@ const deposit = async (
   if (typeof gasLimit !== 'undefined') {
     overrides.gasLimit = gasLimit
   } else {
-    const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, overrides)
-    const estimatedTransferGas = Number(estimatedTransferGasBigNumber.toString()) + GAS_LIMIT_HIGH
-    overrides.gasLimit = estimatedTransferGas
+    try {
+      const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, overrides)
+      const estimatedTransferGas = Number(estimatedTransferGasBigNumber.toString()) + GAS_LIMIT_HIGH
+      overrides.gasLimit = estimatedTransferGas
+    } catch (err) {
+      overrides.gasLimit = GAS_LIMIT_HIGH + GAS_STANDARD_ERC20_TX
+    }
   }
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
