@@ -8,7 +8,9 @@ const HttpStatusCode = {
  * @returns {Object} http data
 */
 async function extractJSON (request) {
-  return request.then(response => response.data)
+  const response = await request
+
+  return response.data
 }
 
 export {
