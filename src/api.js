@@ -185,7 +185,7 @@ async function getExits (address, onlyPendingWithdraws, tokenId, axiosConfig = {
  * @returns {Object} Response data with the specific exit
  */
 async function getExit (batchNum, accountIndex, axiosConfig = {}) {
-  return await extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/exits/${batchNum}/${accountIndex}`, axiosConfig))
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/exits/${batchNum}/${accountIndex}`, axiosConfig))
 }
 
 /**
@@ -218,9 +218,7 @@ async function getToken (tokenId, axiosConfig = {}) {
  * @returns {Object} Response data with the current state of the coordinator
  */
 async function getState (axiosConfig = {}) {
-  const state = await extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/state`, axiosConfig))
-
-  return state
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/state`, axiosConfig))
 }
 
 /**
