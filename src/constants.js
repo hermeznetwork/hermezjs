@@ -50,7 +50,7 @@ const WITHDRAWAL_CIRCUIT_NLEVELS = 32
 
 const WITHDRAWAL_WASM_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw.wasm'
 
-const WITHDRAWAL_ZKEY_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw_hez3_final.zkey'
+const WITHDRAWAL_ZKEY_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw_hez4_final.zkey'
 
 export {
   TRANSACTION_POOL_KEY,
