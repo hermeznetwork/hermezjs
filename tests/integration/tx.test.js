@@ -342,7 +342,7 @@ describe('Full flow', () => {
 
     // setup paths for wasm and zkey files
     const wasmFilePath = path.join(__dirname, '../withdraw-circuit-files/withdraw.wasm')
-    const zkeyFilePath = path.join(__dirname, '../withdraw-circuit-files/withdraw_hez3_final.zkey')
+    const zkeyFilePath = path.join(__dirname, '../withdraw-circuit-files/withdraw_hez4_final.zkey')
 
     const withdrawCircuitTxData = await Tx.withdrawCircuit(
       exitInfo,

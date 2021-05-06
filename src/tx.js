@@ -8,7 +8,7 @@ import {
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_HIGH, GAS_LIMIT_LOW, GAS_STANDARD_ERC20_TX, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL, GAS_LIMIT_WITHDRAW } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_LOW, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
 import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
@@ -16,9 +16,9 @@ import { getProvider } from './providers.js'
 import { generateL2Transaction } from './tx-utils.js'
 import HermezABI from './abis/HermezABI.js'
 import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
-import ERC20ABI from './abis/ERC20ABI.js'
 import { SignerType } from './signers.js'
 import { buildZkInputWithdraw, buildProofContract } from './withdraw-utils.js'
+import { estimateDepositGasLimit, estimateWithdrawGasLimit } from './tx-fees.js'
 
 /**
  * Get current average gas price from the last ethereum blocks and multiply it
@@ -66,7 +66,6 @@ const deposit = async (
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
-  const tokenContract = getContract(token.ethereumAddress, ERC20ABI, txSignerData, providerUrl)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
@@ -87,26 +86,20 @@ const deposit = async (
 
   const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
 
+  // Deposits need a gas limit to not have to wait for the approve to occur
+  // before calculating it automatically, which would slow down the process
+  overrides.gasLimit = typeof gasLimit === 'undefined'
+    ? await estimateDepositGasLimit(token, decompressedAmount, overrides, txSignerData, providerUrl)
+    : gasLimit
+
   if (token.id === 0) {
-    overrides.gasLimit = typeof gasLimit !== 'undefined' ? gasLimit : GAS_LIMIT_LOW
     overrides.value = decompressedAmount
+
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
   }
 
   await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
-  // Deposits need a gas limit to not have to wait for the approve to occur
-  // before calculating it automatically, which would slow down the process
-  if (typeof gasLimit !== 'undefined') {
-    overrides.gasLimit = gasLimit
-  } else {
-    try {
-      const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, overrides)
-      const estimatedTransferGas = Number(estimatedTransferGasBigNumber.toString()) + GAS_LIMIT_HIGH
-      overrides.gasLimit = estimatedTransferGas
-    } catch (err) {
-      overrides.gasLimit = GAS_LIMIT_HIGH + GAS_STANDARD_ERC20_TX
-    }
-  }
+
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
 
@@ -198,23 +191,12 @@ const withdraw = async (
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
-  const tokenContract = getContract(token.ethereumAddress, ERC20ABI, txSignerData, providerUrl)
 
   const overrides = {
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
-  }
-
-  if (typeof gasLimit !== 'undefined') {
-    overrides.gasLimit = gasLimit
-  } else {
-    try {
-      const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], amount, overrides)
-      // 230k + Transfer cost + (31k * siblings.length)
-      const estimatedTransferGas = GAS_LIMIT_WITHDRAW + Number(estimatedTransferGasBigNumber.toString()) + (31000 * merkleSiblings.length)
-      overrides.gasLimit = estimatedTransferGas
-    } catch (err) {
-      overrides.gasLimit = GAS_LIMIT_WITHDRAW + GAS_STANDARD_ERC20_TX + (31000 * merkleSiblings.length)
-    }
+    gasPrice: await getGasPrice(gasMultiplier, providerUrl),
+    gasLimit: typeof gasLimit === 'undefined'
+      ? await estimateWithdrawGasLimit(token, merkleSiblings.length, txSignerData, providerUrl)
+      : gasLimit
   }
 
   const transactionParameters = [

@@ -165,14 +165,16 @@ async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfi
  * @param {String} address - Filter by the address associated to the exits. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
  * @param {Boolean} onlyPendingWithdraws - Filter by exits that still haven't been withdrawn
  * @param {Number} tokenId - Filter by token id
+ * @param {Number} fromItem - Item from where to start the request
  * @returns {Object} Response data with the list of exits
  */
-async function getExits (address, onlyPendingWithdraws, tokenId, axiosConfig = {}) {
+async function getExits (address, onlyPendingWithdraws, tokenId, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
     ...(onlyPendingWithdraws ? { onlyPendingWithdraws } : {}),
-    ...(typeof tokenId !== 'undefined' ? { tokenId } : {})
+    ...(typeof tokenId !== 'undefined' ? { tokenId } : {}),
+    ..._getPageData(fromItem, order, limit)
   }
 
   return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/exits`, { ...axiosConfig, params }))

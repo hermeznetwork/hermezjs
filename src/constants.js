@@ -12,6 +12,7 @@ const GAS_LIMIT_HIGH = 170000
 const GAS_LIMIT_LOW = 150000
 const GAS_STANDARD_ERC20_TX = 30000
 const GAS_LIMIT_WITHDRAW = 230000
+const SIBLING_GAS_COST = 31000
 
 // @deprecated
 const GAS_LIMIT = GAS_LIMIT_HIGH
@@ -50,7 +51,7 @@ const WITHDRAWAL_CIRCUIT_NLEVELS = 32
 
 const WITHDRAWAL_WASM_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw.wasm'
 
-const WITHDRAWAL_ZKEY_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw_hez3_final.zkey'
+const WITHDRAWAL_ZKEY_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw_hez4_final.zkey'
 
 export {
   TRANSACTION_POOL_KEY,
@@ -64,6 +65,7 @@ export {
   GAS_LIMIT_LOW,
   GAS_STANDARD_ERC20_TX,
   GAS_LIMIT_WITHDRAW,
+  SIBLING_GAS_COST,
   GAS_MULTIPLIER,
   DEFAULT_PAGE_SIZE,
   API_VERSION,
