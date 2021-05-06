@@ -2,6 +2,7 @@ import * as HermezWallet from './hermez-wallet.js'
 import * as Utils from './utils.js'
 import * as Tx from './tx.js'
 import * as TxUtils from './tx-utils.js'
+import * as TxFees from './tx-fees.js'
 import * as TxPool from './tx-pool.js'
 import * as CoordinatorAPI from './api.js'
 import * as Constants from './constants.js'
@@ -17,6 +18,7 @@ export {
   Utils,
   Tx,
   TxUtils,
+  TxFees,
   TxPool,
   CoordinatorAPI,
   Constants,
@@ -33,6 +35,7 @@ export default {
   Utils,
   Tx,
   TxUtils,
+  TxFees,
   TxPool,
   CoordinatorAPI,
   Constants,
