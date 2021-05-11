@@ -312,6 +312,66 @@ test('#_buildTxCompressedData', () => {
   }
 })
 
+test('#buildTxCompressedDataV2', () => {
+  const testVectors = [
+    {
+      tx: {
+        fromAccountIndex: Scalar.sub(Scalar.shl(1, 48), 1),
+        toAccountIndex: Scalar.sub(Scalar.shl(1, 48), 1),
+        amount: Scalar.fromString('343597383670000000000000000000000000000000'), // 0xFFFFFFFFFF in float40
+        tokenId: Scalar.sub(Scalar.shl(1, 32), 1),
+        nonce: Scalar.sub(Scalar.shl(1, 40), 1),
+        fee: Scalar.sub(Scalar.shl(1, 3), 1),
+        toBjjSign: true
+      },
+      txCompressedDataV2: '107ffffffffffffffffffffffffffffffffffffffffffffffffffff'
+    },
+    {
+      tx: {
+        fromAccountIndex: 0,
+        toAccountIndex: 0,
+        amount: 0,
+        tokenId: 0,
+        nonce: 0,
+        fee: 0,
+        toBjjSign: false
+      },
+      txCompressedDataV2: '0'
+    },
+    {
+      tx: {
+        fromAccountIndex: 324,
+        toAccountIndex: 256,
+        amount: 10000000000000000000,
+        tokenId: 1,
+        nonce: 76,
+        fee: 214,
+        toBjjSign: false
+      },
+      txCompressedDataV2: 'd6000000004c000000014a540be400000000000100000000000144'
+    },
+    {
+      tx: {
+        fromAccountIndex: 1,
+        toAccountIndex: 2,
+        amount: 3,
+        tokenId: 4,
+        nonce: 5,
+        fee: 6,
+        toBjjSign: false
+      },
+      txCompressedDataV2: '60000000005000000040000000003000000000002000000000001'
+    }
+  ]
+
+  for (let i = 0; i < testVectors.length; i++) {
+    const { tx, txCompressedDataV2 } = testVectors[i]
+
+    const computeTxCompressedData = TxUtils.buildTxCompressedDataV2(tx)
+    expect(computeTxCompressedData.toString(16)).toBe(txCompressedDataV2)
+  }
+})
+
 test('#buildTransactionHashMessage', () => {
   const testVectors = [
     {
@@ -339,7 +399,7 @@ test('#buildTransactionHashMessage', () => {
         toEthereumAddress: '0x925a82559d756f06930e7686eda18f0928d06633',
         toBjjAy: 'ee073100c0b25c40524317bd011ce832b10633810a7c3cd3c9f59aaa02e9b9d',
         rqTxCompressedDataV2: Scalar.sub(Scalar.shl(1, 193), 1),
-        rqToEthAddr: '0x90ad476d5877c05262a74485393df18869965405',
+        rqToEthereumAddress: '0x90ad476d5877c05262a74485393df18869965405',
         rqToBjjAy: '2d80c8e0a35c065ba5f8ec53d59282ca7664231704866d3875c338055b05dc39'
       },
       hashSignature: '2ed59795dac2758098e09cfd93c09936a5a7d9ca5ffdb5e0f71d77ef036d4d5a'
@@ -358,7 +418,7 @@ test('#buildTransactionHashMessage', () => {
         toEthereumAddress: '0x56136932bebca80ff636da32b6f3531dc95c78f4',
         toBjjAy: '1e957ec86f3fd2fdc0779701059b43651bee5795599700fb80cdf2fd6be5b695',
         rqTxCompressedDataV2: 0,
-        rqToEthAddr: '0xe7c6d376022ab8d70727f06276a4fead435a0a4d',
+        rqToEthereumAddress: '0xe7c6d376022ab8d70727f06276a4fead435a0a4d',
         rqToBjjAy: '2d4a25612fb2fd322ff0483627eb04cc6e81dde3d9c8cb654f9d16d5a347de64'
       },
       hashSignature: '5768de86d708006a4695dee75d1ae1b56ae100480e8b3a5179c7ec67717323f'
@@ -377,7 +437,7 @@ test('#buildTransactionHashMessage', () => {
         toEthereumAddress: '0xf4e2b0fcbd0dc4b326d8a52b718a7bb43bdbd072',
         toBjjAy: '1f510abec21e82db99da4fb99ffee33e6de708df9fab9acb1f859267ba76ebc6',
         rqTxCompressedDataV2: Scalar.fromString('98743293726037486'),
-        rqToEthAddr: '0x4a4547136a017c665fcedcdddca9dfd6d7dbc77f',
+        rqToEthereumAddress: '0x4a4547136a017c665fcedcdddca9dfd6d7dbc77f',
         rqToBjjAy: 'bc9e50b1e61510b2ad6f9c0784f4c028cde7f3581d2b9c8c365b90c96cb3426'
       },
       hashSignature: '6226f6b16dc853fa8225e82e5fd675f51858e7cd6b3a951c169ac01d7125c71'
@@ -464,6 +524,202 @@ describe('#generateL2Transaction', () => {
 
     expect(transaction).toEqual(expectedTx)
     expect(encodedTransaction).toEqual(txEncoded)
+  })
+})
+
+describe('#generateL2Transaction Linked', () => {
+  beforeEach(() => {
+    TransactionPool.initializeTransactionPool()
+  })
+
+  afterEach(() => {
+    TransactionPool._storage.clear()
+  })
+
+  test('Link transferToIdx transaction', async () => {
+    const txA = {
+      from: 'hez:HEZ:4141',
+      to: 'hez:HEZ:4242',
+      amount: HermezCompressedAmount.compressAmount('42000000000000000000'),
+      fee: 0.02,
+      nonce: 1
+    }
+
+    const bjjA = 1
+    const tokenA = {
+      id: 0,
+      decimals: 9
+    }
+
+    const bjjB = 2
+    const tokenB = {
+      id: 1,
+      decimals: 10
+    }
+
+    const resTxA = await TxUtils.generateL2Transaction(txA, bjjA, tokenA)
+    const finalTxA = resTxA.transaction
+
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6,
+      linkedTransaction: finalTxA
+    }
+
+    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
+    const finalTxB = resTxB.transaction
+
+    expect(finalTxB.requestFromAccountIndex).toBe(finalTxA.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(finalTxA.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxA.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(finalTxA.toBjj)
+    expect(finalTxB.requestTokenId).toBe(finalTxA.tokenId)
+    expect(finalTxB.requestAmount).toBe(finalTxA.amount)
+    expect(finalTxB.requestFee).toBe(finalTxA.fee)
+    expect(finalTxB.requestNonce).toBe(finalTxA.nonce)
+  })
+
+  test('Link exit transaction', async () => {
+    const exitTx = {
+      type: 'Exit',
+      from: 'hez:DAI:5252',
+      amount: HermezCompressedAmount.compressAmount('3400000000'),
+      fee: 0.000003,
+      nonce: 2
+    }
+
+    const bjjExit = 1
+    const tokenExit = {
+      id: 0,
+      decimals: 9
+    }
+
+    const bjjB = 2
+    const tokenB = {
+      id: 1,
+      decimals: 10
+    }
+
+    const resTxExit = await TxUtils.generateL2Transaction(exitTx, bjjExit, tokenExit)
+    const finalTxExit = resTxExit.transaction
+
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6,
+      linkedTransaction: finalTxExit
+    }
+
+    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
+    const finalTxB = resTxB.transaction
+
+    expect(finalTxB.requestFromAccountIndex).toBe(finalTxExit.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(finalTxExit.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxExit.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(finalTxExit.toBjj)
+    expect(finalTxB.requestTokenId).toBe(finalTxExit.tokenId)
+    expect(finalTxB.requestAmount).toBe(finalTxExit.amount)
+    expect(finalTxB.requestFee).toBe(finalTxExit.fee)
+    expect(finalTxB.requestNonce).toBe(finalTxExit.nonce)
+  })
+
+  test('Link transferToEthAddr transaction', async () => {
+    const txA = {
+      type: 'TransferToEthAddr',
+      from: 'hez:HEZ:3231',
+      to: 'hez:0xbDDa1cb2a03b625024E7a0030d787F326f7F31A2',
+      amount: HermezCompressedAmount.compressAmount('42420000000000000000'),
+      fee: 0.2,
+      nonce: 8
+    }
+
+    const bjjA = 5
+    const tokenA = {
+      id: 2,
+      decimals: 18
+    }
+
+    const bjjB = 3
+    const tokenB = {
+      id: 9,
+      decimals: 18
+    }
+
+    const resTxA = await TxUtils.generateL2Transaction(txA, bjjA, tokenA)
+    const finalTxA = resTxA.transaction
+
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6,
+      linkedTransaction: finalTxA
+    }
+
+    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
+    const finalTxB = resTxB.transaction
+
+    expect(finalTxB.requestFromAccountIndex).toBe(finalTxA.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(finalTxA.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxA.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(finalTxA.toBjj)
+    expect(finalTxB.requestTokenId).toBe(finalTxA.tokenId)
+    expect(finalTxB.requestAmount).toBe(finalTxA.amount)
+    expect(finalTxB.requestFee).toBe(finalTxA.fee)
+    expect(finalTxB.requestNonce).toBe(finalTxA.nonce)
+  })
+
+  test('Link transferToBjj transaction', async () => {
+    const txA = {
+      type: 'TransferToBJJ',
+      from: 'hez:HEZ:1234',
+      to: 'hez:evVpw-0DO8z7iJE6yqloI6hGLahHOiujS4uyjrDJHxSy',
+      amount: HermezCompressedAmount.compressAmount('12340000000000000000'),
+      fee: 0.1234,
+      nonce: 1234
+    }
+
+    const bjjA = 5
+    const tokenA = {
+      id: 2,
+      decimals: 18
+    }
+
+    const bjjB = 3
+    const tokenB = {
+      id: 9,
+      decimals: 18
+    }
+
+    const resTxA = await TxUtils.generateL2Transaction(txA, bjjA, tokenA)
+    const finalTxA = resTxA.transaction
+
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6,
+      linkedTransaction: finalTxA
+    }
+
+    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
+    const finalTxB = resTxB.transaction
+
+    expect(finalTxB.requestFromAccountIndex).toBe(finalTxA.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(finalTxA.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxA.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(finalTxA.toBjj)
+    expect(finalTxB.requestTokenId).toBe(finalTxA.tokenId)
+    expect(finalTxB.requestAmount).toBe(finalTxA.amount)
+    expect(finalTxB.requestFee).toBe(finalTxA.fee)
+    expect(finalTxB.requestNonce).toBe(finalTxA.nonce)
   })
 })
 
