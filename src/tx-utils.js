@@ -14,6 +14,7 @@ import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 import { TxType, TxState } from './enums.js'
 import { INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
+import { hasLinkedTransaction, addLinkedTransaction } from './atomic-utils.js'
 
 // Polyfill for Safari from: https://www.gitmemory.com/issue/tweag/asterius/792/851780352
 // eslint-disable-next-line no-extend-native
@@ -34,27 +35,6 @@ DataView.prototype.setBigUint64 = function (byteOffset, value, littleEndian) {
 // 60 bits is the minimum bits to achieve enough precision among fee factor values < 192
 // no shift value is applied for fee factor values >= 192
 const bitsShiftPrecision = 60
-
-/**
- * Determines if the transaction has a linked transaction
- * @param {Object} transaction - Transaction object returned by generateL2Transaction
- * @returns {Boolean} True if a transaction is linked, false otherwise
- */
-function hasLinkedTransaction (transaction) {
-  if (
-    transaction.requestFromAccountIndex !== null ||
-    transaction.requestToAccountIndex !== null ||
-    transaction.requestToHezEthereumAddress !== null ||
-    transaction.requestToBjj !== null ||
-    transaction.requestTokenId !== null ||
-    transaction.requestAmount !== null ||
-    transaction.requestFee !== null ||
-    transaction.requestNonce !== null
-  ) {
-    return true
-  }
-  return false
-}
 
 /**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
@@ -120,35 +100,6 @@ async function encodeTransaction (transaction, providerUrl) {
 
   return encodedTransaction
 }
-
-/**
- * Add linked transaction parameters to the transaction object
- * @param {Object} transaction - Transaction object
- * @param {Object} linkedTransaction - Transaction to be linked
- * @private
- */
-async function addLinkedTransaction (transaction, linkedTransaction) {
-  if (typeof linkedTransaction !== 'undefined') {
-    transaction.requestFromAccountIndex = linkedTransaction.fromAccountIndex
-    transaction.requestToAccountIndex = linkedTransaction.toAccountIndex
-    transaction.requestToHezEthereumAddress = linkedTransaction.toHezEthereumAddress
-    transaction.requestToBjj = linkedTransaction.toBjj
-    transaction.requestTokenId = linkedTransaction.tokenId
-    transaction.requestAmount = linkedTransaction.amount
-    transaction.requestFee = linkedTransaction.fee
-    transaction.requestNonce = linkedTransaction.nonce
-  } else {
-    transaction.requestFromAccountIndex = null
-    transaction.requestToAccountIndex = null
-    transaction.requestToHezEthereumAddress = null
-    transaction.requestToBjj = null
-    transaction.requestTokenId = null
-    transaction.requestAmount = null
-    transaction.requestFee = null
-    transaction.requestNonce = null
-  }
-}
-
 /**
  * Generates the L1 Transaction Id based on the spec
  * TxID (32 bytes) for L1Tx is the Keccak256 (ethereum) hash of:
@@ -460,6 +411,34 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateL2Transaction (tx, bjj, token) {
+  const transaction = await computeL2Transaction(tx, bjj, token)
+
+  const encodedTransaction = await encodeTransaction(transaction)
+  transaction.id = getL2TxId(
+    encodedTransaction.fromAccountIndex,
+    encodedTransaction.tokenId,
+    encodedTransaction.amount,
+    encodedTransaction.nonce,
+    encodedTransaction.fee
+  )
+
+  return { transaction, encodedTransaction }
+}
+
+/**
+ * Prepares a transaction to be ready to be sent to a Coordinator (without encodedTx)
+ * @param {Object} transaction - ethAddress and babyPubKey together
+ * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+ * @param {String} transaction.to - The account index or Hermez address of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {HermezCompressedAmount} transaction.amount - The amount being sent as a HermezCompressedAmount
+ * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+ * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
+ * @param {Object} transaction.linkedTransaction - Transaction to be linked in request fields. 'transaction' object returned by 'generateL2Transaction' (optional)
+ * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
+ * @param {Object} token - The token information object as returned from the Coordinator.
+ * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
+*/
+async function computeL2Transaction (tx, bjj, token) {
   const type = tx.type || getTransactionType(tx)
   const toAccountIndex = type === TxType.Transfer ? tx.to : null
   const decompressedAmount = HermezCompressedAmount.decompressAmount(tx.amount)
@@ -496,7 +475,24 @@ async function generateL2Transaction (tx, bjj, token) {
     maxNumBatch: typeof tx.maxNumBatch === 'undefined' ? 0 : tx.maxNumBatch
   }
 
-  await addLinkedTransaction(transaction, tx.linkedTransaction)
+  return transaction
+}
+
+/**
+ * Prepares a transaction to be ready to be sent to a Coordinator.
+ * @param {Object} transaction - ethAddress and babyPubKey together
+ * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+ * @param {String} transaction.to - The account index or Hermez address of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+ * @param {HermezCompressedAmount} transaction.amount - The amount being sent as a HermezCompressedAmount
+ * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+ * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
+ * @param {Object} transaction.linkedTransaction - Transaction to be linked in request fields. 'transaction' object returned by 'generateL2Transaction' (optional)
+ * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
+ * @param {Object} token - The token information object as returned from the Coordinator.
+ * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
+*/
+async function generateAtomicTransaction (transaction, txLink) {
+  addLinkedTransaction(transaction, txLink)
 
   const encodedTransaction = await encodeTransaction(transaction)
   transaction.id = getL2TxId(
@@ -532,5 +528,7 @@ export {
   buildTransactionHashMessage,
   buildTxCompressedDataV2,
   generateL2Transaction,
+  computeL2Transaction,
+  generateAtomicTransaction,
   beautifyTransactionState
 }

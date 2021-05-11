@@ -12,6 +12,7 @@ import * as Providers from './providers.js'
 import * as Signers from './signers.js'
 import * as Environment from './environment.js'
 import * as Enums from './enums.js'
+import * as AtomicUtils from './atomic-utils.js'
 
 export {
   HermezWallet,
@@ -27,7 +28,8 @@ export {
   Providers,
   Signers,
   Environment,
-  Enums
+  Enums,
+  AtomicUtils
 }
 
 export default {
@@ -44,5 +46,6 @@ export default {
   Providers,
   Signers,
   Environment,
-  Enums
+  Enums,
+  AtomicUtils
 }

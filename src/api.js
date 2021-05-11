@@ -187,6 +187,20 @@ async function postPoolTransaction (transaction, nextForgerUrls = [], axiosConfi
 }
 
 /**
+ * POST request to the /atomic-pool endpoint. Sends an atomic group to the network
+ * @param {Object} atomicGroup - Object data returned by TxUtils.generateAtomicGroup
+ * @returns {String} Transactions ids
+ */
+async function postAtomicGroup (atomicGroup, nextForgerUrls = [], axiosConfig = {}) {
+  nextForgerUrls = nextForgerUrls.length === 0
+    ? await getNextForgerUrls()
+    : nextForgerUrls
+  return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
+    return axios.post(`${apiUrl}/${API_VERSION}/atomic-pool`, atomicGroup, axiosConfig).catch((error) => error)
+  })).then(filterResponses)
+}
+
+/**
  * GET request to the /exits endpoint. Returns a list of exits based on certain filters
  * @param {String} address - Filter by the address associated to the exits. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
  * @param {Boolean} onlyPendingWithdraws - Filter by exits that still haven't been withdrawn
@@ -374,6 +388,7 @@ export {
   getHistoryTransaction,
   getPoolTransaction,
   postPoolTransaction,
+  postAtomicGroup,
   getExit,
   getExits,
   getTokens,
