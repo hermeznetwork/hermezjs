@@ -356,6 +356,7 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @param {HermezCompressedAmount} transaction.amount - The amount being sent as a HermezCompressedAmount
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
+ * @param {Number} transaction.maxNumBatch - maximum allowed batch number when the transaction can be processed (optional)
  * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
  * @param {Object} token - The token information object as returned from the Coordinator.
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
@@ -393,7 +394,8 @@ async function generateL2Transaction (tx, bjj, token) {
     requestTokenId: null,
     requestAmount: null,
     requestFee: null,
-    requestNonce: null
+    requestNonce: null,
+    maxNumBatch: typeof tx.maxNumBatch === 'undefined' ? 0 : tx.maxNumBatch
   }
 
   const encodedTransaction = await encodeTransaction(transaction)
