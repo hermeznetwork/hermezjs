@@ -24,7 +24,7 @@
     "stop-local-blockchain": "./tests/helpers/stop-local-blockchain.sh",
     "build-node": "babel src --out-dir dist/node",
     "prebuild": "rm -rf dist",
-    "build-publish": "npm run build-node && npm publish",
+    "prepublishOnly": "npm run build-node",
     "test": "jest",
     "test:integration": "jest --forceExit --detectOpenHandles ./tests/integration/*",
     "test:unit": "npm run start-local-blockchain && jest ./tests/unit/* && npm run stop-local-blockchain",
