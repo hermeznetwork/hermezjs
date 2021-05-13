@@ -1,5 +1,3 @@
-import testHelpers from '@openzeppelin/test-helpers'
-
 import * as CoordinatorAPI from '../../src/api.js'
 import { getL1UserTxId } from '../../src/tx-utils.js'
 
@@ -9,14 +7,6 @@ import { getL1UserTxId } from '../../src/tx-utils.js'
  */
 export async function sleep (timeout) {
   await new Promise(resolve => setTimeout(resolve, timeout))
-}
-
-/**
- * Skips time in the local blockchain
- * @returns {Promise}
- */
-export async function advanceTime () {
-  await testHelpers.time.increase(60 * 61)
 }
 
 /**

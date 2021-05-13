@@ -3,6 +3,7 @@ import axios from 'axios'
 import { extractJSON } from './http.js'
 import { DEFAULT_PAGE_SIZE, BASE_API_URL, API_VERSION } from './constants.js'
 import { isHermezEthereumAddress, isHermezBjjAddress } from './addresses.js'
+import { TxType, TxState } from './enums.js'
 
 const PaginationOrder = {
   ASC: 'ASC',
@@ -135,6 +136,33 @@ async function getTransactions (address, tokenId, batchNum, accountIndex, fromIt
  */
 async function getHistoryTransaction (transactionId, axiosConfig = {}) {
   return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/transactions-history/${transactionId}`, axiosConfig))
+}
+
+/**
+ * GET request to the /transactions-pool endpoint. Returns a list of transactions which are in the pool based on certain filters
+ * @param {String} address - Filter by the address that sent or received the transactions. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
+ * @param {String} state - Filter transaction by state [Pending, Forging, Forged, Invalid]
+ * @param {String} type - Filter transaction by type [Transfer, TransferToEthAddr, TransferToBJJ, Exit]
+ * @param {Number} tokenId - Token ID as registered in the network
+ * @param {Number} batchNum - Filter by batch number
+ * @param {String} accountIndex - Filter by an account index that sent or received the transactions
+ * @param {Number} fromItem - Item from where to start the request
+ * @param {Object} axiosConfig - Additional Axios config to use in the request
+ * @returns {Object} Response data with filtered transactions and pagination data
+ */
+async function getPoolTransactions (address, state, type, tokenId, batchNum, accountIndex, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
+  const params = {
+    ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
+    ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
+    ...(typeof TxState[state] !== 'undefined' ? { state: TxState[state] } : {}),
+    ...(typeof TxType[type] !== 'undefined' ? { type: TxType[type] } : {}),
+    ...(typeof tokenId !== 'undefined' ? { tokenId } : {}),
+    ...(batchNum ? { batchNum } : {}),
+    ...(accountIndex ? { accountIndex } : {}),
+    ..._getPageData(fromItem, order, limit)
+  }
+
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/transactions-pool`, { ...axiosConfig, params }))
 }
 
 /**
@@ -351,5 +379,6 @@ export {
   getBids,
   postCreateAccountAuthorization,
   getCreateAccountAuthorization,
-  getConfig
+  getConfig,
+  getPoolTransactions
 }

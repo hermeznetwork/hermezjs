@@ -1,9 +1,9 @@
 name: Integration testing
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
+    tags:
+      - '*rc*'
 
 jobs:
   trigger-integration:
