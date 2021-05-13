@@ -88,7 +88,10 @@ class HermezWallet {
       BJJKey: bJJ
     }
 
-    return signer._signTypedData(domain, types, value)
+    const hashEIP712 = await ethers.utils._TypedDataEncoder.hash(domain, types, value)
+    const signature = await ethers.utils.joinSignature(signer._signingKey().signDigest(hashEIP712))
+
+    return signature
   }
 }
 
