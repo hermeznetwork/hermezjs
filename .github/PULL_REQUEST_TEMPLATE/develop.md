@@ -16,6 +16,5 @@ your descriptive commit message(s)! -->
 These are the criteria that every PR should meet, please check them off as you
 review them:
 
-- [ ] Include tests
 - [ ] Respect code style and lint
 - [ ] Update documentation (if needed)
