@@ -144,20 +144,18 @@ async function getHistoryTransaction (transactionId, axiosConfig = {}) {
  * @param {String} state - Filter transaction by state [Pending, Forging, Forged, Invalid]
  * @param {String} type - Filter transaction by type [Transfer, TransferToEthAddr, TransferToBJJ, Exit]
  * @param {Number} tokenId - Token ID as registered in the network
- * @param {Number} batchNum - Filter by batch number
  * @param {String} accountIndex - Filter by an account index that sent or received the transactions
  * @param {Number} fromItem - Item from where to start the request
  * @param {Object} axiosConfig - Additional Axios config to use in the request
  * @returns {Object} Response data with filtered transactions and pagination data
  */
-async function getPoolTransactions (address, state, type, tokenId, batchNum, accountIndex, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
+async function getPoolTransactions (address, state, type, tokenId, accountIndex, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
     ...(typeof TxState[state] !== 'undefined' ? { state: TxState[state] } : {}),
     ...(typeof TxType[type] !== 'undefined' ? { type: TxType[type] } : {}),
     ...(typeof tokenId !== 'undefined' ? { tokenId } : {}),
-    ...(batchNum ? { batchNum } : {}),
     ...(accountIndex ? { accountIndex } : {}),
     ..._getPageData(fromItem, order, limit)
   }
