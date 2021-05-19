@@ -63,7 +63,8 @@
     "standard": "^15.0.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=14",
+    "npm": ">=7"
   },
   "standard": {
     "parser": "babel-eslint",
