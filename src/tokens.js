@@ -1,5 +1,5 @@
 import ERC20ABI from './abis/ERC20ABI.js'
-import { ContractNames, CONTRACT_ADDRESSES } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, APPROVE_AMOUNT } from './constants.js'
 import { getContract } from './contracts.js'
 import { SignerType } from './signers.js'
 
@@ -18,7 +18,7 @@ async function approve (amount, accountAddress, contractAddress, signerData, pro
   const allowance = await erc20Contract.allowance(accountAddress, CONTRACT_ADDRESSES[ContractNames.Hermez])
 
   if (allowance.lt(amount)) {
-    return erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], amount)
+    return erc20Contract.approve(CONTRACT_ADDRESSES[ContractNames.Hermez], APPROVE_AMOUNT)
   } else {
     return Promise.resolve()
   }
