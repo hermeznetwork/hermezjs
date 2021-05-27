@@ -1,4 +1,4 @@
-import BigInt from 'big-integer'
+import BigInt from 'bigint-polyfill'
 import { Scalar } from 'ffjavascript'
 import circomlib from 'circomlib'
 import { keccak256 } from '@ethersproject/keccak256'
@@ -15,6 +15,8 @@ import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 import { TxType, TxState } from './enums.js'
 import { INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
+
+console.log('TEST')
 
 // 60 bits is the minimum bits to achieve enough precision among fee factor values < 192
 // no shift value is applied for fee factor values >= 192

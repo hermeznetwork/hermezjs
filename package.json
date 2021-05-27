@@ -39,6 +39,7 @@
     "@ledgerhq/hw-transport-webusb": "^5.40.0",
     "axios": "^0.21.1",
     "base64url": "^3.0.1",
+    "bigint-polyfill": "^0.1.0",
     "circomlib": "^0.5.2",
     "core-js": "^3.8.1",
     "ethers": "^5.1.4",
