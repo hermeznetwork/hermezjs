@@ -14,6 +14,7 @@ let provider
 function setProvider (providerData, providerType) {
   if (typeof providerData === 'string' || typeof window === 'undefined') {
     provider = ethers.getDefaultProvider(providerData)
+    return
   }
 
   switch (providerType) {
