@@ -195,7 +195,7 @@ const withdraw = async (
   const overrides = {
     gasPrice: await getGasPrice(gasMultiplier, providerUrl),
     gasLimit: typeof gasLimit === 'undefined'
-      ? await estimateWithdrawGasLimit(token, merkleSiblings.length, txSignerData, providerUrl)
+      ? await estimateWithdrawGasLimit(token, merkleSiblings.length, txSignerData, providerUrl, isInstant)
       : gasLimit
   }
 
