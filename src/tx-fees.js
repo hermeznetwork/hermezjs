@@ -50,7 +50,7 @@ async function estimateDepositGasLimit (token, decompressedAmount, overrides, si
  * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
  * @returns {Number} estimated gas for the withdraw
  */
-async function estimateWithdrawGasLimit (token, merkleSiblingsLength, amount, overrides, signerData, providerUrl, isInstant) {
+async function estimateWithdrawGasLimit (token, merkleSiblingsLength, amount, overrides, signerData, providerUrl, isInstant = true) {
   // TODO Breaking Release: Restructure params order to move isInstant forward
   const nonInstantGas = token.id === ETHER_TOKEN_ID ? NON_INSTANT_WITHDRAW_ETH_GAS_COST : NON_INSTANT_WITHDRAW_ERC20_GAS_COST
   const finalNonInstantGas = isInstant ? 0 : nonInstantGas
