@@ -61,10 +61,9 @@ async function estimateWithdrawGasLimit (token, merkleSiblingsLength, amount, ov
     const estimatedTransferGasBigNumber = await tokenContract.connect(CONTRACT_ADDRESSES[ContractNames.Hermez]).estimateGas.transfer(address, amount, overrides)
 
     // 230k + Transfer cost + (31k * siblings.length) + non-instant cost offset
-    console.log((Number(isInstant) * nonInstantGas))
-    return GAS_LIMIT_WITHDRAW + Number(estimatedTransferGasBigNumber.toString()) + (SIBLING_GAS_COST * merkleSiblingsLength) + (Number(isInstant) * nonInstantGas)
+    return GAS_LIMIT_WITHDRAW + Number(estimatedTransferGasBigNumber.toString()) + (SIBLING_GAS_COST * merkleSiblingsLength) + (Number(!isInstant) * nonInstantGas)
   } catch (err) {
-    return GAS_LIMIT_WITHDRAW + GAS_STANDARD_ERC20_TX + (SIBLING_GAS_COST * merkleSiblingsLength) + (Number(isInstant) * nonInstantGas)
+    return GAS_LIMIT_WITHDRAW + GAS_STANDARD_ERC20_TX + (SIBLING_GAS_COST * merkleSiblingsLength) + (Number(!isInstant) * nonInstantGas)
   }
 }
 
