@@ -53,6 +53,7 @@ async function estimateDepositGasLimit (token, decompressedAmount, overrides, si
 async function estimateWithdrawGasLimit (token, merkleSiblingsLength, amount, overrides, signerData, providerUrl, isInstant) {
   // TODO Breaking Release: Restructure params order to move isInstant forward
   const nonInstantGas = token.id === ETHER_TOKEN_ID ? NON_INSTANT_WITHDRAW_ETH_GAS_COST : NON_INSTANT_WITHDRAW_ERC20_GAS_COST
+  const finalNonInstantGas = isInstant ? 0 : nonInstantGas
   try {
     const tokenContract = getContract(token.ethereumAddress, ERC20ABI, signerData, providerUrl)
     const provider = getProvider(providerUrl)
@@ -61,9 +62,9 @@ async function estimateWithdrawGasLimit (token, merkleSiblingsLength, amount, ov
     const estimatedTransferGasBigNumber = await tokenContract.connect(CONTRACT_ADDRESSES[ContractNames.Hermez]).estimateGas.transfer(address, amount, overrides)
 
     // 230k + Transfer cost + (31k * siblings.length) + non-instant cost offset
-    return GAS_LIMIT_WITHDRAW + Number(estimatedTransferGasBigNumber.toString()) + (SIBLING_GAS_COST * merkleSiblingsLength) + (Number(!isInstant) * nonInstantGas)
+    return GAS_LIMIT_WITHDRAW + Number(estimatedTransferGasBigNumber.toString()) + (SIBLING_GAS_COST * merkleSiblingsLength) + finalNonInstantGas
   } catch (err) {
-    return GAS_LIMIT_WITHDRAW + GAS_STANDARD_ERC20_TX + (SIBLING_GAS_COST * merkleSiblingsLength) + (Number(!isInstant) * nonInstantGas)
+    return GAS_LIMIT_WITHDRAW + GAS_STANDARD_ERC20_TX + (SIBLING_GAS_COST * merkleSiblingsLength) + finalNonInstantGas
   }
 }
 
