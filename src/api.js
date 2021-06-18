@@ -327,7 +327,7 @@ async function postCreateAccountAuthorization (hezEthereumAddress, bJJ, signatur
   nextForgerUrls = nextForgerUrls.length === 0
     ? await getNextForgerUrls()
     : nextForgerUrls
-  return Promise.allSettled(getForgerUrls(nextForgerUrls).map((apiUrl) => {
+  return Promise.all(getForgerUrls(nextForgerUrls).map((apiUrl) => {
     return axios.post(`${apiUrl}/${API_VERSION}/account-creation-authorization`, {
       hezEthereumAddress,
       bjj: bJJ,
