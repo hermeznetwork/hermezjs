@@ -42,7 +42,7 @@
     "circomlib": "^0.5.2",
     "core-js": "^3.8.1",
     "ethers": "^5.1.4",
-    "ffjavascript": "^0.2.37",
+    "ffjavascript": "^0.2.35",
     "graceful-fs": "4.2.4",
     "js-sha3": "^0.8.0",
     "node-localstorage": "^2.1.6",
