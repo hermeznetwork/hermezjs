@@ -59,6 +59,8 @@ const WITHDRAWAL_WASM_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main
 
 const WITHDRAWAL_ZKEY_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw_hez4_final.zkey'
 
+const ETHER_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 export {
   TRANSACTION_POOL_KEY,
   METAMASK_MESSAGE,
@@ -90,5 +92,6 @@ export {
   MAX_NLEVELS,
   WITHDRAWAL_CIRCUIT_NLEVELS,
   WITHDRAWAL_WASM_URL,
-  WITHDRAWAL_ZKEY_URL
+  WITHDRAWAL_ZKEY_URL,
+  ETHER_ADDRESS
 }
