@@ -8,7 +8,7 @@ import {
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_LOW, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL } from './constants.js'
+import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_LOW, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL, ETHER_ADDRESS } from './constants.js'
 import { approve } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
@@ -297,7 +297,7 @@ const delayedWithdraw = async (
 
   const transactionParameters = [
     ethereumAddress,
-    token.id === 0 ? 0x0 : token.ethereumAddress
+    token.id === 0 ? ETHER_ADDRESS : token.ethereumAddress
   ]
 
   return delayedWithdrawalContract.withdrawal(...transactionParameters, overrides)
