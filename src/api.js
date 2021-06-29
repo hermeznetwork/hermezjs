@@ -243,6 +243,7 @@ async function getToken (tokenId, axiosConfig = {}) {
 
 /**
  * GET request to the /state endpoint.
+ * @param {String} apiUrl - API URL of the coordinator to request the state from
  * @returns {Object} Response data with the current state of the coordinator
  */
 async function getState (axiosConfig = {}, apiUrl = baseApiUrl) {
