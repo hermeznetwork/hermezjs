@@ -23,7 +23,8 @@ const transferTransaction = {
   requestTokenId: null,
   requestAmount: null,
   requestFee: null,
-  requestNonce: null
+  requestNonce: null,
+  maxNumBatch: 0
 }
 
 const transferTransactionEncoded = Object.assign({}, transferTransaction, {
@@ -49,7 +50,8 @@ const exitTransaction = {
   requestTokenId: null,
   requestAmount: null,
   requestFee: null,
-  requestNonce: null
+  requestNonce: null,
+  maxNumBatch: 0
 }
 
 const exitTransactionEncoded = Object.assign({}, exitTransaction, {
@@ -443,6 +445,25 @@ describe('#generateL2Transaction', () => {
     encodedTransaction.type = 'Exit'
     expect(transaction).toEqual(exitTransaction)
     expect(encodedTransaction).toEqual(exitTransactionEncoded)
+  })
+
+  test('Check maxNumBatch', async () => {
+    // expected transaction with maxNumBatch
+    const expectedTx = Object.assign({}, transferTransaction, { maxNumBatch: 3 })
+    // transaction with maxNumBatch
+    const tx = Object.assign({}, transferTx, { maxNumBatch: 3 })
+
+    const txEncoded = Object.assign({}, transferTransactionEncoded, {
+      maxNumBatch: 3,
+      chainId: 1337,
+      fromAccountIndex: 4444,
+      toAccountIndex: 1234
+    })
+
+    const { transaction, encodedTransaction } = await TxUtils.generateL2Transaction(tx, bjj, token)
+
+    expect(transaction).toEqual(expectedTx)
+    expect(encodedTransaction).toEqual(txEncoded)
   })
 })
 
