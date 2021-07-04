@@ -355,6 +355,14 @@ async function getConfig (axiosConfig) {
   return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/config`, axiosConfig))
 }
 
+/**
+ * GET request to the /health endpoint
+ * @returns {Object} Response data
+ */
+async function getHealth (axiosConfig) {
+  return extractJSON(axios.get(`${baseApiUrl}/${API_VERSION}/health`, axiosConfig))
+}
+
 export {
   PaginationOrder,
   _getPageData,
@@ -379,5 +387,6 @@ export {
   postCreateAccountAuthorization,
   getCreateAccountAuthorization,
   getConfig,
-  getPoolTransactions
+  getPoolTransactions,
+  getHealth
 }
