@@ -334,3 +334,10 @@ test('#_getPageData', () => {
   const pageData = CoordinatorAPI._getPageData(32, CoordinatorAPI.PaginationOrder.ASC, 20)
   expect(pageData).toEqual({ fromItem: 32, order: CoordinatorAPI.PaginationOrder.ASC, limit: 20 })
 })
+
+test('#getHealth', async () => {
+  CoordinatorAPI.setBaseApiUrl(mockUrlAPI)
+
+  const res = await CoordinatorAPI.getHealth()
+  expect(res).toBeDefined()
+})
