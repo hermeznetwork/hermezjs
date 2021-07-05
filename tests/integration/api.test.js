@@ -340,4 +340,5 @@ test('#getHealth', async () => {
 
   const res = await CoordinatorAPI.getHealth()
   expect(res).toBeDefined()
+  expect(res.status).toBe('UP')
 })
