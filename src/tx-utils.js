@@ -21,6 +21,27 @@ import { INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
 const bitsShiftPrecision = 60
 
 /**
+ * Determines if the transaction has a linked transaction
+ * @param {Object} transaction - Transaction object returned by generateL2Transaction
+ * @returns {Boolean} True if a transaction is linked, false otherwise
+ */
+function hasLinkedTransaction (transaction) {
+  if (
+    transaction.requestFromAccountIndex !== null ||
+    transaction.requestToAccountIndex !== null ||
+    transaction.requestToHezEthereumAddress !== null ||
+    transaction.requestToBjj !== null ||
+    transaction.requestTokenId !== null ||
+    transaction.requestAmount !== null ||
+    transaction.requestFee !== null ||
+    transaction.requestNonce !== null
+  ) {
+    return true
+  }
+  return false
+}
+
+/**
  * Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
  * Used, for example, to sign the transaction
  * @param {Object} transaction - Transaction object returned by generateL2Transaction
@@ -53,7 +74,64 @@ async function encodeTransaction (transaction, providerUrl) {
     encodedTransaction.toEthereumAddress = getEthereumAddress(INTERNAL_ACCOUNT_ETH_ADDR)
   }
 
+  if (hasLinkedTransaction(transaction)) {
+    const fieldsLinkedTx = {}
+    fieldsLinkedTx.fromAccountIndex = getAccountIndex(transaction.requestFromAccountIndex)
+
+    if (transaction.requestToAccountIndex) {
+      fieldsLinkedTx.toAccountIndex = getAccountIndex(transaction.requestToAccountIndex)
+    }
+
+    if (transaction.requestToHezEthereumAddress) {
+      fieldsLinkedTx.toEthereumAddress = getEthereumAddress(transaction.requestToHezEthereumAddress)
+    }
+
+    if (transaction.requestToBjj) {
+      const bjjHex = base64ToHexBJJ(transaction.requestToBjj)
+      const { ay, sign } = getAySignFromBJJ(bjjHex)
+      fieldsLinkedTx.toBjjSign = sign
+      fieldsLinkedTx.toBjjAy = ay
+    }
+
+    fieldsLinkedTx.tokenId = transaction.requestTokenId
+    fieldsLinkedTx.amount = transaction.requestAmount
+    fieldsLinkedTx.fee = transaction.requestFee
+    fieldsLinkedTx.nonce = transaction.requestNonce
+
+    encodedTransaction.rqTxCompressedDataV2 = buildTxCompressedDataV2(fieldsLinkedTx)
+    encodedTransaction.rqToBjjAy = fieldsLinkedTx.toBjjAy
+    encodedTransaction.rqToEthereumAddress = fieldsLinkedTx.toEthereumAddress
+  }
+
   return encodedTransaction
+}
+
+/**
+ * Add linked transaction parameters to the transaction object
+ * @param {Object} transaction - Transaction object
+ * @param {Object} linkedTransaction - Transaction to be linked
+ * @private
+ */
+async function addLinkedTransaction (transaction, linkedTransaction) {
+  if (typeof linkedTransaction !== 'undefined') {
+    transaction.requestFromAccountIndex = linkedTransaction.fromAccountIndex
+    transaction.requestToAccountIndex = linkedTransaction.toAccountIndex
+    transaction.requestToHezEthereumAddress = linkedTransaction.toHezEthereumAddress
+    transaction.requestToBjj = linkedTransaction.toBjj
+    transaction.requestTokenId = linkedTransaction.tokenId
+    transaction.requestAmount = linkedTransaction.amount
+    transaction.requestFee = linkedTransaction.fee
+    transaction.requestNonce = linkedTransaction.nonce
+  } else {
+    transaction.requestFromAccountIndex = null
+    transaction.requestToAccountIndex = null
+    transaction.requestToHezEthereumAddress = null
+    transaction.requestToBjj = null
+    transaction.requestTokenId = null
+    transaction.requestAmount = null
+    transaction.requestFee = null
+    transaction.requestNonce = null
+  }
 }
 
 /**
@@ -298,6 +376,25 @@ function buildTxCompressedData (tx) {
 }
 
 /**
+ * Encode tx request compressed data
+ * @param {Object} tx - Transaction object returned by `encodeTransaction`
+ * @returns {Scalar} Encoded tx request compressed data
+ */
+function buildTxCompressedDataV2 (tx) {
+  let res = Scalar.e(0)
+
+  res = Scalar.add(res, tx.fromAccountIndex || 0) // fromIdx --> 48 bits
+  res = Scalar.add(res, Scalar.shl(tx.toAccountIndex || 0, 48)) // toIdx --> 48 bits
+  res = Scalar.add(res, Scalar.shl(HermezCompressedAmount.compressAmount(tx.amount || 0).value, 96)) // amount40 --> 40 bits
+  res = Scalar.add(res, Scalar.shl(tx.tokenId || 0, 136)) // tokenID --> 32 bits
+  res = Scalar.add(res, Scalar.shl(tx.nonce || 0, 168)) // nonce --> 40 bits
+  res = Scalar.add(res, Scalar.shl(tx.fee || 0, 208)) // userFee --> 8 bits
+  res = Scalar.add(res, Scalar.shl(tx.toBjjSign ? 1 : 0, 216)) // toBjjSign --> 1 bit
+
+  return res
+}
+
+/**
  * Build element_1 for L2HashSignature
  * @param {Object} tx - Transaction object returned by `encodeTransaction`
  * @returns {Scalar} element_1 L2 signature
@@ -326,7 +423,7 @@ function buildTransactionHashMessage (encodedTransaction) {
     element1,
     Scalar.fromString(encodedTransaction.toBjjAy || '0', 16),
     Scalar.e(encodedTransaction.rqTxCompressedDataV2 || 0),
-    Scalar.fromString(encodedTransaction.rqToEthAddr || '0', 16),
+    Scalar.fromString(encodedTransaction.rqToEthereumAddress || '0', 16),
     Scalar.fromString(encodedTransaction.rqToBjjAy || '0', 16)
   ])
 
@@ -341,6 +438,7 @@ function buildTransactionHashMessage (encodedTransaction) {
  * @param {HermezCompressedAmount} transaction.amount - The amount being sent as a HermezCompressedAmount
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
+ * @param {Object} transaction.linkedTransaction - Transaction to be linked in request fields. 'transaction' object returned by 'generateL2Transaction' (optional)
  * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
  * @param {Object} token - The token information object as returned from the Coordinator.
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
@@ -370,16 +468,10 @@ async function generateL2Transaction (tx, bjj, token) {
     // Corrects precision errors using the same system used in the Coordinator
     amount: decompressedAmount.toString(),
     fee: getFeeIndex(feeInScalar, decompressedAmount),
-    nonce: await getNonce(tx.nonce, tx.from, bjj, token.id),
-    requestFromAccountIndex: null,
-    requestToAccountIndex: null,
-    requestToHezEthereumAddress: null,
-    requestToBjj: null,
-    requestTokenId: null,
-    requestAmount: null,
-    requestFee: null,
-    requestNonce: null
+    nonce: await getNonce(tx.nonce, tx.from, bjj, token.id)
   }
+
+  await addLinkedTransaction(transaction, tx.linkedTransaction)
 
   const encodedTransaction = await encodeTransaction(transaction)
   transaction.id = getL2TxId(
@@ -413,6 +505,7 @@ export {
   getNonce,
   buildTxCompressedData as _buildTxCompressedData,
   buildTransactionHashMessage,
+  buildTxCompressedDataV2,
   generateL2Transaction,
   beautifyTransactionState
 }
