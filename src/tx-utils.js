@@ -355,7 +355,7 @@ async function generateL2Transaction (tx, bjj, token) {
   if (type === TxType.TransferToEthAddr) {
     toHezEthereumAddress = tx.to
   } else if (type === TxType.TransferToBJJ) {
-    toHezEthereumAddress = tx.toAuxEthAddr.toLowerCase() || INTERNAL_ACCOUNT_ETH_ADDR.toLowerCase()
+    toHezEthereumAddress = (tx.toAuxEthAddr || INTERNAL_ACCOUNT_ETH_ADDR).toLowerCase()
   } else {
     toHezEthereumAddress = null
   }
