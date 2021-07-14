@@ -8,8 +8,7 @@ const tokenId = 0
 // Source Hermez address
 const hermezEthereumAddress = 'hez:0xaBB84DD767AA0F58949458927bff6aFa550f2466'
 // set amount to transfer
-const compressedUserDepositToInternal = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.001', 18))
-
+const compressedUserDepositToInternal = hermez.HermezCompressedAmount.compressAmount(hermez.Utils.getTokenAmountBigInt('0.001', 18));
 (async () => {
   const token = await hermez.CoordinatorAPI.getTokens()
   const tokenERC20 = token.tokens[tokenId]
@@ -22,15 +21,15 @@ const compressedUserDepositToInternal = hermez.HermezCompressedAmount.compressAm
   const fee = usdTokenExchangeRate ? state.recommendedFee.createAccount / usdTokenExchangeRate : 0
 
   // Get all token accounts associated to this address
-  const response =  await hermez.CoordinatorAPI.getAccounts(address)
+  const response = await hermez.CoordinatorAPI.getAccounts(address)
 
   console.log(response)
   // In case it's a Bjj address, find an Ethereum Address
   const hermezEthereumAccount = hermez.Addresses.isHermezEthereumAddress(address)
     ? address
     : response.accounts
-        .find((account) => account.hezEthereumAddress.toLowerCase() !== hermez.Constants.INTERNAL_ACCOUNT_ETH_ADDR.toLowerCase())
-        .hezEthereumAddress
+      .find((account) => account.hezEthereumAddress.toLowerCase() !== hermez.Constants.INTERNAL_ACCOUNT_ETH_ADDR.toLowerCase())
+      .hezEthereumAddress
 
   console.log(hermezEthereumAccount)
   if (!hermezEthereumAccount && hermez.Addresses.isHermezBjjAddress(address)) {
@@ -43,7 +42,7 @@ const compressedUserDepositToInternal = hermez.HermezCompressedAmount.compressAm
     }
     hermez.Tx.generateAndSendL2Tx(transferData)
   } else {
-    // Check whether user already has 
+    // Check whether user already has
     const accountChecks = [
       hermez.CoordinatorAPI.getAccounts(hermezEthereumAccount, [tokenId]),
       hermez.CoordinatorAPI.getCreateAccountAuthorization(hermezEthereumAccount).catch(() => {})
@@ -53,7 +52,7 @@ const compressedUserDepositToInternal = hermez.HermezCompressedAmount.compressAm
       .then((result) => {
         const receiverAccount = result[0]?.accounts[0]
         if (!receiverAccount && !result[1]) {
-          throw 'Hermez user has neither an existing token account nor signed the Create Account Authorization'
+          throw new Error('Hermez user has neither an existing token account nor signed the Create Account Authorization')
         } else {
           const transferData = {
             from: infoAccountSender.accountIndex,
