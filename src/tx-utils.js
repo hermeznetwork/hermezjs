@@ -1,4 +1,3 @@
-import BigInt from 'big-integer'
 import { Scalar } from 'ffjavascript'
 import circomlib from 'circomlib'
 import { keccak256 } from '@ethersproject/keccak256'
@@ -15,6 +14,22 @@ import { getAccount } from './api.js'
 import { getProvider } from './providers.js'
 import { TxType, TxState } from './enums.js'
 import { INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
+
+// Polyfill for Safari from: https://www.gitmemory.com/issue/tweag/asterius/792/851780352
+// eslint-disable-next-line no-extend-native
+DataView.prototype._setBigUint64 = DataView.prototype.setBigUint64
+// eslint-disable-next-line no-extend-native
+DataView.prototype.setBigUint64 = function (byteOffset, value, littleEndian) {
+  if (typeof this._setBigUint64 !== 'undefined') {
+    this._setBigUint64(byteOffset, value, littleEndian)
+  } else {
+    const wh = Number((value >> BigInt(32)) & BigInt(0xFFFFFFFF))
+    const wl = Number((value) & BigInt(0xFFFFFFFF))
+    const [h, l] = littleEndian ? [4, 0] : [0, 4]
+    this.setUint32(byteOffset + h, wh, littleEndian)
+    this.setUint32(byteOffset + l, wl, littleEndian)
+  }
+}
 
 // 60 bits is the minimum bits to achieve enough precision among fee factor values < 192
 // no shift value is applied for fee factor values >= 192
@@ -69,11 +84,11 @@ async function encodeTransaction (transaction, providerUrl) {
 function getL1UserTxId (toForgeL1TxsNum, currentPosition) {
   const toForgeL1TxsNumBytes = new ArrayBuffer(8)
   const toForgeL1TxsNumView = new DataView(toForgeL1TxsNumBytes)
-  toForgeL1TxsNumView.setBigUint64(0, BigInt(toForgeL1TxsNum).value, false)
+  toForgeL1TxsNumView.setBigUint64(0, BigInt(toForgeL1TxsNum), false)
 
   const positionBytes = new ArrayBuffer(8)
   const positionView = new DataView(positionBytes)
-  positionView.setBigUint64(0, BigInt(currentPosition).value, false)
+  positionView.setBigUint64(0, BigInt(currentPosition), false)
 
   const toForgeL1TxsNumHex = bufToHex(toForgeL1TxsNumView.buffer)
   const positionHex = bufToHex(positionView.buffer.slice(6, 8))
@@ -101,20 +116,20 @@ function getL1UserTxId (toForgeL1TxsNum, currentPosition) {
 function getL2TxId (fromIdx, tokenId, amount, nonce, fee) {
   const fromIdxBytes = new ArrayBuffer(8)
   const fromIdxView = new DataView(fromIdxBytes)
-  fromIdxView.setBigUint64(0, BigInt(fromIdx).value, false)
+  fromIdxView.setBigUint64(0, BigInt(fromIdx), false)
 
   const tokenIdBytes = new ArrayBuffer(8)
   const tokenIdView = new DataView(tokenIdBytes)
-  tokenIdView.setBigUint64(0, BigInt(tokenId).value, false)
+  tokenIdView.setBigUint64(0, BigInt(tokenId), false)
 
   const amountF40 = HermezCompressedAmount.compressAmount(amount).value
   const amountBytes = new ArrayBuffer(8)
   const amountView = new DataView(amountBytes)
-  amountView.setBigUint64(0, BigInt(amountF40).value, false)
+  amountView.setBigUint64(0, BigInt(amountF40), false)
 
   const nonceBytes = new ArrayBuffer(8)
   const nonceView = new DataView(nonceBytes)
-  nonceView.setBigUint64(0, BigInt(nonce).value, false)
+  nonceView.setBigUint64(0, BigInt(nonce), false)
 
   const fromIdxHex = bufToHex(fromIdxView.buffer.slice(2, 8))
   const tokenIdHex = bufToHex(tokenIdView.buffer.slice(4, 8))
