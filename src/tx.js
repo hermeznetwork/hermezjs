@@ -382,6 +382,7 @@ async function sendL2Transaction (transaction, bJJ, nextForgers, addToTxPool) {
  * @param {HermezCompressedAmount} transaction.amount - The amount being sent in the compressed format
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account
+ * @param {Number} transaction.maxNumBatch - maximum allowed batch number when the transaction can be processed (optional)
  * @param {Object} wallet - Transaction sender Hermez Wallet
  * @param {Object} token - The token information object as returned from the Coordinator.
  * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
