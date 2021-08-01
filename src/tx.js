@@ -399,8 +399,8 @@ async function generateAndSendL2Tx (tx, wallet, token, nextForgers, addToTxPool 
 }
 
 /**
- * Sends a atomic group to the Coordinator
- * @param {Object} atomicGroup - Transaction object prepared by TxUtils.generateL2Transaction
+ * Sends an atomic group to the Coordinator
+ * @param {Object} atomicGroup - Transactions object prepared by AtomicUtils.generateAtomicGroup
  * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
  * @return {Object} - Object with the response status and transactions ids
 */
@@ -413,18 +413,14 @@ async function sendAtomicGroup (atomicGroup, nextForgers) {
 }
 
 /**
- * Compact L2 transaction generated and sent to a Coordinator.
- * @param {Array[Object]} txs[tx] - list of tx, in order to link
- * @param {String} tx.from - The account index that's sending the transaction e.g hez:DAI:4444
- * @param {String} tx.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {HermezCompressedAmount} tx.amount - The amount being sent in the compressed format
- * @param {Number} tx.fee - The amount of tokens to be sent as a fee to the Coordinator
- * @param {Number} tx.nonce - The current nonce of the sender's token account
+ * Compact L2 atomic grup transactions generated and sent to a Coordinator.
+ * @param {Array[Object]} txs - list of txs. Transaction object prepared by AtomicUtils.buildAtomicTransaction
  * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
+ * @param {Array} requestOffsets - request offsets to set on each transaction (optional)
  * @return {Object} - Object with the response status and transactions ids
 */
-async function generateAndSendAtomicGroup (txs, nextForgers) {
-  const atomicGroup = await generateAtomicGroup(txs)
+async function generateAndSendAtomicGroup (txs, nextForgers, requestOffsets) {
+  const atomicGroup = await generateAtomicGroup(txs, requestOffsets)
   return sendAtomicGroup(atomicGroup, nextForgers)
 }
 

@@ -2,9 +2,8 @@ import { generateAtomicTransaction } from './tx-utils.js'
 import { Scalar } from 'ffjavascript'
 import { addPoolTransaction } from './tx-pool.js'
 import { padZeros } from './utils.js'
-import { ethers } from 'ethers'
-
-const txIDBytes = 32
+import { keccak256 } from '@ethersproject/keccak256'
+import { TX_ID_BYTES } from './constants'
 
 /**
  * Determines if the transaction has a linked transaction
@@ -31,7 +30,6 @@ function hasLinkedTransaction (transaction) {
  * Add linked transaction parameters to the transaction object
  * @param {Object} transaction - Transaction object
  * @param {Object} linkedTransaction - Transaction to be linked
- * @private
  */
 function addLinkedTransaction (transaction, linkedTransaction) {
   if (typeof linkedTransaction !== 'undefined') {
@@ -61,9 +59,8 @@ function addLinkedTransaction (transaction, linkedTransaction) {
  * @param {Object} wallet - Wallet sender
  * @param {Object} txLink - Transaction to be linked
  * @param {Boolean} addToTxPool - A boolean which indicates if the tx should be added to the tx pool or not
- * @retun transaction
+ * @returns {Object} Transaction object with a linked transaction
  */
-
 async function buildAtomicTransaction (txSender, wallet, txLink, addToTxPool = true) {
   const l2TxParams = await generateAtomicTransaction(txSender, txLink)
 
@@ -78,10 +75,10 @@ async function buildAtomicTransaction (txSender, wallet, txLink, addToTxPool = t
 /**
  * Generate AtomicID
  * @param {Object} txs array of txs (atomic group)
- * @returns atomicID
+ * @returns {String} atomicID as hex string
  */
 function generateAtomicID (txs) {
-  const txLenBits = (txIDBytes + 1) * 8
+  const txLenBits = (TX_ID_BYTES + 1) * 8
   const totalIDBits = txs.length * txLenBits
 
   let res = Scalar.e(0)
@@ -89,7 +86,7 @@ function generateAtomicID (txs) {
     res = Scalar.add(res, Scalar.shl(txs[i].id, txLenBits * (txs.length - 1 - i)))
   }
   const IDHex = padZeros(res.toString('16'), totalIDBits / 4)
-  const hash = ethers.utils.keccak256(`0x${IDHex}`)
+  const hash = keccak256(`0x${IDHex}`)
 
   return hash
 }
@@ -97,18 +94,29 @@ function generateAtomicID (txs) {
 /**
  * Create Atomic Group, add requestOffset and generate atomic ID
  * @param {Object} txs - Transactions
- * @retun atomic group
+ * @param {Array} requestOffsets - request offsets to set on each transaction
+ * @returns {Object} Atomic group ready to be sent to the coordinator
+ * @throws {Error} Throws an error if invalid txs lenght or custom requestOffsets doea not match txs length
  */
-function generateAtomicGroup (txs) {
+function generateAtomicGroup (txs, requestOffsets) {
   if (txs.length <= 1 || txs.length > 5) { throw new Error('Invalid atomic group') }
   const atomicID = generateAtomicID(txs)
-  for (let i = 0; i < txs.length; i++) {
-    if (i !== txs.length - 1) {
-      txs[i].requestOffset = 1
-    } else {
-      txs[i].requestOffset = 8 - i
+
+  if (typeof requestOffsets !== 'undefined') {
+    if (txs.length !== requestOffsets.length) { throw new Error('Invalid length requestOffsets') }
+    for (let i = 0; i < txs.length; i++) {
+      txs[i].requestOffset = requestOffsets[i]
+    }
+  } else {
+    for (let i = 0; i < txs.length; i++) {
+      if (i !== txs.length - 1) {
+        txs[i].requestOffset = 1
+      } else {
+        txs[i].requestOffset = 8 - i
+      }
     }
   }
+
   const atomicGroup = {
     atomicGroupId: atomicID,
     transactions: txs

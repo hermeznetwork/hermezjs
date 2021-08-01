@@ -87,5 +87,12 @@ describe('#generateAtomicGroup', () => {
     expect(res.atomicGroupId).toEqual(expectedValueID)
     expect(res.transactions[0].requestOffset).toEqual(1)
     expect(res.transactions[1].requestOffset).toEqual(7)
+
+    const requestOffsets = [2, 3]
+    const res2 = AtomicUtils.generateAtomicGroup(txs, requestOffsets)
+
+    expect(res2.atomicGroupId).toEqual(expectedValueID)
+    expect(res2.transactions[0].requestOffset).toEqual(2)
+    expect(res2.transactions[1].requestOffset).toEqual(3)
   })
 })

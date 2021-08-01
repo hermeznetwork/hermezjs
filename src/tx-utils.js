@@ -433,7 +433,6 @@ async function generateL2Transaction (tx, bjj, token) {
  * @param {HermezCompressedAmount} transaction.amount - The amount being sent as a HermezCompressedAmount
  * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
  * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
- * @param {Object} transaction.linkedTransaction - Transaction to be linked in request fields. 'transaction' object returned by 'generateL2Transaction' (optional)
  * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
  * @param {Object} token - The token information object as returned from the Coordinator.
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
@@ -479,16 +478,9 @@ async function computeL2Transaction (tx, bjj, token) {
 }
 
 /**
- * Prepares a transaction to be ready to be sent to a Coordinator.
- * @param {Object} transaction - ethAddress and babyPubKey together
- * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
- * @param {String} transaction.to - The account index or Hermez address of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
- * @param {HermezCompressedAmount} transaction.amount - The amount being sent as a HermezCompressedAmount
- * @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
- * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
- * @param {Object} transaction.linkedTransaction - Transaction to be linked in request fields. 'transaction' object returned by 'generateL2Transaction' (optional)
- * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
- * @param {Object} token - The token information object as returned from the Coordinator.
+ * Prepares an atomic transaction to be ready to be sent to a Coordinator.
+ * @param {Object} transaction - Transaction to add linked transaction. 'transaction' object returned by 'generateL2Transaction'
+ * @param {Object} txLink - Transaction to be linked in request fields. 'transaction' object returned by 'generateL2Transaction'
  * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 */
 async function generateAtomicTransaction (transaction, txLink) {
