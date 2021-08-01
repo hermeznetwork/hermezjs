@@ -527,7 +527,7 @@ describe('#generateL2Transaction', () => {
   })
 })
 
-describe('#generateL2Transaction Linked', () => {
+describe('#generateAtomicTransaction', () => {
   beforeEach(() => {
     TransactionPool.initializeTransactionPool()
   })
@@ -545,6 +545,14 @@ describe('#generateL2Transaction Linked', () => {
       nonce: 1
     }
 
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6
+    }
+
     const bjjA = 1
     const tokenA = {
       id: 0,
@@ -557,29 +565,20 @@ describe('#generateL2Transaction Linked', () => {
       decimals: 10
     }
 
-    const resTxA = await TxUtils.generateL2Transaction(txA, bjjA, tokenA)
-    const finalTxA = resTxA.transaction
+    const genTxA = await TxUtils.computeL2Transaction(txA, bjjA, tokenA)
+    const genTxB = await TxUtils.computeL2Transaction(txB, bjjB, tokenB)
 
-    const txB = {
-      from: 'hez:HEZ:2121',
-      to: 'hez:HEZ:2222',
-      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
-      fee: 0.12,
-      nonce: 6,
-      linkedTransaction: finalTxA
-    }
+    const atomicTxB = await TxUtils.generateAtomicTransaction(genTxB, genTxA)
+    const finalTxB = atomicTxB.transaction
 
-    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
-    const finalTxB = resTxB.transaction
-
-    expect(finalTxB.requestFromAccountIndex).toBe(finalTxA.fromAccountIndex)
-    expect(finalTxB.requestToAccountIndex).toBe(finalTxA.toAccountIndex)
-    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxA.toHezEthereumAddress)
-    expect(finalTxB.requestToBjj).toBe(finalTxA.toBjj)
-    expect(finalTxB.requestTokenId).toBe(finalTxA.tokenId)
-    expect(finalTxB.requestAmount).toBe(finalTxA.amount)
-    expect(finalTxB.requestFee).toBe(finalTxA.fee)
-    expect(finalTxB.requestNonce).toBe(finalTxA.nonce)
+    expect(finalTxB.requestFromAccountIndex).toBe(genTxA.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(genTxA.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(genTxA.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(genTxA.toBjj)
+    expect(finalTxB.requestTokenId).toBe(genTxA.tokenId)
+    expect(finalTxB.requestAmount).toBe(genTxA.amount)
+    expect(finalTxB.requestFee).toBe(genTxA.fee)
+    expect(finalTxB.requestNonce).toBe(genTxA.nonce)
   })
 
   test('Link exit transaction', async () => {
@@ -589,6 +588,14 @@ describe('#generateL2Transaction Linked', () => {
       amount: HermezCompressedAmount.compressAmount('3400000000'),
       fee: 0.000003,
       nonce: 2
+    }
+
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6
     }
 
     const bjjExit = 1
@@ -603,29 +610,20 @@ describe('#generateL2Transaction Linked', () => {
       decimals: 10
     }
 
-    const resTxExit = await TxUtils.generateL2Transaction(exitTx, bjjExit, tokenExit)
-    const finalTxExit = resTxExit.transaction
+    const genTxA = await TxUtils.computeL2Transaction(exitTx, bjjExit, tokenExit)
+    const genTxB = await TxUtils.computeL2Transaction(txB, bjjB, tokenB)
 
-    const txB = {
-      from: 'hez:HEZ:2121',
-      to: 'hez:HEZ:2222',
-      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
-      fee: 0.12,
-      nonce: 6,
-      linkedTransaction: finalTxExit
-    }
+    const atomicTxB = await TxUtils.generateAtomicTransaction(genTxB, genTxA)
+    const finalTxB = atomicTxB.transaction
 
-    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
-    const finalTxB = resTxB.transaction
-
-    expect(finalTxB.requestFromAccountIndex).toBe(finalTxExit.fromAccountIndex)
-    expect(finalTxB.requestToAccountIndex).toBe(finalTxExit.toAccountIndex)
-    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxExit.toHezEthereumAddress)
-    expect(finalTxB.requestToBjj).toBe(finalTxExit.toBjj)
-    expect(finalTxB.requestTokenId).toBe(finalTxExit.tokenId)
-    expect(finalTxB.requestAmount).toBe(finalTxExit.amount)
-    expect(finalTxB.requestFee).toBe(finalTxExit.fee)
-    expect(finalTxB.requestNonce).toBe(finalTxExit.nonce)
+    expect(finalTxB.requestFromAccountIndex).toBe(genTxA.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(genTxA.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(genTxA.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(genTxA.toBjj)
+    expect(finalTxB.requestTokenId).toBe(genTxA.tokenId)
+    expect(finalTxB.requestAmount).toBe(genTxA.amount)
+    expect(finalTxB.requestFee).toBe(genTxA.fee)
+    expect(finalTxB.requestNonce).toBe(genTxA.nonce)
   })
 
   test('Link transferToEthAddr transaction', async () => {
@@ -638,6 +636,14 @@ describe('#generateL2Transaction Linked', () => {
       nonce: 8
     }
 
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6
+    }
+
     const bjjA = 5
     const tokenA = {
       id: 2,
@@ -650,29 +656,20 @@ describe('#generateL2Transaction Linked', () => {
       decimals: 18
     }
 
-    const resTxA = await TxUtils.generateL2Transaction(txA, bjjA, tokenA)
-    const finalTxA = resTxA.transaction
+    const genTxA = await TxUtils.computeL2Transaction(txA, bjjA, tokenA)
+    const genTxB = await TxUtils.computeL2Transaction(txB, bjjB, tokenB)
 
-    const txB = {
-      from: 'hez:HEZ:2121',
-      to: 'hez:HEZ:2222',
-      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
-      fee: 0.12,
-      nonce: 6,
-      linkedTransaction: finalTxA
-    }
+    const atomicTxB = await TxUtils.generateAtomicTransaction(genTxB, genTxA)
+    const finalTxB = atomicTxB.transaction
 
-    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
-    const finalTxB = resTxB.transaction
-
-    expect(finalTxB.requestFromAccountIndex).toBe(finalTxA.fromAccountIndex)
-    expect(finalTxB.requestToAccountIndex).toBe(finalTxA.toAccountIndex)
-    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxA.toHezEthereumAddress)
-    expect(finalTxB.requestToBjj).toBe(finalTxA.toBjj)
-    expect(finalTxB.requestTokenId).toBe(finalTxA.tokenId)
-    expect(finalTxB.requestAmount).toBe(finalTxA.amount)
-    expect(finalTxB.requestFee).toBe(finalTxA.fee)
-    expect(finalTxB.requestNonce).toBe(finalTxA.nonce)
+    expect(finalTxB.requestFromAccountIndex).toBe(genTxA.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(genTxA.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(genTxA.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(genTxA.toBjj)
+    expect(finalTxB.requestTokenId).toBe(genTxA.tokenId)
+    expect(finalTxB.requestAmount).toBe(genTxA.amount)
+    expect(finalTxB.requestFee).toBe(genTxA.fee)
+    expect(finalTxB.requestNonce).toBe(genTxA.nonce)
   })
 
   test('Link transferToBjj transaction', async () => {
@@ -685,6 +682,14 @@ describe('#generateL2Transaction Linked', () => {
       nonce: 1234
     }
 
+    const txB = {
+      from: 'hez:HEZ:2121',
+      to: 'hez:HEZ:2222',
+      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
+      fee: 0.12,
+      nonce: 6
+    }
+
     const bjjA = 5
     const tokenA = {
       id: 2,
@@ -697,29 +702,20 @@ describe('#generateL2Transaction Linked', () => {
       decimals: 18
     }
 
-    const resTxA = await TxUtils.generateL2Transaction(txA, bjjA, tokenA)
-    const finalTxA = resTxA.transaction
+    const genTxA = await TxUtils.computeL2Transaction(txA, bjjA, tokenA)
+    const genTxB = await TxUtils.computeL2Transaction(txB, bjjB, tokenB)
 
-    const txB = {
-      from: 'hez:HEZ:2121',
-      to: 'hez:HEZ:2222',
-      amount: HermezCompressedAmount.compressAmount('21000000000000000000'),
-      fee: 0.12,
-      nonce: 6,
-      linkedTransaction: finalTxA
-    }
+    const atomicTxB = await TxUtils.generateAtomicTransaction(genTxB, genTxA)
+    const finalTxB = atomicTxB.transaction
 
-    const resTxB = await TxUtils.generateL2Transaction(txB, bjjB, tokenB)
-    const finalTxB = resTxB.transaction
-
-    expect(finalTxB.requestFromAccountIndex).toBe(finalTxA.fromAccountIndex)
-    expect(finalTxB.requestToAccountIndex).toBe(finalTxA.toAccountIndex)
-    expect(finalTxB.requestToHezEthereumAddress).toBe(finalTxA.toHezEthereumAddress)
-    expect(finalTxB.requestToBjj).toBe(finalTxA.toBjj)
-    expect(finalTxB.requestTokenId).toBe(finalTxA.tokenId)
-    expect(finalTxB.requestAmount).toBe(finalTxA.amount)
-    expect(finalTxB.requestFee).toBe(finalTxA.fee)
-    expect(finalTxB.requestNonce).toBe(finalTxA.nonce)
+    expect(finalTxB.requestFromAccountIndex).toBe(genTxA.fromAccountIndex)
+    expect(finalTxB.requestToAccountIndex).toBe(genTxA.toAccountIndex)
+    expect(finalTxB.requestToHezEthereumAddress).toBe(genTxA.toHezEthereumAddress)
+    expect(finalTxB.requestToBjj).toBe(genTxA.toBjj)
+    expect(finalTxB.requestTokenId).toBe(genTxA.tokenId)
+    expect(finalTxB.requestAmount).toBe(genTxA.amount)
+    expect(finalTxB.requestFee).toBe(genTxA.fee)
+    expect(finalTxB.requestNonce).toBe(genTxA.nonce)
   })
 })
 

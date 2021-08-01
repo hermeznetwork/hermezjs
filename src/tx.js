@@ -3,6 +3,7 @@ import { groth16 } from 'snarkjs'
 
 import {
   postPoolTransaction,
+  postAtomicGroup,
   getAccounts,
   getAccount
 } from './api.js'
@@ -19,6 +20,7 @@ import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
 import { SignerType } from './signers.js'
 import { buildZkInputWithdraw, buildProofContract } from './withdraw-utils.js'
 import { estimateDepositGasLimit, estimateWithdrawGasLimit } from './tx-fees.js'
+import { generateAtomicGroup } from './atomic-utils.js'
 
 /**
  * Get current average gas price from the last ethereum blocks and multiply it
@@ -396,6 +398,32 @@ async function generateAndSendL2Tx (tx, wallet, token, nextForgers, addToTxPool 
   return sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex, nextForgers, addToTxPool)
 }
 
+/**
+ * Sends an atomic group to the Coordinator
+ * @param {Object} atomicGroup - Transactions object prepared by AtomicUtils.generateAtomicGroup
+ * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
+ * @return {Object} - Object with the response status and transactions ids
+*/
+async function sendAtomicGroup (atomicGroup, nextForgers) {
+  const result = await postAtomicGroup(atomicGroup, nextForgers)
+  return {
+    status: result.status,
+    id: result.data
+  }
+}
+
+/**
+ * Compact L2 atomic grup transactions generated and sent to a Coordinator.
+ * @param {Array[Object]} txs - list of txs. Transaction object prepared by AtomicUtils.buildAtomicTransaction
+ * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
+ * @param {Array} requestOffsets - request offsets to set on each transaction (optional)
+ * @return {Object} - Object with the response status and transactions ids
+*/
+async function generateAndSendAtomicGroup (txs, nextForgers, requestOffsets) {
+  const atomicGroup = await generateAtomicGroup(txs, requestOffsets)
+  return sendAtomicGroup(atomicGroup, nextForgers)
+}
+
 export {
   deposit,
   forceExit,
@@ -404,5 +432,7 @@ export {
   isInstantWithdrawalAllowed,
   sendL2Transaction,
   generateAndSendL2Tx,
+  sendAtomicGroup,
+  generateAndSendAtomicGroup,
   withdrawCircuit
 }
