@@ -98,6 +98,7 @@ export async function printBalances (accounts, token) {
 
 /**
  * Compute, generate and send atomic group
+ * This functionality is only thought to be used in tests since it uses several wallets
  * @param {Array[Object]} transactions - list of tx, in order to link
  * @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
  * @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
@@ -106,17 +107,24 @@ export async function printBalances (accounts, token) {
  * @param {Number} transaction.nonce - The current nonce of the sender's token account
  * @param {Object} wallets - Transactions senders Hermez Wallet
  * @param {Object} tokens - The tokens information object as returned from the Coordinator.
- * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
  * @return response status
 */
-export async function computeGenerateAndSendAtomicGroup (txs, wallets, tokens, nextForgers) {
+export async function computeGenerateAndSendAtomicGroup (txs, wallets, tokens) {
   const generateTxs = []
   const atomicTxs = []
-  if (txs.length !== wallets.length || txs.length !== tokens.length) { throw new Error('Invalid atomic group') }
+
+  if (txs.length !== wallets.length || txs.length !== tokens.length) {
+    throw new Error('Invalid atomic group')
+  }
+
+  // compute L2 transactions as the object almost ready to be sent to the Coordinator
   for (let i = 0; i < txs.length; i++) {
     const tx = await computeL2Transaction(txs[i], wallets[i], tokens[i])
     generateTxs.push(tx)
   }
+
+  // link transactions as they are ordered in txs object circularly
+  // example: [A, B, C, D] --> [A linkTo B], [B linkTo C], [C linkTo D], [D linkTo A]
   for (let j = 0; j < generateTxs.length; j++) {
     let atomicTx
     if (j !== generateTxs.length - 1) {
@@ -126,5 +134,6 @@ export async function computeGenerateAndSendAtomicGroup (txs, wallets, tokens, n
     }
     atomicTxs.push(atomicTx)
   }
+
   return generateAndSendAtomicGroup(atomicTxs, wallets, tokens)
 }

@@ -435,7 +435,7 @@ async function generateL2Transaction (tx, bjj, token) {
  * @param {Number} transaction.nonce - The current nonce of the sender's token account (optional)
  * @param {String} bjj - The compressed BabyJubJub in hexadecimal format of the transaction sender
  * @param {Object} token - The token information object as returned from the Coordinator.
- * @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
+ * @return {Object} - `transaction` is the object almost ready to be sent to the Coordinator
 */
 async function computeL2Transaction (tx, bjj, token) {
   const type = tx.type || getTransactionType(tx)

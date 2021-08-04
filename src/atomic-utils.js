@@ -1,9 +1,10 @@
-import { generateAtomicTransaction } from './tx-utils.js'
 import { Scalar } from 'ffjavascript'
+import { keccak256 } from '@ethersproject/keccak256'
+
 import { addPoolTransaction } from './tx-pool.js'
 import { padZeros } from './utils.js'
-import { keccak256 } from '@ethersproject/keccak256'
 import { TX_ID_BYTES } from './constants'
+import { generateAtomicTransaction } from './tx-utils.js'
 
 /**
  * Determines if the transaction has a linked transaction
@@ -12,7 +13,7 @@ import { TX_ID_BYTES } from './constants'
  */
 function hasLinkedTransaction (transaction) {
   if (
-    (transaction.requestFromAccountIndex !== null && transaction.requestFromAccountIndex !== undefined) ||
+    (transaction.requestFromAccountIndex ?? false) ||
     (transaction.requestToAccountIndex !== null && transaction.requestToAccountIndex !== undefined) ||
     (transaction.requestToHezEthereumAddress !== null && transaction.requestToHezEthereumAddress !== undefined) ||
     (transaction.requestToBjj !== null && transaction.requestToBjj !== undefined) ||
@@ -74,7 +75,7 @@ async function buildAtomicTransaction (txSender, wallet, txLink, addToTxPool = t
 
 /**
  * Generate AtomicID
- * @param {Object} txs array of txs (atomic group)
+ * @param {Array} txs array of txs (atomic group)
  * @returns {String} atomicID as hex string
  */
 function generateAtomicID (txs) {
@@ -93,17 +94,22 @@ function generateAtomicID (txs) {
 
 /**
  * Create Atomic Group, add requestOffset and generate atomic ID
- * @param {Object} txs - Transactions
+ * @param {Array} txs - Transactions
  * @param {Array} requestOffsets - request offsets to set on each transaction
  * @returns {Object} Atomic group ready to be sent to the coordinator
  * @throws {Error} Throws an error if invalid txs lenght or custom requestOffsets doea not match txs length
  */
 function generateAtomicGroup (txs, requestOffsets) {
-  if (txs.length <= 1 || txs.length > 5) { throw new Error('Invalid atomic group') }
+  if (txs.length <= 1 || txs.length > 5) {
+    throw new Error('Invalid atomic group')
+  }
   const atomicID = generateAtomicID(txs)
 
   if (typeof requestOffsets !== 'undefined') {
-    if (txs.length !== requestOffsets.length) { throw new Error('Invalid length requestOffsets') }
+    if (txs.length !== requestOffsets.length) {
+      throw new Error('Invalid length requestOffsets')
+    }
+
     for (let i = 0; i < txs.length; i++) {
       txs[i].requestOffset = requestOffsets[i]
     }
