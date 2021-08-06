@@ -55,9 +55,9 @@ const MAX_NLEVELS = 48
 
 const WITHDRAWAL_CIRCUIT_NLEVELS = 32
 
-const WITHDRAWAL_WASM_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw.wasm'
+const WITHDRAWAL_WASM_URL = 'https://raw.githubusercontent.com/hermeznetwork/hermezjs/main/withdraw-circuit-files/withdraw.wasm'
 
-const WITHDRAWAL_ZKEY_URL = 'https://github.com/hermeznetwork/hermezjs/blob/main/withdraw-circuit-files/withdraw_hez4_final.zkey'
+const WITHDRAWAL_ZKEY_URL = 'https://raw.githubusercontent.com/hermeznetwork/hermezjs/main/withdraw-circuit-files/withdraw_hez4_final.zkey'
 
 const ETHER_ADDRESS = '0x0000000000000000000000000000000000000000'
 
