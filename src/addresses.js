@@ -55,7 +55,28 @@ function isHermezEthereumAddress (hermezEthereumAddress) {
  * @returns {Boolean}
  */
 function isHermezBjjAddress (bjjAddress) {
-  return bjjAddressPattern.test(bjjAddress)
+  if (!bjjAddressPattern.test(bjjAddress)) {
+    return false
+  }
+
+  const bjjCompressedHex = base64ToHexBJJ(bjjAddress)
+  const bjjScalar = Scalar.fromString(bjjCompressedHex, 16)
+  const bjjBuff = utilsScalar.leInt2Buff(bjjScalar, 32)
+  const bjjSwap = padZeros(utilsScalar.beBuff2int(bjjBuff).toString(16), 64)
+  const bjjSwapBuffer = Buffer.from(bjjSwap, 'hex')
+
+  let sum = 0
+  for (let i = 0; i < bjjSwapBuffer.length; i++) {
+    sum += bjjSwapBuffer[i]
+    sum = sum % 2 ** 8
+  }
+
+  if (bjjAddress.startsWith('hez:')) {
+    bjjAddress = bjjAddress.replace('hez:', '')
+  }
+  const bjjDecodedBuffer = base64url.toBuffer(bjjAddress)
+  const correctSum = bjjDecodedBuffer.slice(-1)[0]
+  return sum === correctSum
 }
 
 /**

@@ -4,6 +4,7 @@ const ethereumAddress = '0x4294cE558F2Eb6ca4C3191AeD502cF0c625AE995'
 const hermezEthereumAddress = 'hez:0x4294cE558F2Eb6ca4C3191AeD502cF0c625AE995'
 const hermezHexBjjAddress = '8128bb403a7e7641b1e34f00f9b5922b27a8583a163609e39e96bde63f422008'
 const hermezBjjAddress = 'hez:CCBCP-a9lp7jCTYWOlioJyuStfkAT-OxQXZ-OkC7KIF6'
+const hermezWrongBjjAddress = 'hez:testtesttesttesttesttesttesttesttesttesttest'
 const expectedAy = '128bb403a7e7641b1e34f00f9b5922b27a8583a163609e39e96bde63f422008'
 const expectedSign = 1
 const hermezAccountIndex = 'hez:TKN:256'
@@ -24,6 +25,7 @@ test('#isHermezEthereumAddress', () => {
 
 test('#isHermezBjjAddress', () => {
   expect(addresses.isHermezBjjAddress(hermezBjjAddress)).toBe(true)
+  expect(addresses.isHermezBjjAddress(hermezWrongBjjAddress)).toBe(false)
   expect(addresses.isHermezBjjAddress(hermezEthereumAddress)).toBe(false)
 })
 
