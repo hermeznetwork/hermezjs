@@ -13,7 +13,7 @@ import { generateAtomicTransaction } from './tx-utils.js'
  */
 function hasLinkedTransaction (transaction) {
   if (
-    (transaction.requestFromAccountIndex ?? false) ||
+    (transaction.requestFromAccountIndex !== null && transaction.requestFromAccountIndex !== undefined) ||
     (transaction.requestToAccountIndex !== null && transaction.requestToAccountIndex !== undefined) ||
     (transaction.requestToHezEthereumAddress !== null && transaction.requestToHezEthereumAddress !== undefined) ||
     (transaction.requestToBjj !== null && transaction.requestToBjj !== undefined) ||
