@@ -238,8 +238,8 @@ async function getExit (batchNum, accountIndex, axiosConfig = {}) {
  */
 async function getTokens (tokenIds, tokenSymbols, fromItem, order = PaginationOrder.ASC, limit = DEFAULT_PAGE_SIZE, axiosConfig = {}) {
   const params = {
-    ...(tokenIds ? { ids: tokenIds.join(',') } : {}),
-    ...(tokenSymbols ? { symbols: tokenSymbols.join(',') } : {}),
+    ...(tokenIds ? { ids: tokenIds.join('|') } : {}),
+    ...(tokenSymbols ? { symbols: tokenSymbols.join('|') } : {}),
     ..._getPageData(fromItem, order, limit)
   }
 
