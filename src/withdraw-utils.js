@@ -21,7 +21,7 @@ async function buildZkInputWithdraw (exitInfo) {
   zkInputWithdrawal.idx = Scalar.e(getAccountIndex(exitInfo.accountIndex))
   zkInputWithdrawal.sign = Scalar.e(sign)
   zkInputWithdrawal.ay = Scalar.fromString(ay, 16)
-  const siblings = exitInfo.merkleProof.siblings
+  const siblings = [...exitInfo.merkleProof.siblings]
   while (siblings.length < (WITHDRAWAL_CIRCUIT_NLEVELS + 1)) siblings.push(Scalar.e(0))
   zkInputWithdrawal.siblingsState = siblings
 
