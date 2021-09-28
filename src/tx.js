@@ -28,7 +28,7 @@ import { generateAtomicGroup } from './atomic-utils.js'
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @returns {Promise} - promise will return the gas price obtained.
  */
-async function getGasPrice (multiplier, providerUrl) {
+async function getGasPrice (multiplier = GAS_MULTIPLIER, providerUrl) {
   const provider = getProvider(providerUrl)
   const strAvgGas = await provider.getGasPrice()
   const avgGas = Scalar.e(strAvgGas)
@@ -59,7 +59,7 @@ const deposit = async (
   signerData,
   providerUrl,
   gasLimit,
-  gasMultiplier = GAS_MULTIPLIER
+  gasMultiplier
 ) => {
   if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
     throw new Error('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
@@ -124,7 +124,7 @@ const forceExit = async (
   signerData,
   providerUrl,
   gasLimit,
-  gasMultiplier = GAS_MULTIPLIER
+  gasMultiplier
 ) => {
   if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
     throw new Error('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
@@ -184,7 +184,7 @@ const withdraw = async (
   signerData,
   providerUrl,
   gasLimit,
-  gasMultiplier = GAS_MULTIPLIER
+  gasMultiplier
 ) => {
   const account = await getAccount(accountIndex)
     .catch(() => {
@@ -234,7 +234,7 @@ const withdrawCircuit = async (
   signerData,
   providerUrl,
   gasLimit,
-  gasMultiplier = GAS_MULTIPLIER
+  gasMultiplier
 ) => {
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, signerData, providerUrl)
   const wasmFileInput = typeof window === 'undefined' ? wasmFilePath : wasmFilePath || WITHDRAWAL_WASM_URL
@@ -245,11 +245,8 @@ const withdrawCircuit = async (
   const zkProofContract = await buildProofContract(zkProofSnarkJs.proof)
 
   const overrides = {
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
-  }
-
-  if (typeof gasLimit !== 'undefined') {
-    overrides.gasLimit = gasLimit
+    gasPrice: gasMultiplier ? await getGasPrice(gasMultiplier, providerUrl) : undefined,
+    gasLimit
   }
 
   const transactionParameters = [
@@ -283,7 +280,7 @@ const delayedWithdraw = async (
   signerData,
   providerUrl,
   gasLimit,
-  gasMultiplier = GAS_MULTIPLIER
+  gasMultiplier
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
