@@ -1,4 +1,3 @@
-import { Scalar } from 'ffjavascript'
 import { groth16 } from 'snarkjs'
 
 import {
@@ -39,8 +38,8 @@ async function getGasPrice (providerUrl) {
   const { maxFeePerGas, maxPriorityFeePerGas } = await provider.getFeeData()
 
   return {
-    maxFeePerGas: Scalar.e(maxFeePerGas).toString(),
-    maxPriorityFeePerGas: Scalar.e(maxPriorityFeePerGas).toString()
+    maxFeePerGas: maxFeePerGas.toString(),
+    maxPriorityFeePerGas: maxPriorityFeePerGas.toString()
   }
 }
 
