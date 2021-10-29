@@ -9,7 +9,7 @@ import { SignerType } from '../../src/signers.js'
 
 // Requires `integration-testing` environment running
 
-test('Check Allowance', async () => {
+test('Check Allowance with approve', async () => {
   const ERC20Address = '0xaded47e7b9275b17189f0b17bf6a4ce909047084'
 
   // Initialize providers

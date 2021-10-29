@@ -1,7 +1,7 @@
 import * as CoordinatorAPI from '../../src/api.js'
 import { getL1UserTxId, computeL2Transaction } from '../../src/tx-utils.js'
 import { buildAtomicTransaction } from '../../src/atomic-utils.js'
-import { generateAndSendAtomicGroup } from '../../src/txjs'
+import { generateAndSendAtomicGroup } from '../../src/tx.js'
 
 /**
  * Wait timeout

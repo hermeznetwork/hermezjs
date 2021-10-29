@@ -10,11 +10,12 @@ import {
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
 import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_LOW, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL, ETHER_ADDRESS } from './constants.js'
-import { approve } from './tokens.js'
+import { approve, isPermitSupported, permit } from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
 import { getProvider } from './providers.js'
 import { generateL2Transaction } from './tx-utils.js'
+import ERC20ABI from './abis/ERC20ABI.js'
 import HermezABI from './abis/HermezABI.js'
 import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
 import { SignerType } from './signers.js'
@@ -68,6 +69,7 @@ const deposit = async (
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
+  const fromTokenContract = getContract(token.ethereumAddress, ERC20ABI, txSignerData, providerUrl)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
@@ -76,6 +78,13 @@ const deposit = async (
   const overrides = {
     gasPrice: await getGasPrice(gasMultiplier, providerUrl)
   }
+
+  const usePermit = await isPermitSupported(fromTokenContract)
+  const permitSignature =
+    usePermit
+      ? await permit(fromTokenContract, ethereumAddress, CONTRACT_ADDRESSES[ContractNames.Hermez], signerData, providerUrl)
+      : '0x'
+
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
     account ? getAccountIndex(account.accountIndex) : 0,
@@ -83,7 +92,7 @@ const deposit = async (
     0,
     token.id,
     0,
-    '0x'
+    permitSignature
   ]
 
   const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
@@ -100,7 +109,9 @@ const deposit = async (
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
   }
 
-  await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
+  if (!usePermit) {
+    await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
+  }
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
