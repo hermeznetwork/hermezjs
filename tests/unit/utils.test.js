@@ -17,7 +17,7 @@ test('#bufToHex', () => {
 test('#getTokenAmountString', () => {
   const testString = '1234567'
   const testVector = [
-    '1234567.0',
+    '1234567',
     '123456.7',
     '12345.67',
     '1234.567',
