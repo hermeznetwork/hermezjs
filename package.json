@@ -26,7 +26,7 @@
     "prebuild": "rm -rf dist",
     "prepublishOnly": "npm run build-node",
     "test": "jest",
-    "test:integration": "jest --forceExit --detectOpenHandles ./tests/integration/tx.test.js",
+    "test:integration": "jest --forceExit --detectOpenHandles ./tests/integration/*",
     "test:unit": "npm run start-local-blockchain && jest ./tests/unit/* && npm run stop-local-blockchain",
     "lint": "standard",
     "lint:fix": "standard --fix"
