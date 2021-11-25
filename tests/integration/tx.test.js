@@ -1,6 +1,5 @@
 import path from 'path'
 import { ethers } from 'ethers'
-
 import { Scalar } from 'ffjavascript'
 
 import * as Tx from '../../src/tx.js'
@@ -20,10 +19,11 @@ describe('Full flow', () => {
   const mnemonic = 'explain tackle mirror kit van hammer degree position ginger unfair soup bonus'
 
   const accounts = []
-  const numAccounts = 2
+  const numAccounts = 3
   const numAccountsBjj = 1
   let provider
   let tokenEth
+  let tokenHez
   let fee
 
   test('Setup accounts', async () => {
@@ -53,6 +53,7 @@ describe('Full flow', () => {
     const tokensResponse = await CoordinatorAPI.getTokens()
     const tokens = tokensResponse.tokens
     tokenEth = tokens[0]
+    tokenHez = tokens[1]
 
     // setup fee
     fee = 0
@@ -67,7 +68,7 @@ describe('Full flow', () => {
   test('Deposits', async () => {
     const depositAmount = getTokenAmountBigInt('1', tokenEth.decimals)
     const compressedDepositAmount = HermezCompressedAmount.compressAmount(depositAmount)
-    // Deposit account 0
+    // Deposit account 0 Eth
     let depositTokenTxData = await Tx.deposit(
       compressedDepositAmount,
       accounts[0].hermezWallet.hermezEthereumAddress,
@@ -80,7 +81,7 @@ describe('Full flow', () => {
     let txId = getL1TxIdFromReceipt(depositReceipt)
     await assertTxForged(txId)
 
-    // Deposit account 1
+    // Deposit account 1 Eth
     depositTokenTxData = await Tx.deposit(
       compressedDepositAmount,
       accounts[1].hermezWallet.hermezEthereumAddress,
@@ -93,17 +94,33 @@ describe('Full flow', () => {
     txId = getL1TxIdFromReceipt(depositReceipt)
     await assertTxForged(txId)
 
-    // set accounts indexes for account 0 and 1
-    for (let i = 0; i < 2; i++) {
+    // Deposit account 2 Hez
+    depositTokenTxData = await Tx.deposit(
+      compressedDepositAmount,
+      accounts[2].hermezWallet.hermezEthereumAddress,
+      tokenHez,
+      accounts[2].hermezWallet.publicKeyCompressedHex,
+      accounts[2].signer,
+      urlEthNode
+    )
+    depositReceipt = await depositTokenTxData.wait()
+    txId = getL1TxIdFromReceipt(depositReceipt)
+    await assertTxForged(txId)
+
+    // set accounts indexes for account 0, 1 and 2
+    for (let i = 0; i < numAccounts; i++) {
       const hezAddress = accounts[i].hermezWallet.hermezEthereumAddress
-      const accountInfo = await CoordinatorAPI.getAccounts(hezAddress, [tokenEth.id])
+      const accountInfo =
+        i === 2
+          ? await CoordinatorAPI.getAccounts(hezAddress, [tokenHez.id])
+          : await CoordinatorAPI.getAccounts(hezAddress, [tokenEth.id])
       accounts[i].index = accountInfo.accounts[0].accountIndex
+      accounts[i].expectedBalance = depositAmount
     }
 
     // update and assert balances
-    accounts[0].expectedBalance = depositAmount
-    accounts[1].expectedBalance = depositAmount
-    await assertBalances(accounts, tokenEth)
+    await assertBalances([accounts[0], accounts[1]], tokenEth)
+    await assertBalances([accounts[2]], tokenHez)
   })
 
   test('Transfer to a non-existent Bjj address', async () => {
@@ -112,11 +129,11 @@ describe('Full flow', () => {
     const compressedTransferAmount = HermezCompressedAmount.compressAmount(transferAmount)
 
     // transfer to internal account
-    // this transfer should create a new account for accounts[2]
+    // this transfer should create a new account for accounts[3]
     // it also creates an operator fee account to receives fees
     const txTransfer = {
       from: accounts[0].index,
-      to: accounts[2].hermezWallet.publicKeyBase64,
+      to: accounts[3].hermezWallet.publicKeyBase64,
       amount: compressedTransferAmount,
       fee
     }
@@ -127,13 +144,13 @@ describe('Full flow', () => {
     await assertTxForged(res.id)
 
     // set accounts indexes for account 0 and 1
-    const bjjAddress = accounts[2].hermezWallet.publicKeyBase64
+    const bjjAddress = accounts[3].hermezWallet.publicKeyBase64
     const accountInfo = await CoordinatorAPI.getAccounts(bjjAddress, [tokenEth.id])
-    accounts[2].index = accountInfo.accounts[0].accountIndex
+    accounts[3].index = accountInfo.accounts[0].accountIndex
 
     // update and assert balances
     accounts[0].expectedBalance = Scalar.sub(accounts[0].expectedBalance, transferAmount)
-    accounts[2].expectedBalance = transferAmount
+    accounts[3].expectedBalance = transferAmount
     await assertBalances(accounts, tokenEth)
   })
 
@@ -144,20 +161,20 @@ describe('Full flow', () => {
 
     // transfer to ethereum address using internal account
     const txTransfer = {
-      from: accounts[2].index,
+      from: accounts[3].index,
       to: accounts[0].hermezWallet.hermezEthereumAddress,
       amount: compressedTransferAmount,
       fee
     }
 
     // send transaction to coordinator
-    const res = await Tx.generateAndSendL2Tx(txTransfer, accounts[2].hermezWallet, tokenEth)
+    const res = await Tx.generateAndSendL2Tx(txTransfer, accounts[3].hermezWallet, tokenEth)
     expect(res.status).toEqual(200)
     await assertTxForged(res.id)
 
     // update and assert balances
     accounts[0].expectedBalance = Scalar.add(accounts[0].expectedBalance, transferAmount)
-    accounts[2].expectedBalance = Scalar.sub(accounts[2].expectedBalance, transferAmount)
+    accounts[3].expectedBalance = Scalar.sub(accounts[3].expectedBalance, transferAmount)
     await assertBalances(accounts, tokenEth)
   })
 
@@ -193,7 +210,7 @@ describe('Full flow', () => {
     // transfer to index
     const txTransfer = {
       from: accounts[0].index,
-      to: accounts[2].index,
+      to: accounts[3].index,
       amount: compressedTransferAmount,
       fee
     }
@@ -205,7 +222,7 @@ describe('Full flow', () => {
 
     // update and assert balances
     accounts[0].expectedBalance = Scalar.sub(accounts[0].expectedBalance, transferAmount)
-    accounts[2].expectedBalance = Scalar.add(accounts[2].expectedBalance, transferAmount)
+    accounts[3].expectedBalance = Scalar.add(accounts[3].expectedBalance, transferAmount)
     await assertBalances(accounts, tokenEth)
   })
 

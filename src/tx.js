@@ -1,4 +1,3 @@
-import { Scalar } from 'ffjavascript'
 import { groth16 } from 'snarkjs'
 
 import {
@@ -9,12 +8,24 @@ import {
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
 import { addPoolTransaction } from './tx-pool.js'
-import { ContractNames, CONTRACT_ADDRESSES, GAS_LIMIT_LOW, GAS_MULTIPLIER, WITHDRAWAL_WASM_URL, WITHDRAWAL_ZKEY_URL, ETHER_ADDRESS } from './constants.js'
-import { approve } from './tokens.js'
+import {
+  ContractNames,
+  CONTRACT_ADDRESSES,
+  GAS_LIMIT_LOW,
+  WITHDRAWAL_WASM_URL,
+  WITHDRAWAL_ZKEY_URL,
+  ETHER_ADDRESS
+} from './constants.js'
+import {
+  approve,
+  isPermitSupported,
+  permit
+} from './tokens.js'
 import { getEthereumAddress, getAccountIndex } from './addresses.js'
 import { getContract } from './contracts.js'
 import { getProvider } from './providers.js'
 import { generateL2Transaction } from './tx-utils.js'
+import ERC20ABI from './abis/ERC20ABI.js'
 import HermezABI from './abis/HermezABI.js'
 import WithdrawalDelayerABI from './abis/WithdrawalDelayerABI.js'
 import { SignerType } from './signers.js'
@@ -23,18 +34,18 @@ import { estimateDepositGasLimit, estimateWithdrawGasLimit } from './tx-fees.js'
 import { generateAtomicGroup } from './atomic-utils.js'
 
 /**
- * Get current average gas price from the last ethereum blocks and multiply it
- * @param {Number} multiplier - multiply the average gas price by this parameter
+ * Get max Fee per Gas from the last ethereum blocks
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @returns {Promise} - promise will return the gas price obtained.
  */
-async function getGasPrice (multiplier = GAS_MULTIPLIER, providerUrl) {
+async function getGasPrice (providerUrl) {
   const provider = getProvider(providerUrl)
-  const strAvgGas = await provider.getGasPrice()
-  const avgGas = Scalar.e(strAvgGas)
-  const res = (avgGas * Scalar.e(multiplier))
-  const retValue = res.toString()
-  return retValue
+  const { maxFeePerGas, maxPriorityFeePerGas } = await provider.getFeeData()
+
+  return {
+    maxFeePerGas: maxFeePerGas.toString(),
+    maxPriorityFeePerGas: maxPriorityFeePerGas.toString()
+  }
 }
 
 /**
@@ -68,14 +79,22 @@ const deposit = async (
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
+  const fromTokenContract = getContract(token.ethereumAddress, ERC20ABI, txSignerData, providerUrl)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
   const account = typeof accounts !== 'undefined' ? accounts.accounts[0] : null
 
   const overrides = {
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
+    gasPrice: await getGasPrice(providerUrl)
   }
+
+  const usePermit = await isPermitSupported(fromTokenContract)
+  const permitSignature =
+    usePermit
+      ? await permit(fromTokenContract, ethereumAddress, CONTRACT_ADDRESSES[ContractNames.Hermez], signerData, providerUrl)
+      : '0x'
+
   const transactionParameters = [
     account ? 0 : `0x${babyJubJub}`,
     account ? getAccountIndex(account.accountIndex) : 0,
@@ -83,7 +102,7 @@ const deposit = async (
     0,
     token.id,
     0,
-    '0x'
+    permitSignature
   ]
 
   const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
@@ -100,7 +119,9 @@ const deposit = async (
     return hermezContract.addL1Transaction(...transactionParameters, overrides)
   }
 
-  await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
+  if (!usePermit) {
+    await approve(decompressedAmount, ethereumAddress, token.ethereumAddress, signerData, providerUrl)
+  }
 
   return hermezContract.addL1Transaction(...transactionParameters, overrides)
 }
@@ -137,10 +158,10 @@ const forceExit = async (
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
-
+  const gasPrice = await getGasPrice(providerUrl)
   const overrides = {
     gasLimit: typeof gasLimit !== 'undefined' ? gasLimit : GAS_LIMIT_LOW,
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
+    ...gasPrice
   }
 
   const transactionParameters = [
@@ -193,12 +214,21 @@ const withdraw = async (
   const ethereumAddress = getEthereumAddress(account.hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
-
+  const gasPrice = await getGasPrice(providerUrl)
   const overrides = {
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl),
-    gasLimit: typeof gasLimit === 'undefined'
-      ? await estimateWithdrawGasLimit(token, merkleSiblings.length, amount, {}, txSignerData, providerUrl, isInstant)
-      : gasLimit
+    ...gasPrice,
+    gasLimit:
+      typeof gasLimit === 'undefined'
+        ? await estimateWithdrawGasLimit(
+            token,
+            merkleSiblings.length,
+            amount,
+            {},
+            txSignerData,
+            providerUrl,
+            isInstant
+          )
+        : gasLimit
   }
 
   const transactionParameters = [
@@ -243,9 +273,9 @@ const withdrawCircuit = async (
   const zkInputs = await buildZkInputWithdraw(exitInfo)
   const zkProofSnarkJs = await groth16.fullProve(zkInputs, wasmFileInput, zkeyFileInput)
   const zkProofContract = await buildProofContract(zkProofSnarkJs.proof)
-
+  const gasPrice = await getGasPrice(providerUrl)
   const overrides = {
-    gasPrice: gasMultiplier ? await getGasPrice(gasMultiplier, providerUrl) : undefined,
+    ...gasPrice,
     gasLimit
   }
 
@@ -286,9 +316,7 @@ const delayedWithdraw = async (
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const delayedWithdrawalContract = getContract(CONTRACT_ADDRESSES[ContractNames.WithdrawalDelayer], WithdrawalDelayerABI, txSignerData, providerUrl)
 
-  const overrides = {
-    gasPrice: await getGasPrice(gasMultiplier, providerUrl)
-  }
+  const overrides = await getGasPrice(providerUrl)
 
   if (typeof gasLimit !== 'undefined') {
     overrides.gasLimit = gasLimit
