@@ -88,7 +88,7 @@ const deposit = async (
 
   const usePermit = await isPermitSupported(fromTokenContract)
   const permitSignature =
-    await isPermitSupported()
+    usePermit
       ? await permit(fromTokenContract, ethereumAddress, CONTRACT_ADDRESSES[ContractNames.Hermez], signerData, providerUrl)
       : '0x'
 
