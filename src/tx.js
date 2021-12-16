@@ -78,7 +78,6 @@ const deposit = async (
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
   const fromTokenContract = getContract(token.ethereumAddress, ERC20ABI, txSignerData, providerUrl)
-  console.log(token, fromTokenContract)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
