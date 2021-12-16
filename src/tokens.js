@@ -104,13 +104,14 @@ async function createPermitSignature (
  * Generates a permit data string to be passed to a smart contract function call
  * @param {ethers.Contract} fromTokenContract - A Contract instance of an ERC 20 token
  * @param {String} accountAddress - The Ethereum address of the transaction sender
+ * @param {String} contractAddress - The contract we are authorizing to handle our tokens
+ * @param {ethers.BigNumber} amount - The amount we want to authorize
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @returns {String} A hex string with the permit data
  */
-async function permit (fromTokenContract, accountAddress, contractAddress, signerData, providerUrl) {
+async function permit (fromTokenContract, accountAddress, contractAddress, amount, signerData, providerUrl) {
   const nonce = await fromTokenContract.nonces(accountAddress)
-  const amount = ethersConstants.MaxUint256
   const deadline = ethersConstants.MaxUint256
   const { v, r, s } = await createPermitSignature(
     fromTokenContract,
