@@ -84,10 +84,7 @@ const deposit = async (
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
   const account = typeof accounts !== 'undefined' ? accounts.accounts[0] : null
-
-  const overrides = {
-    gasPrice: await getGasPrice(providerUrl)
-  }
+  const overrides = await getGasPrice(providerUrl)
 
   const usePermit = await isPermitSupported(fromTokenContract)
   const permitSignature =
