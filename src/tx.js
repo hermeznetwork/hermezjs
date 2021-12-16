@@ -59,7 +59,6 @@ async function getGasPrice (providerUrl) {
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
- * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
  */
 const deposit = async (
@@ -69,8 +68,7 @@ const deposit = async (
   babyJubJub,
   signerData,
   providerUrl,
-  gasLimit,
-  gasMultiplier
+  gasLimit
 ) => {
   if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
     throw new Error('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
@@ -80,16 +78,18 @@ const deposit = async (
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, txSignerData, providerUrl)
   const fromTokenContract = getContract(token.ethereumAddress, ERC20ABI, txSignerData, providerUrl)
+  console.log(token, fromTokenContract)
 
   const accounts = await getAccounts(hezEthereumAddress, [token.id])
     .catch(() => undefined)
   const account = typeof accounts !== 'undefined' ? accounts.accounts[0] : null
   const overrides = await getGasPrice(providerUrl)
+  const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
 
   const usePermit = await isPermitSupported(fromTokenContract)
   const permitSignature =
     usePermit
-      ? await permit(fromTokenContract, ethereumAddress, CONTRACT_ADDRESSES[ContractNames.Hermez], signerData, providerUrl)
+      ? await permit(fromTokenContract, ethereumAddress, CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, signerData, providerUrl)
       : '0x'
 
   const transactionParameters = [
@@ -101,8 +101,6 @@ const deposit = async (
     0,
     permitSignature
   ]
-
-  const decompressedAmount = HermezCompressedAmount.decompressAmount(amount)
 
   // Deposits need a gas limit to not have to wait for the approve to occur
   // before calculating it automatically, which would slow down the process
@@ -131,7 +129,6 @@ const deposit = async (
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
- * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
  * @throws {Error} Throws an error if account index isn't valid
  */
@@ -141,8 +138,7 @@ const forceExit = async (
   token,
   signerData,
   providerUrl,
-  gasLimit,
-  gasMultiplier
+  gasLimit
 ) => {
   if (!HermezCompressedAmount.isHermezCompressedAmount(amount)) {
     throw new Error('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
@@ -187,7 +183,6 @@ const forceExit = async (
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Boolean} filterSiblings - Whether siblings should be filtered
  * @param {Number} gasLimit - Optional gas limit
- * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
  * @throws {Error} Throws an error if account index isn't valid
  */
@@ -201,8 +196,7 @@ const withdraw = async (
   isInstant = true,
   signerData,
   providerUrl,
-  gasLimit,
-  gasMultiplier
+  gasLimit
 ) => {
   const account = await getAccount(accountIndex)
     .catch(() => {
@@ -250,7 +244,6 @@ const withdraw = async (
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
- * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
  */
 const withdrawCircuit = async (
@@ -260,8 +253,7 @@ const withdrawCircuit = async (
   zkeyFilePath,
   signerData,
   providerUrl,
-  gasLimit,
-  gasMultiplier
+  gasLimit
 ) => {
   const hermezContract = getContract(CONTRACT_ADDRESSES[ContractNames.Hermez], HermezABI, signerData, providerUrl)
   const wasmFileInput = typeof window === 'undefined' ? wasmFilePath : wasmFilePath || WITHDRAWAL_WASM_URL
@@ -298,7 +290,6 @@ const withdrawCircuit = async (
  * @param {Object} signerData - Signer data used to build a Signer to send the transaction
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @param {Number} gasLimit - Optional gas limit
- * @param {Number} gasMultiplier - Optional gas multiplier
  * @returns {Promise} transaction parameters
  */
 const delayedWithdraw = async (
@@ -306,8 +297,7 @@ const delayedWithdraw = async (
   token,
   signerData,
   providerUrl,
-  gasLimit,
-  gasMultiplier
+  gasLimit
 ) => {
   const ethereumAddress = getEthereumAddress(hezEthereumAddress)
   const txSignerData = signerData || { type: SignerType.JSON_RPC, addressOrIndex: ethereumAddress }
