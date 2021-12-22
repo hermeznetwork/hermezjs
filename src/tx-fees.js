@@ -8,6 +8,8 @@ import {
   GAS_LIMIT_WITHDRAW,
   GAS_STANDARD_ERC20_TX,
   SIBLING_GAS_COST,
+  GAS_COST_VERIFY_CIRCUIT,
+  GAS_BASE_WITHDRAW,
   NON_INSTANT_WITHDRAW_ERC20_GAS_COST,
   NON_INSTANT_WITHDRAW_ETH_GAS_COST
 } from './constants'
@@ -68,7 +70,35 @@ async function estimateWithdrawGasLimit (token, merkleSiblingsLength, amount, ov
   }
 }
 
+/**
+ * Estimates the gas limit for a withdrawCircuit
+ * @param {Object} token - The token information object as returned from the API
+ * @param {BigInt} amount - The amount to be withdrawn
+ * @param {Object} overrides - Transaction overrides
+ * @param {Object} signerData - Signer data used to send the transaction.
+ * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+ * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
+ * @returns {Number} estimated gas for the withdrawCircuit
+ */
+async function estimateWithdrawCircuitGasLimit (token, amount, overrides, signerData, providerUrl, isInstant = true) {
+  const nonInstantGas = token.id === ETHER_TOKEN_ID ? NON_INSTANT_WITHDRAW_ETH_GAS_COST : NON_INSTANT_WITHDRAW_ERC20_GAS_COST
+  const finalNonInstantGas = isInstant ? 0 : nonInstantGas
+  try {
+    const tokenContract = getContract(token.ethereumAddress, ERC20ABI, signerData, providerUrl)
+    const provider = getProvider(providerUrl)
+    const signer = getSigner(provider, signerData)
+    const address = await signer.getAddress()
+    const estimatedTransferGasBigNumber = await tokenContract.connect(CONTRACT_ADDRESSES[ContractNames.Hermez]).estimateGas.transfer(address, amount, overrides)
+
+    // Base cost (70k) + (Verify circuit cost 208k) + Transfer cost + non-instant cost offset
+    return GAS_BASE_WITHDRAW + GAS_COST_VERIFY_CIRCUIT + Number(estimatedTransferGasBigNumber.toString()) + finalNonInstantGas
+  } catch (err) {
+    return GAS_BASE_WITHDRAW + GAS_COST_VERIFY_CIRCUIT + GAS_STANDARD_ERC20_TX + finalNonInstantGas
+  }
+}
+
 export {
   estimateDepositGasLimit,
-  estimateWithdrawGasLimit
+  estimateWithdrawGasLimit,
+  estimateWithdrawCircuitGasLimit
 }
