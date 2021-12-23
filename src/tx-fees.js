@@ -75,12 +75,12 @@ async function estimateWithdrawGasLimit (token, merkleSiblingsLength, amount, ov
  * @param {Object} token - The token information object as returned from the API
  * @param {BigInt} amount - The amount to be withdrawn
  * @param {Object} overrides - Transaction overrides
+ * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
  * @param {Object} signerData - Signer data used to send the transaction. Optional
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
- * @param {Boolean} isInstant - Whether it should be an Instant Withdrawal. Optional
  * @returns {Number} estimated gas for the withdrawCircuit
  */
-async function estimateWithdrawCircuitGasLimit (token, amount, overrides, signerData, providerUrl, isInstant = true) {
+async function estimateWithdrawCircuitGasLimit (token, amount, overrides, isInstant, signerData, providerUrl) {
   const nonInstantGas = token.id === ETHER_TOKEN_ID ? NON_INSTANT_WITHDRAW_ETH_GAS_COST : NON_INSTANT_WITHDRAW_ERC20_GAS_COST
   const finalNonInstantGas = isInstant ? 0 : nonInstantGas
   try {
