@@ -9,7 +9,8 @@ import {
   GAS_STANDARD_ERC20_TX,
   SIBLING_GAS_COST,
   NON_INSTANT_WITHDRAW_ERC20_GAS_COST,
-  NON_INSTANT_WITHDRAW_ETH_GAS_COST
+  NON_INSTANT_WITHDRAW_ETH_GAS_COST,
+  GAS_PERMIT
 } from './constants'
 import { getProvider } from './providers'
 import { getSigner } from './signers'
@@ -20,21 +21,25 @@ import { getContract } from './contracts'
  * @param {Object} token - The token information object as returned from the API
  * @param {Scalar} decompressedAmount - Deposit amount in encoded in fix
  * @param {Object} overrides - Transaction overrides
+ * @param {Boolean} usePermit - Flag to indicate if the token supports the EIP-2612
  * @param {Object} signerData - Signer data used to send the transaction.
  * @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
  * @returns {Number} estimated gas for the deposit
  */
-async function estimateDepositGasLimit (token, decompressedAmount, overrides, signerData, providerUrl) {
+async function estimateDepositGasLimit (token, decompressedAmount, overrides, usePermit, signerData, providerUrl) {
   if (token.id === 0) {
     return GAS_LIMIT_LOW
   } else {
     try {
       const tokenContract = getContract(token.ethereumAddress, ERC20ABI, signerData, providerUrl)
       const estimatedTransferGasBigNumber = await tokenContract.estimateGas.transfer(CONTRACT_ADDRESSES[ContractNames.Hermez], decompressedAmount, overrides)
+      const estimatedTransferGas = Number(estimatedTransferGasBigNumber.toString())
 
-      return Number(estimatedTransferGasBigNumber.toString()) + GAS_LIMIT_HIGH
+      return usePermit
+        ? estimatedTransferGas + GAS_LIMIT_HIGH + GAS_PERMIT
+        : estimatedTransferGas + GAS_LIMIT_HIGH
     } catch (err) {
-      return GAS_LIMIT_HIGH + GAS_STANDARD_ERC20_TX
+      return GAS_LIMIT_HIGH + GAS_STANDARD_ERC20_TX + GAS_PERMIT
     }
   }
 }

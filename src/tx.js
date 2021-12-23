@@ -104,7 +104,7 @@ const deposit = async (
   // Deposits need a gas limit to not have to wait for the approve to occur
   // before calculating it automatically, which would slow down the process
   overrides.gasLimit = typeof gasLimit === 'undefined'
-    ? await estimateDepositGasLimit(token, decompressedAmount, overrides, txSignerData, providerUrl)
+    ? await estimateDepositGasLimit(token, decompressedAmount, overrides, usePermit, txSignerData, providerUrl)
     : gasLimit
 
   if (token.id === 0) {
