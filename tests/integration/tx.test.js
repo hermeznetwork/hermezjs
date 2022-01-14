@@ -3,7 +3,6 @@ import { ethers } from 'ethers'
 import { Scalar } from 'ffjavascript'
 
 import * as Tx from '../../src/tx.js'
-import * as TransactionPool from '../../src/tx-pool.js'
 import * as CoordinatorAPI from '../../src/api.js'
 import { getEthereumAddress } from '../../src/addresses.js'
 import { createWalletFromEtherAccount, createWalletFromBjjPvtKey } from '../../src/hermez-wallet.js'
@@ -57,9 +56,6 @@ describe('Full flow', () => {
 
     // setup fee
     fee = 0
-
-    // setup tx pool
-    TransactionPool.initializeTransactionPool()
 
     // setup provider
     provider = new ethers.providers.JsonRpcProvider(urlEthNode)

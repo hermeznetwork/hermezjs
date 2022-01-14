@@ -1,5 +1,3 @@
-const TRANSACTION_POOL_KEY = 'transactionPool'
-
 const METAMASK_MESSAGE = 'Hermez Network account access.\n\nSign this message if you are in a trusted application only.'
 
 const CREATE_ACCOUNT_AUTH_MESSAGE = 'Account creation'
@@ -67,7 +65,6 @@ const ETHER_ADDRESS = '0x0000000000000000000000000000000000000000'
 const TX_ID_BYTES = 32
 
 export {
-  TRANSACTION_POOL_KEY,
   METAMASK_MESSAGE,
   CREATE_ACCOUNT_AUTH_MESSAGE,
   EIP_712_VERSION,

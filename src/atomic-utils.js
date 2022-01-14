@@ -1,7 +1,6 @@
 import { Scalar } from 'ffjavascript'
 import { keccak256 } from '@ethersproject/keccak256'
 
-import { addPoolTransaction } from './tx-pool.js'
 import { padZeros } from './utils.js'
 import { TX_ID_BYTES } from './constants'
 import { generateAtomicTransaction } from './tx-utils.js'
@@ -59,16 +58,12 @@ function addLinkedTransaction (transaction, linkedTransaction) {
  * @param {Object} txSender - Transaction object
  * @param {Object} wallet - Wallet sender
  * @param {Object} txLink - Transaction to be linked
- * @param {Boolean} addToTxPool - A boolean which indicates if the tx should be added to the tx pool or not
  * @returns {Object} Transaction object with a linked transaction
  */
-async function buildAtomicTransaction (txSender, wallet, txLink, addToTxPool = true) {
+async function buildAtomicTransaction (txSender, wallet, txLink) {
   const l2TxParams = await generateAtomicTransaction(txSender, txLink)
 
   wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
-  if (addToTxPool) {
-    await addPoolTransaction(l2TxParams.transaction, wallet.publicKeyCompressedHex)
-  }
 
   return l2TxParams.transaction
 }
