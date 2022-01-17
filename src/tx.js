@@ -7,7 +7,6 @@ import {
   getAccount
 } from './api.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
-import { addPoolTransaction } from './tx-pool.js'
 import {
   ContractNames,
   CONTRACT_ADDRESSES,
@@ -369,16 +368,11 @@ async function isInstantWithdrawalAllowed (
 /**
  * Sends a L2 transaction to the Coordinator
  * @param {Object} transaction - Transaction object prepared by TxUtils.generateL2Transaction
- * @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
  * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
- * @param {Boolean} addToTxPool - A boolean which indicates if the tx should be added to the tx pool or not
  * @return {Object} - Object with the response status, transaction id and the transaction nonce
 */
-async function sendL2Transaction (transaction, bJJ, nextForgers, addToTxPool) {
+async function sendL2Transaction (transaction, nextForgers) {
   const result = await postPoolTransaction(transaction, nextForgers)
-  if (result.status === 200 && addToTxPool) {
-    await addPoolTransaction(transaction, bJJ)
-  }
 
   return {
     status: result.status,
@@ -399,14 +393,13 @@ async function sendL2Transaction (transaction, bJJ, nextForgers, addToTxPool) {
  * @param {Object} wallet - Transaction sender Hermez Wallet
  * @param {Object} token - The token information object as returned from the Coordinator.
  * @param {Array} nextForgers - An array of URLs of the next forgers to send the L2 tx to.
- * @param {Boolean} addToTxPool - A boolean which indicates if the tx should be added to the tx pool or not
 */
-async function generateAndSendL2Tx (tx, wallet, token, nextForgers, addToTxPool = true) {
+async function generateAndSendL2Tx (tx, wallet, token, nextForgers) {
   const l2TxParams = await generateL2Transaction(tx, wallet.publicKeyCompressedHex, token)
 
   wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction)
 
-  return sendL2Transaction(l2TxParams.transaction, wallet.publicKeyCompressedHex, nextForgers, addToTxPool)
+  return sendL2Transaction(l2TxParams.transaction, nextForgers)
 }
 
 /**

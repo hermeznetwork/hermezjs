@@ -2,7 +2,6 @@ import { jest } from '@jest/globals'
 import axios from 'axios'
 import { Scalar } from 'ffjavascript'
 
-import * as TransactionPool from '../../src/tx-pool.js'
 import * as TxUtils from '../../src/tx-utils.js'
 import { HermezCompressedAmount } from '../../src/hermez-compressed-amount.js'
 
@@ -156,10 +155,6 @@ describe('#getNonce', () => {
   const accountIndex1 = 1
   const id1 = 1
   const tokenId1 = 1
-  const localTx = {
-    id: id1,
-    fromAccountIndex: accountIndex1
-  }
   const poolTx1 = {
     id: id1,
     fromAccountIndex: accountIndex1,
@@ -189,22 +184,16 @@ describe('#getNonce', () => {
 
   beforeEach(() => {
     jest.mock('axios')
-    TransactionPool.initializeTransactionPool()
   })
 
   afterEach(() => {
     axios.get.mockRestore()
-    TransactionPool._storage.clear()
   })
 
   test('calculates correct next nonce', async () => {
     axios.get = jest.fn()
       .mockResolvedValue({ data: poolTx1 })
       .mockResolvedValueOnce({ data: poolTx2 })
-
-    TransactionPool.addPoolTransaction(localTx, bjj1)
-    TransactionPool.addPoolTransaction(localTx, bjj1)
-    TransactionPool.addPoolTransaction(localTx, bjj1)
 
     // return current nonce since it is still not used
     const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
@@ -220,9 +209,6 @@ describe('#getNonce', () => {
       .mockResolvedValue({ data: poolTx1 })
       .mockResolvedValueOnce({ data: poolTx3 })
 
-    TransactionPool.addPoolTransaction(localTx, bjj1)
-    TransactionPool.addPoolTransaction(localTx, bjj1)
-
     const nonce = await TxUtils.getNonce(2, accountIndex1, bjj1, tokenId1)
     expect(nonce).toBe(2)
   })
@@ -230,9 +216,6 @@ describe('#getNonce', () => {
   test('returns current nonce if no transactions for account index', async () => {
     axios.get = jest.fn()
       .mockResolvedValue({ data: poolTx3 })
-
-    TransactionPool.addPoolTransaction(localTx, bjj1)
-    TransactionPool.addPoolTransaction(localTx, bjj1)
 
     const nonce = await TxUtils.getNonce(1, accountIndex1, bjj1, tokenId1)
     expect(nonce).toBe(1)
@@ -482,13 +465,11 @@ describe('#generateL2Transaction', () => {
   beforeEach(() => {
     transferTransaction.id = '0x02c674951a81881b7bc50db3b9e5efd97ac88550c7426ac548720e5057cfba515a'
     exitTransaction.id = '0x02c674951a81881b7bc50db3b9e5efd97ac88550c7426ac548720e5057cfba515a'
-    TransactionPool.initializeTransactionPool()
   })
 
   afterEach(() => {
     delete transferTransaction.id
     delete exitTransaction.id
-    TransactionPool._storage.clear()
   })
 
   test('Works for transfers', async () => {
@@ -528,14 +509,6 @@ describe('#generateL2Transaction', () => {
 })
 
 describe('#generateAtomicTransaction', () => {
-  beforeEach(() => {
-    TransactionPool.initializeTransactionPool()
-  })
-
-  afterEach(() => {
-    TransactionPool._storage.clear()
-  })
-
   test('Link transferToIdx transaction', async () => {
     const txA = {
       from: 'hez:HEZ:4141',
