@@ -5,12 +5,12 @@ import { keccak256 } from '@ethersproject/keccak256'
 import { feeFactors, feeFactorsAsBigInts } from './fee-factors.js'
 import { bufToHex, getTokenAmountBigInt } from './utils.js'
 import { HermezCompressedAmount } from './hermez-compressed-amount.js'
-import { getPoolTransactions } from './tx-pool.js'
+import { getPoolTransactions, getAccount } from './api.js'
 import {
   getAccountIndex, getEthereumAddress, isHermezEthereumAddress, isHermezAccountIndex, isHermezBjjAddress,
   base64ToHexBJJ, getAySignFromBJJ
 } from './addresses.js'
-import { getAccount } from './api.js'
+
 import { getProvider } from './providers.js'
 import { TxType, TxState } from './enums.js'
 import { INTERNAL_ACCOUNT_ETH_ADDR } from './constants.js'
@@ -302,7 +302,7 @@ async function getNonce (currentNonce, accountIndex, bjj, tokenId) {
   const accountData = await getAccount(accountIndex)
   let nonce = accountData.nonce
 
-  const poolTxs = await getPoolTransactions(accountIndex, bjj)
+  const poolTxs = (await getPoolTransactions(null, null, null, null, accountIndex)).transactions
 
   const poolTxsNonces = poolTxs
     .filter(tx => tx.token.id === tokenId)
