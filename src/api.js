@@ -3,7 +3,6 @@ import axios from 'axios'
 import { extractJSON } from './http.js'
 import { DEFAULT_PAGE_SIZE, BASE_API_URL, API_VERSION } from './constants.js'
 import { isHermezEthereumAddress, isHermezBjjAddress } from './addresses.js'
-import { TxType, TxState } from './enums.js'
 
 const PaginationOrder = {
   ASC: 'ASC',
@@ -153,8 +152,8 @@ async function getPoolTransactions (address, state, type, tokenId, accountIndex,
   const params = {
     ...(isHermezEthereumAddress(address) ? { hezEthereumAddress: address } : {}),
     ...(isHermezBjjAddress(address) ? { BJJ: address } : {}),
-    ...(typeof TxState[state] !== 'undefined' ? { state: TxState[state] } : {}),
-    ...(typeof TxType[type] !== 'undefined' ? { type: TxType[type] } : {}),
+    ...(typeof state !== 'undefined' ? { state } : {}),
+    ...(typeof type !== 'undefined' ? { type } : {}),
     ...(typeof tokenId !== 'undefined' ? { tokenId } : {}),
     ...(accountIndex ? { accountIndex } : {}),
     ..._getPageData(fromItem, order, limit)
